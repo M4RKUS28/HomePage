@@ -1,28 +1,164 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, GraduationCap, Code, Award, Users, Zap as SkillIcon } from 'lucide-react'; // Added more icons
+import {
+  Briefcase,
+  GraduationCap,
+  Code,
+  Award,
+  Users,
+  Zap as SkillIcon
+} from 'lucide-react';
+
+
 
 const cvData = {
-  summary: "A results-driven Full Stack Developer with a passion for creating intuitive and performant web applications. Adept at leveraging modern technologies to build innovative solutions and continuously seeking opportunities to learn and grow in the ever-evolving tech landscape.",
+  summary: "As a business informatics student, I combine a strong academic foundation with a passion for connecting business and technology. I enjoy working in collaborative, innovative environments and am motivated to keep learning and growing in the digital world.",
+
   experience: [
-    { id: 1, role: "Senior Full Stack Developer", company: "Innovatech Solutions", period: "2021 - Present", details: "Led a team of 5 developers in designing and implementing scalable microservices for a flagship SaaS product. Spearheaded the adoption of Next.js and GraphQL, improving frontend performance by 30%. Mentored junior developers and contributed to CI/CD pipeline optimization.", icon: Briefcase },
-    { id: 2, role: "Software Engineer", company: "Web Wizards LLC", period: "2019 - 2021", details: "Developed and maintained client-facing web applications using React, Node.js, and PostgreSQL. Collaborated in an Agile environment, participating in daily stand-ups, sprint planning, and retrospectives. Implemented RESTful APIs and integrated third-party services.", icon: Briefcase },
+    {
+      id: 1,
+      role: "Working Student Data Analyst",
+      company: "Siemens Global Business Services",
+      period: "Nov 2024 – Mar 2025",
+      details: `
+- Data analysis and processing with KNIME  
+- Creation of dashboards and visualizations in Power BI  
+- Design and setup of database structures in Microsoft Access
+      `.trim(),
+      icon: Briefcase,
+    },
   ],
+
   education: [
-    { id: 1, degree: "M.Sc. in Advanced Computer Science", institution: "University of Technology", period: "2017 - 2019", details: "Thesis on 'Machine Learning for Predictive Analytics in E-commerce'. Awarded Distinction.", icon: GraduationCap },
-    { id: 2, degree: "B.Sc. in Computer Science", institution: "State University", period: "2014 - 2017", details: "Graduated Summa Cum Laude. President of the Coding Club.", icon: GraduationCap },
+    {
+      id: 1,
+      degree: "B.Sc. in Business Informatics",
+      institution: "Technische Universität München",
+      period: "Oct 2023 – Present",
+      details: "Currently enrolled in the Bachelor of Science programme in Wirtschaftsinformatik.",
+      icon: GraduationCap,
+    },
+    {
+      id: 2,
+      degree: "Abitur",
+      institution: "Luitpold Gymnasium Wasserburg",
+      period: "Sep 2015 – Jun 2023",
+      details: "",
+      icon: GraduationCap,
+    },
   ],
+
+  projectsHighlight: [
+    {
+      id: 1,
+      name: "Barcode Scanner for Delicatessen",
+      period: "Apr 2022 – Dec 2022",
+      description: `
+- Programmed the software for a custom barcode scanner  
+- Built and connected the backend database and web server  
+- Designed a Qt-based GUI for end users  
+[Code & demo →](https://github.com/Benefranko/Barcode-Scanner-Feinkost-)`,
+      icon: Code,
+    },
+    {
+      id: 2,
+      name: "Mandelbrot Set Visualizer",
+      period: "Oct 2022 – Present",
+      description: `
+- Realized theoretical investigations from W-Seminar paper  
+- Developed a C++/Qt application for interactive fractal rendering  
+[Live demo →](https://m4rkus28.github.io/Fraktalgenerator)`,
+      icon: Code,
+    },
+  ],
+
+  awards: [
+    {
+      id: 1,
+      name: "1st Place, CHECK24 Challenge at TUM.ai Makeathon",
+      date: "Apr 2025",
+      details: "3-day AI hackathon solving real-world business cases. Project: SmartStay24. [GitHub →](https://github.com/M4RKUS28/SmartStay24)",
+      icon: Award,
+    },
+    {
+      id: 2,
+      name: "GenDev IT Scholarship",
+      date: "Feb 2025",
+      awardingBody: "CHECK24",
+      icon: Award,
+    },
+    {
+      id: 3,
+      name: "Deutschlandstipendium",
+      date: "Oct 2024",
+      awardingBody: "Technische Universität München",
+      icon: Award,
+    },
+    {
+      id: 4,
+      name: "GI Computer Science Prize",
+      date: "Jun 2023",
+      awardingBody: "Gesellschaft für Informatik e.V.",
+      details: "One year of free GI benefits for outstanding achievements in computer science.",
+      icon: Award,
+    },
+    {
+      id: 5,
+      name: "1st Place, 6th Salzburg Robothon",
+      date: "Apr 2023",
+      awardingBody: "FH Salzburg",
+      details: "24-hour robot design & programming competition.",
+      icon: Award,
+    },
+    {
+      id: 6,
+      name: "1st Prize, 41st Federal Computer Science Competition (Round 1)",
+      date: "Jan 2023",
+      awardingBody: "BMBF",
+      icon: Award,
+    },
+    {
+      id: 7,
+      name: "1st Prize, 40th Federal Computer Science Competition (Round 1)",
+      date: "Jan 2022",
+      awardingBody: "BMBF",
+      icon: Award,
+    },
+  ],
+
   skills: [
-    { name: "JavaScript (ES6+)", level: 95, icon: SkillIcon }, { name: "React & Next.js", level: 90, icon: SkillIcon },
-    { name: "Python (FastAPI, Django)", level: 85, icon: SkillIcon }, { name: "Node.js & Express", level: 80, icon: SkillIcon },
-    { name: "SQL (PostgreSQL, MySQL)", level: 80, icon: SkillIcon }, { name: "NoSQL (MongoDB)", level: 70, icon: SkillIcon },
-    { name: "Docker & Kubernetes", level: 75, icon: SkillIcon }, { name: "AWS/GCP", level: 65, icon: SkillIcon },
-    { name: "Tailwind CSS", level: 90, icon: SkillIcon }, { name: "GraphQL", level: 70, icon: SkillIcon },
+    { name: "Python", level: 85, icon: SkillIcon },
+    { name: "C++ / Qt", level: 75, icon: SkillIcon },
+    { name: "SQL", level: 80, icon: SkillIcon },
+    { name: "HTML & CSS", level: 70, icon: SkillIcon },
+    { name: "Git", level: 80, icon: SkillIcon },
+    { name: "KNIME", level: 65, icon: SkillIcon },
+    { name: "Power BI", level: 70, icon: SkillIcon },
+    { name: "Microsoft Access", level: 60, icon: SkillIcon },
+    { name: "Linux", level: 75, icon: SkillIcon },
+    { name: "Self-learning & teamwork", level: 90, icon: SkillIcon },
   ],
-  // Add more sections like projects, awards, volunteering
-  // projectsHighlight: [ { name: "Project X", description: "..." } ],
-  // awards: [ { name: "Best Innovator Award", year: "2022", icon: Award } ],
+
+  volunteering: [
+    {
+      id: 1,
+      role: "Volunteer Leader",
+      organization: "Scouts Stamm Marinus Rott am Inn",
+      period: "Feb 2023 – Present",
+      details: `
+- Organized and led youth meetings and outings  
+- Planned and executed community projects and events  
+- Liaised with parents and partner organizations`,
+      icon: Users,
+    },
+  ],
+
+  languages: [
+    { name: "German", level: "C2" },
+    { name: "English", level: "B2" },
+  ],
 };
+
 
 const Section = ({ title, children, icon: IconComponent }) => (
   <motion.div 
@@ -118,27 +254,47 @@ const InteractiveCV = () => {
         </motion.h2>
         
         <div className="max-w-3xl mx-auto">
-          <Section title="Summary" icon={Users}>
-            <p className="text-gray-300 leading-relaxed text-md">{cvData.summary}</p>
-          </Section>
+            <Section title="Summary" icon={Users}>
+              <p className="text-gray-300 leading-relaxed text-md">{cvData.summary}</p>
+            </Section>
 
-          <Section title="Professional Experience" icon={Briefcase}>
-            <div className="space-y-5">
-              {cvData.experience.map(exp => <TimelineItem key={exp.id} item={exp} />)}
-            </div>
-          </Section>
+            <Section title="Core Skills" icon={Code}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                {cvData.skills
+                  .sort((a, b) => b.level - a.level)
+                  .map((skill, idx) => <SkillBar key={skill.name} skill={skill} index={idx} />)}
+              </div>
+            </Section>
 
-          <Section title="Education" icon={GraduationCap}>
-            <div className="space-y-5">
-              {cvData.education.map(edu => <TimelineItem key={edu.id} item={edu} />)}
-            </div>
-          </Section>
+            <Section title="Professional Experience" icon={Briefcase}>
+              <div className="space-y-5">
+                {cvData.experience.map(exp => <TimelineItem key={exp.id} item={exp} />)}
+              </div>
+            </Section>
 
-          <Section title="Core Skills" icon={Code}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-              {cvData.skills.sort((a,b) => b.level - a.level).map((skill, index) => <SkillBar key={skill.name} skill={skill} index={index} />)}
-            </div>
-          </Section>
+            <Section title="Education" icon={GraduationCap}>
+              <div className="space-y-5">
+                {cvData.education.map(edu => <TimelineItem key={edu.id} item={edu} />)}
+              </div>
+            </Section>
+
+            <Section title="Projects" icon={Code}>
+              <div className="space-y-5">
+                {cvData.projectsHighlight.map(proj => <TimelineItem key={proj.id} item={proj} />)}
+              </div>
+            </Section>
+
+            <Section title="Awards" icon={Award}>
+              <div className="space-y-5">
+                {cvData.awards.map(aw => <TimelineItem key={aw.id} item={aw} />)}
+              </div>
+            </Section>
+
+            <Section title="Volunteering" icon={Users}>
+              <div className="space-y-5">
+                {cvData.volunteering.map(vol => <TimelineItem key={vol.id} item={vol} />)}
+              </div>
+            </Section>
         </div>
       </div>
     </section>
