@@ -1,7 +1,7 @@
 import apiClient from './index';
 
 export const getMessagesApi = async () => {
-    const response = await apiClient.get('/messages');
+    const response = await apiClient.get('/messages/');
     return response.data;
 };
 

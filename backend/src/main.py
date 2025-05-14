@@ -142,11 +142,11 @@ async def scheduled_update_all_projects_status():
 
 @app.on_event("startup")
 async def startup_scheduler():
-    # Add job to scheduler. Run every 60 seconds.
+    # Add job to scheduler. Run every 20*60 seconds.
     scheduler.add_job(
         scheduled_update_all_projects_status,
         'interval',
-        minutes=1, # Check every minute
+        minutes=20, # Check every minute
         id="update_all_projects_job",
         replace_existing=True
     )

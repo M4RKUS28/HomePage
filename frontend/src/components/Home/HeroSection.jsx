@@ -49,7 +49,7 @@ const HeroSection = () => {
         </motion.div>
         
         <AnimatedTextCharacter 
-          text="Hello, I'm [Your Name]" 
+          text="Hello, I'm Markus" 
           el="h1" 
           className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent"
           stagger={0.05}

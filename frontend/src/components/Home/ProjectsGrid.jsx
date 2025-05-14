@@ -98,7 +98,7 @@ const ProjectsGrid = () => {
           transition={{ duration: 0.5 }}
           className="text-4xl md:text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
         >
-          My Creations
+          My Creations and Projects
         </motion.h2>
         
         {currentUser?.is_admin && (

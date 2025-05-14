@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import ProjectsGrid from '../components/Home/ProjectsGrid'; // Re-using for project management
 import MessageList from '../components/Admin/MessageList';
