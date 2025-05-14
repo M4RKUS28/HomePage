@@ -51,7 +51,24 @@ const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
           </button>
         </div>
       </div>
-      {/* Rest of the component remains the same */}
+      
+      {/* Message content section - shows when expanded */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 pt-4 border-t border-gray-700"
+          >
+            <h4 className="text-sm font-medium text-gray-300 mb-2">Message:</h4>
+            <div className="bg-gray-900/50 p-4 rounded-md whitespace-pre-wrap text-gray-300">
+              {message.content}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

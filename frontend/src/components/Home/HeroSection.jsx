@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import AnimatedTextCharacter from '../UI/AnimatedTextCharacter'; // Adjust path if needed
-import ProfilePic from '../../assets/placeholder-profile.jpeg'; // Create this image
+import ProfilePic from '../../assets/placeholder-profile.jpg'; // Create this image
 
 const HeroSection = () => {
   const scrollToProjects = () => {
