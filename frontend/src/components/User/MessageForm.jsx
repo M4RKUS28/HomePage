@@ -37,13 +37,13 @@ const MessageForm = ({ onMessageSent }) => {
   };
 
   return (
-    <div className="p-6 bg-gray-800 rounded-lg shadow-xl max-w-lg mx-auto">
-      <h3 className="text-2xl font-semibold text-white mb-6 text-center">Send me a Message</h3>
+    <div className="p-6 bg-card shadow-xl rounded-lg max-w-lg mx-auto">
+      <h3 className="text-2xl font-semibold text-mode-primary mb-6 text-center">Send me a Message</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && <p className="text-sm text-red-400 bg-red-900/30 p-2 rounded text-center">{error}</p>}
-        {success && <p className="text-sm text-green-400 bg-green-900/30 p-2 rounded text-center">{success}</p>}
+        {error && <p className="text-sm text-red-400 dark:bg-red-900/30 light:bg-red-100 p-2 rounded text-center">{error}</p>}
+        {success && <p className="text-sm text-green-400 dark:bg-green-900/30 light:bg-green-100 p-2 rounded text-center">{success}</p>}
         <div>
-          <label htmlFor="messageContent" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="messageContent" className="block text-sm font-medium text-mode-secondary mb-1">
             Your Message
           </label>
           <textarea

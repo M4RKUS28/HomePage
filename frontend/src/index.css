@@ -1,10 +1,8 @@
-/* frontend/frontend/src/index.css (modified) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 @layer base {
   :root {
@@ -19,18 +17,6 @@
     --color-accent: 219 39 119; /* pink-600 */
     --color-accent-dark: 190 24 93; /* pink-700 */
     --color-accent-light: 236 72 153; /* pink-500 */
-    
-    --color-neutral-50: 250 250 250;
-    --color-neutral-100: 245 245 245;
-    --color-neutral-200: 229 229 229;
-    --color-neutral-300: 212 212 212;
-    --color-neutral-400: 163 163 163;
-    --color-neutral-500: 115 115 115;
-    --color-neutral-600: 82 82 82;
-    --color-neutral-700: 64 64 64;
-    --color-neutral-800: 38 38 38;
-    --color-neutral-900: 23 23 23;
-    --color-neutral-950: 10 10 10;
   }
   
   html {
@@ -44,11 +30,55 @@
   body.dark {
     @apply bg-neutral-900 text-neutral-100;
     color-scheme: dark;
+    
+    /* Dark mode text colors */
+    --text-primary: 255 255 255; /* white */
+    --text-secondary: 226 232 240; /* slate-200 */
+    --text-tertiary: 203 213 225; /* slate-300 */
+  
+    /* Dark mode backgrounds */
+    --bg-card: 31 41 55; /* gray-800 */
+    --bg-card-hover: 55 65 81; /* gray-700 */
+    
+    /* Dark mode neutral colors */
+    --color-neutral-50: 250 250 250;
+    --color-neutral-100: 245 245 245;
+    --color-neutral-200: 229 229 229;
+    --color-neutral-300: 212 212 212;
+    --color-neutral-400: 163 163 163;
+    --color-neutral-500: 115 115 115;
+    --color-neutral-600: 82 82 82;
+    --color-neutral-700: 64 64 64;
+    --color-neutral-800: 38 38 38;
+    --color-neutral-900: 23 23 23;
+    --color-neutral-950: 10 10 10;
   }
   
   body.light {
     @apply bg-neutral-50 text-neutral-900;
     color-scheme: light;
+    
+    /* Light mode text colors */
+    --text-primary: 15 23 42; /* slate-900 */
+    --text-secondary: 51 65 85; /* slate-700 */
+    --text-tertiary: 71 85 105; /* slate-600 */
+  
+    /* Light mode backgrounds */
+    --bg-card: 255 255 255; /* white */
+    --bg-card-hover: 243 244 246; /* gray-100 */
+    
+    /* Light mode neutral colors - inverted from dark for better contrast */
+    --color-neutral-50: 250 250 250;
+    --color-neutral-100: 245 245 245;
+    --color-neutral-200: 229 229 229;
+    --color-neutral-300: 212 212 212;
+    --color-neutral-400: 163 163 163;
+    --color-neutral-500: 115 115 115;
+    --color-neutral-600: 82 82 82;
+    --color-neutral-700: 64 64 64;
+    --color-neutral-800: 38 38 38;
+    --color-neutral-900: 23 23 23;
+    --color-neutral-950: 10 10 10;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -83,6 +113,24 @@
 }
 
 @layer components {
+  /* Helper text color classes */
+  .text-mode-primary {
+    color: rgb(var(--text-primary));
+  }
+  
+  .text-mode-secondary {
+    color: rgb(var(--text-secondary));
+  }
+  
+  .text-mode-tertiary {
+    color: rgb(var(--text-tertiary));
+  }
+  
+  .bg-card {
+    background-color: rgb(var(--bg-card));
+  }
+  
+  /* Button styles */
   .btn {
     @apply py-2 px-4 rounded-md font-semibold transition-all duration-300 ease-in-out 
       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent
@@ -116,6 +164,7 @@
     @apply py-1 px-3 text-sm;
   }
   
+  /* Input field styles */
   .input-field {
     @apply block w-full px-3 py-2 rounded-md shadow-sm transition-colors duration-200
       focus:outline-none focus:ring-primary focus:border-primary sm:text-sm;
@@ -126,9 +175,10 @@
   }
   
   .light .input-field {
-    @apply bg-white border border-gray-300 text-gray-900 placeholder-gray-500;
+    @apply bg-white border border-gray-300 text-gray-800 placeholder-gray-500;
   }
   
+  /* Card styles */
   .card {
     @apply rounded-lg shadow-xl overflow-hidden transition-all duration-300;
   }
@@ -138,7 +188,174 @@
   }
   
   .light .card {
-    @apply bg-white shadow-md shadow-black/10;
+    @apply bg-white shadow-md shadow-gray-200/80 border border-gray-200;
+  }
+  
+  /* Timeline items (for projects and experience) */
+  .timeline-item {
+    @apply relative pl-10 py-3 border-l-2 transition-colors duration-300;
+  }
+  
+  .dark .timeline-item {
+    @apply border-gray-700 hover:border-primary;
+  }
+  
+  .light .timeline-item {
+    @apply border-gray-300 hover:border-primary;
+  }
+  
+  .timeline-dot {
+    @apply absolute -left-[11px] top-3 w-5 h-5 rounded-full flex items-center justify-center
+      transition-colors duration-300;
+  }
+  
+  .dark .timeline-dot {
+    @apply bg-gray-800 border-2 border-gray-600 group-hover:border-primary;
+  }
+  
+  .light .timeline-dot {
+    @apply bg-white border-2 border-gray-400 group-hover:border-primary;
+  }
+  
+  .timeline-dot-icon {
+    @apply text-gray-400 group-hover:text-primary transition-colors duration-300;
+  }
+  
+  /* Project card styles */
+  .project-title {
+    @apply text-lg font-medium cursor-pointer;
+  }
+  
+  .dark .project-title {
+    @apply text-gray-100;
+  }
+  
+  .light .project-title {
+    @apply text-gray-800;
+  }
+  
+  .project-subtitle {
+    @apply text-sm;
+  }
+  
+  .dark .project-subtitle {
+    @apply text-primary;
+  }
+  
+  .light .project-subtitle {
+    @apply text-primary-dark;
+  }
+  
+  .project-date {
+    @apply text-sm;
+  }
+  
+  .dark .project-date {
+    @apply text-gray-500;
+  }
+  
+  .light .project-date {
+    @apply text-gray-600;
+  }
+  
+  /* Message list styles */
+  .message-item {
+    @apply p-4 rounded-md border transition-colors cursor-pointer;
+  }
+  
+  .dark .message-item {
+    @apply border-gray-700 bg-gray-800/50;
+  }
+  
+  .light .message-item {
+    @apply border-gray-300 bg-white;
+  }
+  
+  .dark .message-item.unread {
+    @apply border-primary bg-emerald-900/30 hover:bg-emerald-900/40;
+  }
+  
+  .light .message-item.unread {
+    @apply border-primary-dark bg-emerald-50 hover:bg-emerald-100/70;
+  }
+  
+   .message-sender {
+    @apply font-semibold;
+  }
+
+  .dark .message-sender {
+    @apply text-gray-300;
+  }
+  .light .message-sender {
+    @apply text-gray-800;
+  }
+
+  /* Styles for unread message senders in dark mode */
+  .dark .message-sender.unread {
+    @apply text-primary; /* Overrides .dark .message-sender color */
+  }
+
+  /* Styles for unread message senders in light mode */
+  .light .message-sender.unread {
+    @apply text-primary-dark; /* Overrides .light .message-sender color */
+  }
+
+
+  .message-timestamp {
+    @apply text-xs;
+  }
+  
+  .dark .message-timestamp {
+    @apply text-gray-500;
+  }
+  
+  .light .message-timestamp {
+    @apply text-gray-600;
+  }
+  
+  .message-content {
+    @apply p-4 rounded-md whitespace-pre-wrap;
+  }
+  
+  .dark .message-content {
+    @apply bg-gray-900/50 text-gray-300;
+  }
+  
+  .light .message-content {
+    @apply bg-gray-100 text-gray-700;
+  }
+  
+  /* Language item styles */
+  .language-item {
+    @apply p-4 rounded-lg;
+  }
+  
+  .dark .language-item {
+    @apply bg-gray-800;
+  }
+  
+  .light .language-item {
+    @apply bg-white border border-gray-200;
+  }
+  
+  .language-name {
+    @apply text-lg font-medium;
+  }
+  
+  .dark .language-name {
+    @apply text-gray-100;
+  }
+  
+  .light .language-name {
+    @apply text-gray-800;
+  }
+  
+  .dark .language-level {
+    @apply text-primary;
+  }
+  
+  .light .language-level {
+    @apply text-primary-dark;
   }
   
   /* Toast notification */

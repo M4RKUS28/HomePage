@@ -166,7 +166,6 @@ const cvData = {
     { name: "Java", level: 80, icon: SkillIcon },
     { name: "Java Script", level: 70, icon: SkillIcon },
     { name: "Ocaml", level: 95, icon: SkillIcon },
-
   ],
 
   volunteering: [
@@ -201,14 +200,14 @@ const formatText = (text) => {
     // Check if the line is a list item
     if (line.trim().startsWith('- ')) {
       return (
-        <li key={index} className="ml-5 list-disc text-gray-400 text-sm leading-relaxed mb-1">
+        <li key={index} className="ml-5 list-disc text-mode-secondary text-sm leading-relaxed mb-1">
           {line.trim().substring(2)}
         </li>
       );
     }
     // Regular paragraph
     return (
-      <p key={index} className="text-gray-400 text-sm leading-relaxed mb-2">
+      <p key={index} className="text-mode-secondary text-sm leading-relaxed mb-2">
         {line}
       </p>
     );
@@ -251,28 +250,28 @@ const TimelineItem = ({ item }) => {
   return (
     <motion.div 
       layout 
-      className="relative pl-10 py-3 border-l-2 border-gray-700 hover:border-primary transition-colors duration-300 group"
+      className="timeline-item group"
       onClick={() => setIsOpen(!isOpen)}
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.5, delay: item.id * 0.1 }}
     >
-      <div className="absolute -left-[11px] top-3 w-5 h-5 bg-gray-800 border-2 border-gray-600 group-hover:border-primary rounded-full flex items-center justify-center transition-colors duration-300">
-        {ItemIcon && <ItemIcon size={10} className="text-gray-400 group-hover:text-primary transition-colors duration-300" />}
+      <div className="timeline-dot">
+        {ItemIcon && <ItemIcon size={10} className="timeline-dot-icon" />}
       </div>
       
       <div className="flex items-center">
         {item.logo && (
-          <img src={item.logo} className="w-6 h-6 mr-2 object-contain" />
+          <img src={item.logo} className="w-6 h-6 mr-2 object-contain" alt="" />
         )}
-        <motion.h4 layout="position" className="text-lg font-medium text-gray-100 cursor-pointer">{title}</motion.h4>
+        <motion.h4 layout="position" className="project-title">{title}</motion.h4>
       </div>
       
-      <motion.p layout="position" className="text-sm text-primary">
+      <motion.p layout="position" className="project-subtitle">
         {subtitle}
-        {subtitle && timeframe && <span className="text-gray-500"> | </span>}
-        {timeframe && <span className="text-gray-500">{timeframe}</span>}
+        {subtitle && timeframe && <span className="project-date"> | </span>}
+        {timeframe && <span className="project-date">{timeframe}</span>}
       </motion.p>
       
       <AnimatePresence>
@@ -326,11 +325,11 @@ const SkillBar = ({ skill, index }) => (
     <div className="flex justify-between mb-1">
       <div className="flex items-center">
         {skill.icon && <skill.icon size={16} className="mr-2 text-primary" />}
-        <span className="text-sm font-medium text-gray-200">{skill.name}</span>
+        <span className="text-sm font-medium text-mode-primary">{skill.name}</span>
       </div>
-      <span className="text-xs font-medium text-gray-400">{skill.level}%</span>
+      <span className="text-xs font-medium text-mode-secondary">{skill.level}%</span>
     </div>
-    <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+    <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden dark:bg-gray-700 light:bg-gray-300">
       <motion.div
         className="bg-gradient-to-r from-primary to-teal-400 h-full rounded-full"
         initial={{ width: 0 }}
@@ -391,7 +390,7 @@ const InteractiveCV = () => {
         
         <div className="max-w-3xl mx-auto">
             <Section title="Summary" icon={Users}>
-              <p className="text-gray-300 leading-relaxed text-md">{cvData.summary}</p>
+              <p className="text-mode-secondary leading-relaxed text-md">{cvData.summary}</p>
             </Section>
 
             <Section title="Core Skills" icon={Code}>
@@ -439,9 +438,9 @@ const InteractiveCV = () => {
             <Section title="Languages" icon={Users}>
               <div className="grid grid-cols-2 gap-4">
                 {cvData.languages.map((lang, idx) => (
-                  <div key={idx} className="bg-gray-800 p-3 rounded-lg" style={{ margin: "12px 0 0 0" }}>
-                    <h4 className="text-lg font-medium text-gray-100">{lang.name}</h4>
-                    <p className="text-primary">{lang.level}</p>
+                  <div key={idx} className="language-item" style={{ margin: "12px 0 0 0" }}>
+                    <h4 className="language-name">{lang.name}</h4>
+                    <p className="language-level">{lang.level}</p>
                   </div>
                 ))}
               </div>

@@ -1,4 +1,3 @@
-// frontend/frontend/src/contexts/ThemeContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 
 export const ThemeContext = createContext(null);
@@ -7,19 +6,25 @@ export const ThemeProvider = ({ children }) => {
   // Check if user has saved a theme preference or set dark as default
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
+    // Default to the user's system preference if no saved theme
     return savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   });
 
   // Apply theme change to DOM
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     
     if (theme === 'dark') {
       root.classList.add('dark');
       root.classList.remove('light');
+      body.classList.add('dark');
+      body.classList.remove('light');
     } else {
       root.classList.add('light');
       root.classList.remove('dark');
+      body.classList.add('light');
+      body.classList.remove('dark');
     }
     
     localStorage.setItem('theme', theme);
