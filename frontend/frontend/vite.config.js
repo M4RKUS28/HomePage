@@ -1,9 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tailwindcss({
+      config: './tailwind.config.js', // Path to your Tailwind CSS config file
+      apply: 'build' // Apply only during build
+    })
+  ],
   server: {
     port: 3000, // Or your preferred port
     proxy: {
