@@ -30,9 +30,6 @@ const Footer = () => {
             >
               MyPortfolio
             </motion.div>
-            <p className="mt-2 text-sm">
-              Showcasing my work and skills in web development
-            </p>
           </div>
           
           <div className="flex space-x-4">
@@ -62,10 +59,7 @@ const Footer = () => {
         
         <div className="mt-8 pt-4 text-center text-sm border-t border-gray-700">
           <p>
-            © {currentYear} [Your Name]. All rights reserved.
-          </p>
-          <p className="mt-2">
-            Built with React, Tailwind CSS, and FastAPI
+            © {currentYear} Markus. All rights reserved.
           </p>
         </div>
       </div>
