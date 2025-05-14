@@ -13,6 +13,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
+@router.get("/me", response_model=user_schemas.User, tags=["users"]) # Moved /users/me here
+async def read_users_me(current_user: user_model.User = Depends(auth.get_current_active_user)):
+    return current_user
+
 @router.get("/", response_model=List[user_schemas.User], dependencies=[Depends(auth.get_current_admin_user)])
 async def read_users(
     skip: int = 0,

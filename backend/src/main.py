@@ -1,19 +1,28 @@
+import logging
 from fastapi import FastAPI, Depends, HTTPException, status, APIRouter # Import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
+import asyncio # For APScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from .schemas import user as user_schema
 from .models import db_user as user_model
+from .models import db_project as project_model # Import new models
+from .models import db_message as message_model # Import new models
 from .schemas import token as token_schema
 
 from .utils import auth
-from .db.database import engine, get_db
-from .routers import users # Your existing users router
+from .db.database import engine, get_db, SessionLocal # Import SessionLocal for scheduler
+from .routers import users, projects, messages # Import new routers
+
 
 # Create database tables
 user_model.Base.metadata.create_all(bind=engine)
+project_model.Base.metadata.create_all(bind=engine) # Ensure project table is created
+message_model.Base.metadata.create_all(bind=engine) # Ensure message table is created
+
 
 # Create the main app instance
 app = FastAPI(title="User Management API", root_path="/api")
@@ -36,9 +45,8 @@ api_router = APIRouter()
 
 # Include your existing routers under this api_router
 api_router.include_router(users.router)
-# If you had other routers (e.g., items_router), you would include them here too:
-# api_router.include_router(items_router, prefix="/items", tags=["items"])
-
+api_router.include_router(projects.router) # Add projects router
+api_router.include_router(messages.router) # Add messages router
 
 # Define /token and /register directly under api_router if you want them prefixed
 @api_router.post("/token", response_model=token_schema.Token, tags=["authentication"])
@@ -101,10 +109,6 @@ async def register_user(user_data: user_schema.UserCreate, db: Session = Depends
     
     return new_db_user
 
-@api_router.get("/users/me", response_model=user_schema.User, tags=["users"]) # Moved /users/me here
-async def read_users_me(current_user: user_model.User = Depends(auth.get_current_active_user)):
-    return current_user
-
 
 # Include the api_router in the main app
 app.include_router(api_router)
@@ -114,3 +118,44 @@ app.include_router(api_router)
 @app.get("/")
 async def root():
     return {"message": "Welcome to the User Management API. API endpoints are under /api"}
+
+
+
+from sqlalchemy.orm import Session
+from datetime import timedelta
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter, BackgroundTasks
+
+# --- APScheduler Setup ---
+scheduler = AsyncIOScheduler()
+
+# This is the function that APScheduler will call
+async def scheduled_update_all_projects_status():
+    # We need a new database session for each scheduled job execution
+    db = SessionLocal()
+    try:
+        logging.info("APScheduler: Triggering scheduled update for all project statuses.")
+        await projects.update_all_projects_status(db=db) # Call the function from projects router
+    except Exception as e:
+        logging.error(f"APScheduler: Error during scheduled task: {e}")
+    finally:
+        db.close()
+
+@app.on_event("startup")
+async def startup_scheduler():
+    # Add job to scheduler. Run every 60 seconds.
+    scheduler.add_job(
+        scheduled_update_all_projects_status,
+        'interval',
+        minutes=1, # Check every minute
+        id="update_all_projects_job",
+        replace_existing=True
+    )
+    if not scheduler.running:
+        scheduler.start()
+        logging.info("APScheduler started for project status checks.")
+
+@app.on_event("shutdown")
+async def shutdown_scheduler():
+    if scheduler.running:
+        scheduler.shutdown()
+        logging.info("APScheduler shut down.")
