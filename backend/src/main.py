@@ -16,7 +16,7 @@ from .schemas import token as token_schema
 from .utils import auth
 from .db.database import engine, get_db, SessionLocal # Import SessionLocal for scheduler
 from .routers import users, projects, messages # Import new routers
-
+from .utils.email import notify_new_user
 
 # Create database tables
 user_model.Base.metadata.create_all(bind=engine)
@@ -106,6 +106,9 @@ async def register_user(user_data: user_schema.UserCreate, db: Session = Depends
     db.add(new_db_user)
     db.commit()
     db.refresh(new_db_user)
+
+    # Send email notification
+    notify_new_user(new_db_user.username, new_db_user.email)
     
     return new_db_user
 

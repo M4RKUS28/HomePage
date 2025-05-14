@@ -7,6 +7,8 @@ from ..models import db_message as message_model
 from ..models import db_user as user_model
 from ..utils import auth
 from ..db.database import get_db
+from ..utils.email import notify_new_message
+
 
 router = APIRouter(
     prefix="/messages",
@@ -18,12 +20,16 @@ router = APIRouter(
 async def create_message(
     message: message_schemas.MessageCreate,
     db: Session = Depends(get_db),
-    current_user: user_model.User = Depends(auth.get_current_active_user) # Any active user can send
+    current_user: user_model.User = Depends(auth.get_current_active_user)
 ):
     db_message = message_model.Message(**message.model_dump(), sender_id=current_user.id)
     db.add(db_message)
     db.commit()
     db.refresh(db_message)
+    
+    # Send email notification
+    notify_new_message(message.content, current_user.username)
+    
     return db_message
 
 @router.get("/", response_model=List[message_schemas.Message])
@@ -31,12 +37,29 @@ async def read_messages(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: user_model.User = Depends(auth.get_current_admin_user) # Only admin can read all
+    current_user: user_model.User = Depends(auth.get_current_admin_user)
 ):
-    # Optionally, join with User table to get sender username if needed
-    # messages = db.query(message_model.Message).join(user_model.User).order_by(message_model.Message.timestamp.desc()).offset(skip).limit(limit).all()
-    messages = db.query(message_model.Message).order_by(message_model.Message.timestamp.desc()).offset(skip).limit(limit).all()
-    return messages
+    # Join with User table to get sender username
+    messages = db.query(message_model.Message, user_model.User.username)\
+        .join(user_model.User, message_model.Message.sender_id == user_model.User.id)\
+        .order_by(message_model.Message.timestamp.desc())\
+        .offset(skip).limit(limit).all()
+    
+    # Format the results to include username
+    result = []
+    for message, username in messages:
+        message_dict = {
+            "id": message.id,
+            "sender_id": message.sender_id,
+            "content": message.content,
+            "timestamp": message.timestamp,
+            "is_read": message.is_read,
+            "sender_username": username
+        }
+        result.append(message_dict)
+    
+    return result
+
 
 @router.put("/{message_id}/read", response_model=message_schemas.Message)
 async def mark_message_as_read(

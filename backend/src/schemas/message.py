@@ -14,7 +14,7 @@ class Message(MessageBase): # For responses
     timestamp: datetime
     is_read: bool
     # You might want to include sender details here for convenience in the frontend
-    # sender_username: str 
+    sender_username: Optional[str] = None  # Add this field
 
     class Config:
         from_attributes = True

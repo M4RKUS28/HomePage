@@ -14,3 +14,5 @@ class Message(Base):
     is_read = Column(Boolean, default=False)
 
     sender = relationship("User")
+
+    
