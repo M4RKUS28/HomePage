@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, {useContext,  useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import ProjectsGrid from '../components/Home/ProjectsGrid'; // Re-using for project management
 import MessageList from '../components/Admin/MessageList';
 import { Briefcase, MessageCircle, Settings } from 'lucide-react'; // Example icons for tabs
+import { ThemeContext } from '../contexts/ThemeContext';
+
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -28,7 +30,8 @@ const TabButton = ({ children, onClick, isActive }) => (
 const AdminDashboardPage = () => {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('projects'); // 'projects', 'messages', 'settings'
-
+  const { theme } = useContext(ThemeContext);
+  
   const renderContent = () => {
     switch (activeTab) {
       case 'projects':
@@ -52,7 +55,13 @@ const AdminDashboardPage = () => {
         className="py-8"
     >
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
+        <h1
+           className={`
+              text-4xl 
+              font-bold 
+              ${theme === 'dark' ? 'text-white' : 'text-gray-800'}
+            `}
+          >Admin Dashboard</h1>
         <p className="text-lg text-gray-400 mt-2">Manage your site, {currentUser?.username}.</p>
       </div>
 

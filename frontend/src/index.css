@@ -350,6 +350,7 @@
     @apply text-gray-800;
   }
   
+
   .dark .language-level {
     @apply text-primary;
   }

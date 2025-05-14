@@ -1592,6 +1592,11 @@ h1, h2, h3, h4, h5, h6{
   z-index: 100;
 }
 
+.mx-4{
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
 .mx-auto{
   margin-left: auto;
   margin-right: auto;
@@ -1600,6 +1605,11 @@ h1, h2, h3, h4, h5, h6{
 .my-10{
   margin-top: 2.5rem;
   margin-bottom: 2.5rem;
+}
+
+.my-8{
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .mb-1{
@@ -2636,6 +2646,11 @@ h1, h2, h3, h4, h5, h6{
   color: rgb(55 65 81 / var(--tw-text-opacity, 1));
 }
 
+.text-gray-800{
+  --tw-text-opacity: 1;
+  color: rgb(31 41 55 / var(--tw-text-opacity, 1));
+}
+
 .text-gray-900{
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
@@ -3026,6 +3041,11 @@ h1, h2, h3, h4, h5, h6{
 }
 
 @media (min-width: 640px){
+  .sm\:mx-8{
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+
   .sm\:w-auto{
     width: auto;
   }

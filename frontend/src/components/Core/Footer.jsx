@@ -2,17 +2,16 @@
 import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { Github, Linkedin, Twitter, Mail } from 'lucide-react';
+import { Github, Linkedin, Mail } from 'lucide-react';
 
 const Footer = () => {
   const { theme } = useContext(ThemeContext);
   const currentYear = new Date().getFullYear();
   
   const socialLinks = [
-    { icon: Github, href: 'https://github.com/yourusername', label: 'GitHub' },
-    { icon: Linkedin, href: 'https://linkedin.com/in/yourusername', label: 'LinkedIn' },
-    { icon: Twitter, href: 'https://twitter.com/yourusername', label: 'Twitter' },
-    { icon: Mail, href: 'mailto:your.email@example.com', label: 'Email' }
+    { icon: Github, href: 'https://github.com/M4RKUS28', label: 'GitHub' },
+    { icon: Linkedin, href: 'https://www.linkedin.com/in/markus-huber-0132282bb/', label: 'LinkedIn' },
+    { icon: Mail, href: 'mailto:markus28.huber@tum.de', label: 'Email' }
   ];
   
   return (

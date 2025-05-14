@@ -82,7 +82,7 @@ const Navbar = () => {
                 initial={false}
                 whileHover={{ scale: 1.05 }}
               >
-                MyPortfolio
+                M4RKUS28
               </motion.span>
             </Link>
           </div>

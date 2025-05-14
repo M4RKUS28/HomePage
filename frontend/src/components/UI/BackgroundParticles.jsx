@@ -29,8 +29,8 @@ const BackgroundParticles = () => {
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           radius: Math.random() * 2 + 1,
-          speedX: Math.random() * 0.5 - 0.25,
-          speedY: Math.random() * 0.5 - 0.25,
+          speedX: (Math.random() * 0.5 - 0.25) / 2.0,
+          speedY: (Math.random() * 0.5 - 0.25) / 2.0,
           opacity: Math.random() * 0.5 + 0.2
         });
       }

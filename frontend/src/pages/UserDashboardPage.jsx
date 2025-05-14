@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useContext } from 'react';
 import { motion } from 'framer-motion';
 import MessageForm from '../components/User/MessageForm';
 import { useAuth } from '../hooks/useAuth';
+import { ThemeContext } from '../contexts/ThemeContext';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -12,6 +13,7 @@ const pageTransition = { type: "tween", ease: "anticipate", duration: 0.5 };
 
 const UserDashboardPage = () => {
   const { currentUser } = useAuth();
+  const { theme } = useContext(ThemeContext);
 
   return (
     <motion.div
@@ -23,7 +25,13 @@ const UserDashboardPage = () => {
         className="py-8"
     >
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-white">Welcome, <span className="text-primary">{currentUser?.username}!</span></h1>
+        <h1
+           className={`
+              text-4xl 
+              font-bold 
+              ${theme === 'dark' ? 'text-white' : 'text-gray-800'}
+            `}
+          >Welcome, <span className="text-primary">{currentUser?.username}!</span></h1>
         <p className="text-lg text-gray-400 mt-2">This is your personal dashboard.</p>
       </div>
       

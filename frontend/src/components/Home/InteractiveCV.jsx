@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeContext } from '../../contexts/ThemeContext';
+
 import {
   Briefcase,
   GraduationCap,
@@ -375,8 +377,14 @@ const AwardItem = ({ award }) => {
 };
 
 const InteractiveCV = () => {
+  const { theme } = useContext(ThemeContext);
+
   return (
-    <section id="cv" className="py-16 md:py-24 bg-gray-900 text-white">
+    <section id="cv" className={`py-16 md:py-24 ${
+      theme === 'dark' 
+        ? 'bg-gray-900 text-white' 
+        : 'bg-gray-100 text-gray-800'
+      } rounded-lg mx-4 sm:mx-8 my-8`}>
       <div className="container mx-auto px-4">
         <motion.h2 
           initial={{ opacity:0, y:20 }}
