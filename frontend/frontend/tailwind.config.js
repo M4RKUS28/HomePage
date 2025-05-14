@@ -1,14 +1,12 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {
-      // Your theme extensions here
-    },
+    extend: {},
   },
   plugins: [],
-  darkMode: 'class' // Use 'class' for theme switching
 }
