@@ -1,4 +1,4 @@
-// frontend/frontend/src/components/UI/ErrorMessage.jsx
+// frontend/src/components/UI/ErrorMessage.jsx (fixed version)
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, X } from 'lucide-react';
@@ -41,7 +41,7 @@ const ErrorMessage = ({
           animate={{ opacity: 1, y: 0, height: 'auto' }}
           exit={{ opacity: 0, y: -10, height: 0 }}
           transition={{ duration: 0.3 }}
-          className={`error-text flex items-start ${className}`}
+          className={`bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-md flex items-start ${className}`}
         >
           <Icon size={18} className={`mr-2 flex-shrink-0 mt-0.5 ${iconColor}`} />
           <div className="flex-1 mr-2 whitespace-pre-line">{message}</div>

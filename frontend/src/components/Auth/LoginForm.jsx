@@ -1,4 +1,4 @@
-// frontend/src/components/Auth/LoginForm.jsx (updated with improved error handling)
+// frontend/src/components/Auth/LoginForm.jsx (fixed error display)
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
@@ -47,35 +47,42 @@ const LoginForm = () => {
       });
       navigate('/dashboard'); // Or wherever you want to redirect after login
     } catch (err) {
-      // Check if error has a response from the server
-      if (err.response && err.response.data) {
-        // If server provided a detail message, use it
-        if (err.response.data.detail) {
-          // Don't set authError directly, it's managed by the auth context
-          console.error("Login error:", err.response.data.detail);
-        }
-        // If there's validation errors (422 status)
-        else if (err.response.status === 422 && err.response.data.detail) {
-          const validationErrors = err.response.data.detail;
-          // Format validation errors
-          if (Array.isArray(validationErrors)) {
-            const errorMessages = validationErrors.map(err => {
-              const field = err.loc && err.loc.length > 1 ? err.loc[1] : '';
-              return `${field}: ${err.msg}`;
-            }).join('\n');
+      console.error("Login failed:", err);
+      
+      // Error handling for display in UI
+      if (err.response) {
+        if (err.response.status === 401) {
+          setFormError('Invalid username or password. Please try again.');
+        } else if (err.response.data && err.response.data.detail) {
+          // Handle server response details
+          if (typeof err.response.data.detail === 'string') {
+            setFormError(err.response.data.detail);
+          } else if (Array.isArray(err.response.data.detail)) {
+            const errorMessages = err.response.data.detail
+              .map(e => {
+                const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
+                return `${field}: ${e.msg}`;
+              })
+              .join('\n');
             setFormError(errorMessages);
-          } else {
-            setFormError('Validation error. Please check your inputs.');
           }
+        } else {
+          setFormError('Login failed. Please check your credentials.');
         }
+      } else if (err.request) {
+        // The request was made but no response was received
+        setFormError('No response from server. Please check your internet connection.');
       } else {
-        // Fallback error message
+        // Something happened in setting up the request that triggered an Error
         setFormError('An error occurred during login. Please try again.');
       }
     }
   };
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
+
+  // This visible error message combines both sources of errors
+  const visibleError = formError || authError;
 
   return (
     <motion.div 
@@ -118,14 +125,23 @@ const LoginForm = () => {
         className="mt-8 space-y-6" 
         onSubmit={handleSubmit}
       >
-        {/* Show either context auth error or local form error */}
-        <ErrorMessage 
-          message={authError || formError} 
-          onClose={() => {
-            clearAuthError();
-            setFormError('');
-          }}
-        />
+        {/* IMPORTANT: Display error message prominently */}
+        {visibleError && (
+          <div className="error-text flex items-start">
+            <AlertCircle size={18} className="text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 mr-2 whitespace-pre-line">{visibleError}</div>
+            <button 
+              onClick={() => {
+                clearAuthError();
+                setFormError('');
+              }} 
+              className="flex-shrink-0 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              aria-label="Dismiss error"
+            >
+              <EyeOff size={16} />
+            </button>
+          </div>
+        )}
         
         <div>
           <label htmlFor="username" className={`block text-sm font-medium ${
@@ -137,7 +153,7 @@ const LoginForm = () => {
             type="text"
             autoComplete="username"
             required
-            className={`input-field mt-1 ${username.trim() === '' && formError ? 'border-red-500 dark:border-red-500' : ''}`}
+            className={`input-field mt-1 ${username.trim() === '' && visibleError ? 'border-red-500 dark:border-red-500' : ''}`}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -153,7 +169,7 @@ const LoginForm = () => {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              className={`input-field pr-10 ${password === '' && formError ? 'border-red-500 dark:border-red-500' : ''}`}
+              className={`input-field pr-10 ${password === '' && visibleError ? 'border-red-500 dark:border-red-500' : ''}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

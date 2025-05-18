@@ -1,4 +1,4 @@
-// frontend/src/contexts/AuthContext.jsx (enhanced version)
+// frontend/src/contexts/AuthContext.jsx (fixed error handling)
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { loginUserApi, registerUserApi, fetchCurrentUserApi } from '../api/auth';
 import { jwtDecode } from 'jwt-decode';
@@ -52,30 +52,40 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(userData);
       return userData;
     } catch (err) {
-      // Enhanced error handling
-      let errorMessage = 'Login failed. Please check your credentials.';
+      // Enhanced error handling - set error message directly on AuthContext
+      console.error("Login error:", err);
       
       if (err.response) {
-        // Server returned an error response
-        if (err.response.data?.detail) {
+        // Direct 401 Unauthorized error handling
+        if (err.response.status === 401) {
+          setAuthError('Invalid username or password. Please try again.');
+        }
+        // Other server response error handling
+        else if (err.response.data && err.response.data.detail) {
           if (typeof err.response.data.detail === 'string') {
-            errorMessage = err.response.data.detail;
+            setAuthError(err.response.data.detail);
           } else if (Array.isArray(err.response.data.detail)) {
             // Format validation errors
-            errorMessage = err.response.data.detail
+            const errorMessage = err.response.data.detail
               .map(e => {
                 const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
                 return `${field}: ${e.msg}`;
               })
               .join('\n');
+            setAuthError(errorMessage);
           }
+        } else {
+          setAuthError('Login failed. Please check your credentials.');
         }
       } else if (err.request) {
-        // Request was made but no response received
-        errorMessage = 'No response from server. Please check your internet connection.';
+        // The request was made but no response was received
+        setAuthError('No response from server. Please check your internet connection.');
+      } else {
+        // Something happened in setting up the request
+        setAuthError('An error occurred during login. Please try again.');
       }
       
-      setAuthError(errorMessage);
+      // Re-throw error for component-level handling if needed
       throw err;
     } finally {
       setLoadingAuth(false);
@@ -87,34 +97,37 @@ export const AuthProvider = ({ children }) => {
       setAuthError(null);
       setLoadingAuth(true);
       const data = await registerUserApi(username, email, password);
-      // Optionally auto-login or prompt user to login
-      // For now, just return data and let user log in separately
       return data;
     } catch (err) {
-      // Enhanced error handling
-      let errorMessage = 'Registration failed. Please try again.';
+      console.error("Registration error:", err);
       
       if (err.response) {
-        // Server returned an error response
-        if (err.response.data?.detail) {
-          if (typeof err.response.data.detail === 'string') {
-            errorMessage = err.response.data.detail;
-          } else if (Array.isArray(err.response.data.detail)) {
-            // Format validation errors
-            errorMessage = err.response.data.detail
+        // Direct 400 Bad Request error handling (common for duplicate username/email)
+        if (err.response.status === 400 && err.response.data && err.response.data.detail) {
+          setAuthError(err.response.data.detail);
+        }
+        // Validation error handling
+        else if (err.response.status === 422 && err.response.data && err.response.data.detail) {
+          if (Array.isArray(err.response.data.detail)) {
+            const errorMessage = err.response.data.detail
               .map(e => {
                 const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
                 return `${field}: ${e.msg}`;
               })
               .join('\n');
+            setAuthError(errorMessage);
+          } else {
+            setAuthError('Validation error. Please check your inputs.');
           }
+        } else {
+          setAuthError('Registration failed. Please try again.');
         }
       } else if (err.request) {
-        // Request was made but no response received
-        errorMessage = 'No response from server. Please check your internet connection.';
+        setAuthError('No response from server. Please check your internet connection.');
+      } else {
+        setAuthError('An error occurred during registration. Please try again.');
       }
       
-      setAuthError(errorMessage);
       throw err;
     } finally {
       setLoadingAuth(false);
@@ -124,7 +137,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('accessToken');
     setCurrentUser(null);
-    // Optionally redirect to home or login page via navigate from react-router-dom
   };
 
   return (

@@ -1,4 +1,4 @@
-// frontend/src/components/Auth/RegisterForm.jsx (updated with improved error handling)
+// frontend/src/components/Auth/RegisterForm.jsx (fixed error display)
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
@@ -30,6 +30,11 @@ const RegisterForm = () => {
   // Password strength requirements
   const passwordLength = password.length >= 3;
   const passwordsMatch = password === confirmPassword && confirmPassword !== '';
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,45 +74,44 @@ const RegisterForm = () => {
       });
       navigate('/login');
     } catch (err) {
-      // Check specific error handling for registration issues
-      if (err.response && err.response.data) {
-        // If server provided a detail message, use it
-        if (typeof err.response.data.detail === 'string') {
-          setFormError(err.response.data.detail);
-        }
-        // If there's validation errors (422 status)
-        else if (err.response.status === 422 && err.response.data.detail) {
-          const validationErrors = err.response.data.detail;
-          // Format validation errors
-          if (Array.isArray(validationErrors)) {
-            const errorMessages = validationErrors.map(err => {
-              const field = err.loc && err.loc.length > 1 ? err.loc[1] : '';
-              return `${field}: ${err.msg}`;
-            }).join('\n');
-            setFormError(errorMessages);
-          } else {
-            setFormError('Validation error. Please check your inputs.');
-          }
-        }
-        // Handle case where username or email already exists
-        else if (err.response.status === 400) {
-          setFormError(err.response.data.detail || "Username or email already exists.");
-        }
-      } else {
-        // Fallback error message
-        setFormError('Registration failed. Please try again.');
-      }
       console.error("Registration failed:", err);
+      
+      // Error handling for display in UI
+      if (err.response) {
+        if (err.response.status === 400) {
+          // Common 400 errors are duplicate username/email
+          setFormError(err.response.data.detail || "Username or email already exists.");
+        } else if (err.response.data && err.response.data.detail) {
+          // Handle server response details
+          if (typeof err.response.data.detail === 'string') {
+            setFormError(err.response.data.detail);
+          } else if (Array.isArray(err.response.data.detail)) {
+            const errorMessages = err.response.data.detail
+              .map(e => {
+                const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
+                return `${field ? field + ': ' : ''}${e.msg}`;
+              })
+              .join('\n');
+            setFormError(errorMessages);
+          }
+        } else {
+          setFormError('Registration failed. Please try again.');
+        }
+      } else if (err.request) {
+        // The request was made but no response was received
+        setFormError('No response from server. Please check your internet connection.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setFormError('An error occurred during registration. Please try again.');
+      }
     }
-  };
-
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
   };
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
   const toggleShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
+
+  // This visible error message combines both sources of errors
+  const visibleError = formError || authError;
 
   return (
     <motion.div 
@@ -150,13 +154,23 @@ const RegisterForm = () => {
         className="mt-8 space-y-5" 
         onSubmit={handleSubmit}
       >
-        <ErrorMessage 
-          message={authError || formError} 
-          onClose={() => {
-            clearAuthError();
-            setFormError('');
-          }}
-        />
+        {/* IMPORTANT: Display error message prominently */}
+        {visibleError && (
+          <div className="error-text flex items-start">
+            <AlertCircle size={18} className="text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 mr-2 whitespace-pre-line">{visibleError}</div>
+            <button 
+              onClick={() => {
+                clearAuthError();
+                setFormError('');
+              }} 
+              className="flex-shrink-0 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              aria-label="Dismiss error"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         <div>
           <label htmlFor="username-register" className={`block text-sm font-medium ${
@@ -168,7 +182,7 @@ const RegisterForm = () => {
             type="text"
             autoComplete="username"
             required
-            className={`input-field mt-1 ${!username.trim() && formError ? 'border-red-500 dark:border-red-500' : ''}`}
+            className={`input-field mt-1 ${!username.trim() && visibleError ? 'border-red-500 dark:border-red-500' : ''}`}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -183,7 +197,7 @@ const RegisterForm = () => {
             type="email"
             autoComplete="email"
             required
-            className={`input-field mt-1 ${(!email.trim() || !validateEmail(email)) && formError ? 'border-red-500 dark:border-red-500' : ''}`}
+            className={`input-field mt-1 ${(!email.trim() || !validateEmail(email)) && visibleError ? 'border-red-500 dark:border-red-500' : ''}`}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -199,7 +213,7 @@ const RegisterForm = () => {
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               required
-              className={`input-field pr-10 ${password.length < 3 && formError ? 'border-red-500 dark:border-red-500' : ''}`}
+              className={`input-field pr-10 ${password.length < 3 && visibleError ? 'border-red-500 dark:border-red-500' : ''}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-describedby="password-requirements"
