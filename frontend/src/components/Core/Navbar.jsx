@@ -1,11 +1,12 @@
-// frontend/frontend/src/components/Core/Navbar.jsx (updated)
-import React, { useState, useContext } from 'react';
+// Updated Navbar.jsx to use header text from CV data
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { LogIn, LogOut, UserPlus, LayoutDashboard, ShieldCheck, Menu, X, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import ThemeToggle from '../UI/ThemeToggle';
+import { getCVDataApi } from '../../api/cv';
 
 const NavLink = ({ to, children, onClick }) => {
   const { theme } = useContext(ThemeContext);
@@ -56,6 +57,23 @@ const Navbar = () => {
   const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [headerText, setHeaderText] = useState('Portfolio');
+  
+  useEffect(() => {
+    const fetchCVData = async () => {
+      try {
+        const data = await getCVDataApi();
+        if (data && data.personalInfo && data.personalInfo.headerText) {
+          setHeaderText(data.personalInfo.headerText);
+        }
+      } catch (err) {
+        console.error("Error fetching header text:", err);
+        // Keep default header text if there's an error
+      }
+    };
+    
+    fetchCVData();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -82,7 +100,7 @@ const Navbar = () => {
                 initial={false}
                 whileHover={{ scale: 1.05 }}
               >
-                M4RKUS28
+                {headerText}
               </motion.span>
             </Link>
           </div>

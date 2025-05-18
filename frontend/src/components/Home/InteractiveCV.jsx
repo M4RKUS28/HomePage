@@ -1,6 +1,9 @@
-import React, { useContext, useState } from 'react';
+// Updated InteractiveCV.jsx to fetch data from backend
+import React, { useContext, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import Spinner from '../UI/Spinner';
+import { getCVDataApi } from '../../api/cv';
 
 import {
   Briefcase,
@@ -9,187 +12,9 @@ import {
   Award,
   Users,
   Zap as SkillIcon,
-  ExternalLink
+  ExternalLink,
+  AlertTriangle
 } from 'lucide-react';
-
-const cvData = {
-  summary: "As a business informatics student, I combine a strong academic foundation with a passion for connecting business and technology. I enjoy working in collaborative, innovative environments and am motivated to keep learning and growing in the digital world.",
-
-  experience: [
-    {
-      id: 1,
-      role: "Working Student Data Analyst",
-      company: "Siemens Global Business Services",
-      period: "Nov 2024 – Mar 2025",
-      details: `
-- Data analysis and processing with KNIME  
-- Creation of dashboards and visualizations in Power BI  
-- Design and setup of database structures in Microsoft Access
-      `.trim(),
-      icon: Briefcase,
-      logo: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Siemens-logo.svg"
-    },
-  ],
-
-  education: [
-    {
-      id: 1,
-      degree: "B.Sc. in Business Informatics",
-      institution: "Technische Universität München",
-      period: "Oct 2023 – Present",
-      details: "Currently enrolled in the Bachelor of Science programme in Wirtschaftsinformatik.",
-      icon: GraduationCap,
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Logo_of_the_Technical_University_of_Munich.svg/2560px-Logo_of_the_Technical_University_of_Munich.svg.png"
-    },
-    {
-      id: 2,
-      degree: "Abitur",
-      institution: "Luitpold Gymnasium Wasserburg",
-      period: "Sep 2015 – Jun 2023",
-      details: "",
-      icon: GraduationCap,
-      logo: null
-    },
-  ],
-
-  projectsHighlight: [
-    {
-      id: 2,
-      name: "Mandelbrot Set Visualizer",
-      period: "Oct 2022 – Present",
-      description: `
-- Realized theoretical investigations from W-Seminar paper  
-- Developed a C++/Qt application for interactive fractal rendering`,
-      links: [
-        {
-          text: "Live demo",
-          url: "https://m4rkus28.github.io/Fraktalgenerator"
-        }
-      ],
-      icon: Code,
-      logo: "https://github.com/M4RKUS28/Fraktalgenerator/blob/ebc6ed28b1b0ae4813db7d4dcf07146df0b7343f/docs/103199188.png?raw=true"
-    },{
-      id: 1,
-      name: "Barcode Scanner for Delicatessen",
-      period: "Apr 2022 – Dec 2022",
-      description: `
-- Programmed the software for a custom barcode scanner  
-- Built and connected the backend database and web server  
-- Designed a Qt-based GUI for end users`,
-      links: [
-        {
-          text: "Code & demo",
-          url: "https://github.com/Benefranko/Barcode-Scanner-Feinkost-"
-        }
-      ],
-      icon: Code,
-      logo: null
-    }
-  ],
-
-  awards: [
-    {
-      id: 1,
-      name: "1st Place, CHECK24 Challenge at TUM.ai Makeathon",
-      date: "Apr 2025",
-      details: "3-day AI hackathon solving real-world business cases. Project: SmartStay24.",
-      links: [
-        {
-          text: "GitHub",
-          url: "https://github.com/M4RKUS28/SmartStay24"
-        }
-      ],
-      icon: Award,
-      awardingBody: "TUM.ai",
-      logo: null
-    },
-    {
-      id: 2,
-      name: "GenDev IT Scholarship",
-      date: "Feb 2025",
-      awardingBody: "CHECK24",
-      icon: Award,
-      logo: null
-    },
-    {
-      id: 3,
-      name: "Deutschlandstipendium",
-      date: "Oct 2024",
-      awardingBody: "Technische Universität München",
-      icon: Award,
-      logo: null
-    },
-    {
-      id: 4,
-      name: "GI Computer Science Prize",
-      date: "Jun 2023",
-      awardingBody: "Gesellschaft für Informatik e.V.",
-      details: "One year of free GI benefits for outstanding achievements in computer science.",
-      icon: Award,
-      logo: null
-    },
-    {
-      id: 5,
-      name: "1st Place, 6th Salzburg Robothon",
-      date: "Apr 2023",
-      awardingBody: "FH Salzburg",
-      details: "24-hour robot design & programming competition.",
-      icon: Award,
-      logo: null
-    },
-    {
-      id: 6,
-      name: "1st Prize, 41st Federal Computer Science Competition (Round 1)",
-      date: "Jan 2023",
-      awardingBody: "BMBF",
-      icon: Award,
-      logo: null
-    },
-    {
-      id: 7,
-      name: "1st Prize, 40th Federal Computer Science Competition (Round 1)",
-      date: "Jan 2022",
-      awardingBody: "BMBF",
-      icon: Award,
-      logo: null
-    },
-  ],
-
-  skills: [
-    { name: "Python", level: 90, icon: SkillIcon },
-    { name: "C++ / Qt", level: 95, icon: SkillIcon },
-    { name: "SQL", level: 85, icon: SkillIcon },
-    { name: "HTML & CSS", level: 70, icon: SkillIcon },
-    { name: "Git", level: 85, icon: SkillIcon },
-    { name: "KNIME", level: 85, icon: SkillIcon },
-    { name: "Power BI", level: 80, icon: SkillIcon },
-    { name: "Linux", level: 85, icon: SkillIcon },
-    { name: "Self-learning & teamwork", level: 100, icon: SkillIcon },
-    { name: "Java", level: 80, icon: SkillIcon },
-    { name: "Java Script", level: 70, icon: SkillIcon },
-    { name: "Ocaml", level: 95, icon: SkillIcon },
-  ],
-
-  volunteering: [
-    {
-      id: 1,
-      role: "Volunteer Leader Boy Scouts",
-      organization: "Scouts Stamm Marinus Rott am Inn",
-      period: "Feb 2023 – Present",
-      details: `
-- Organized and led youth meetings and outings  
-- Planned and executed community projects and events  
-- Liaised with parents and partner organizations`,
-      icon: Users,
-      logo: null
-    },
-  ],
-
-  languages: [
-    { name: "German", level: "C2" },
-    { name: "English", level: "B2" },
-  ],
-};
 
 // Helper function to parse markdown-style lists and links
 const formatText = (text) => {
@@ -267,7 +92,7 @@ const TimelineItem = ({ item }) => {
         {item.logo && (
           <img src={item.logo} className="w-6 h-6 mr-2 object-contain" alt="" />
         )}
-        <motion.h4 layout="position" className="project-title">{title}</motion.h4>
+        <motion.h4 layout="position" className="project-title">{title || "Untitled"}</motion.h4>
       </div>
       
       <motion.p layout="position" className="project-subtitle">
@@ -326,16 +151,16 @@ const SkillBar = ({ skill, index }) => (
   >
     <div className="flex justify-between mb-1">
       <div className="flex items-center">
-        {skill.icon && <skill.icon size={16} className="mr-2 text-primary" />}
-        <span className="text-sm font-medium text-mode-primary">{skill.name}</span>
+        <SkillIcon size={16} className="mr-2 text-primary" />
+        <span className="text-sm font-medium text-mode-primary">{skill.name || "Unnamed Skill"}</span>
       </div>
-      <span className="text-xs font-medium text-mode-secondary">{skill.level}%</span>
+      <span className="text-xs font-medium text-mode-secondary">{skill.level || 0}%</span>
     </div>
     <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden dark:bg-gray-700 light:bg-gray-300">
       <motion.div
         className="bg-gradient-to-r from-primary to-teal-400 h-full rounded-full"
         initial={{ width: 0 }}
-        whileInView={{ width: `${skill.level}%` }}
+        whileInView={{ width: `${skill.level || 0}%` }}
         viewport={{ once: true, amount: 0.8 }}
         transition={{ duration: 1, delay: 0.2 + (index * 0.05), ease: "circOut" }}
       />
@@ -352,7 +177,7 @@ const ProjectItem = ({ project }) => {
         period: project.period,
         details: project.description,
         links: project.links,
-        icon: project.icon,
+        icon: Code,
         logo: project.logo
       }}
     />
@@ -369,7 +194,7 @@ const AwardItem = ({ award }) => {
         awardingBody: award.awardingBody,
         details: award.details,
         links: award.links,
-        icon: award.icon,
+        icon: Award,
         logo: award.logo
       }}
     />
@@ -378,6 +203,58 @@ const AwardItem = ({ award }) => {
 
 const InteractiveCV = () => {
   const { theme } = useContext(ThemeContext);
+  const [cvData, setCvData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCVData = async () => {
+      setLoading(true);
+      try {
+        const data = await getCVDataApi();
+        setCvData(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching CV data:", err);
+        setError('Failed to load CV data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCVData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="cv" className="py-16 md:py-24 flex justify-center items-center">
+        <Spinner size="h-12 w-12" />
+      </section>
+    );
+  }
+
+  if (error || !cvData) {
+    return (
+      <section id="cv" className="py-16 md:py-24 text-center">
+        <div className="container mx-auto px-4">
+          <div className="bg-red-900/20 border border-red-500/50 text-red-300 p-8 rounded-lg max-w-xl mx-auto">
+            <AlertTriangle size={48} className="mx-auto mb-4" />
+            <h3 className="text-2xl font-semibold mb-4">Couldn't Load CV Data</h3>
+            <p>{error || "Something went wrong. Please try again later."}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Add default icon functions to each section
+  const experience = (cvData.experience || []).map(item => ({ ...item, icon: Briefcase }));
+  const education = (cvData.education || []).map(item => ({ ...item, icon: GraduationCap }));
+  const projects = cvData.projectsHighlight || [];
+  const awards = cvData.awards || [];
+  const skills = cvData.skills || [];
+  const volunteering = (cvData.volunteering || []).map(item => ({ ...item, icon: Users }));
+  const languages = cvData.languages || [];
 
   return (
     <section id="cv" className={`py-16 md:py-24 ${
@@ -398,61 +275,75 @@ const InteractiveCV = () => {
         
         <div className="max-w-3xl mx-auto">
             <Section title="Summary" icon={Users}>
-              <p className="text-mode-secondary leading-relaxed text-md">{cvData.summary}</p>
+              <p className="text-mode-secondary leading-relaxed text-md">{cvData.summary || "No summary provided."}</p>
             </Section>
 
-            <Section title="Core Skills" icon={Code}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                {cvData.skills
-                  .sort((a, b) => b.level - a.level)
-                  .map((skill, idx) => <SkillBar key={skill.name} skill={skill} index={idx} />)}
-              </div>
-            </Section>
+            {skills.length > 0 && (
+              <Section title="Core Skills" icon={Code}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                  {skills
+                    .sort((a, b) => (b.level || 0) - (a.level || 0))
+                    .map((skill, idx) => <SkillBar key={skill.name || idx} skill={skill} index={idx} />)}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Professional Experience" icon={Briefcase}>
-              <div className="space-y-5">
-                {cvData.experience.map(exp => <TimelineItem key={exp.id} item={exp} />)}
-              </div>
-            </Section>
+            {experience.length > 0 && (
+              <Section title="Professional Experience" icon={Briefcase}>
+                <div className="space-y-5">
+                  {experience.map((exp, idx) => <TimelineItem key={exp.id || idx} item={exp} />)}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Education" icon={GraduationCap}>
-              <div className="space-y-5">
-                {cvData.education.map(edu => <TimelineItem key={edu.id} item={edu} />)}
-              </div>
-            </Section>
+            {education.length > 0 && (
+              <Section title="Education" icon={GraduationCap}>
+                <div className="space-y-5">
+                  {education.map((edu, idx) => <TimelineItem key={edu.id || idx} item={edu} />)}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Projects" icon={Code}>
-              <div className="space-y-5">
-                {cvData.projectsHighlight.map(proj => (
-                  <ProjectItem key={proj.id} project={proj} />
-                ))}
-              </div>
-            </Section>
+            {projects.length > 0 && (
+              <Section title="Projects" icon={Code}>
+                <div className="space-y-5">
+                  {projects.map((proj, idx) => (
+                    <ProjectItem key={proj.id || idx} project={proj} />
+                  ))}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Awards" icon={Award}>
-              <div className="space-y-5">
-                {cvData.awards.map(award => (
-                  <AwardItem key={award.id} award={award} />
-                ))}
-              </div>
-            </Section>
+            {awards.length > 0 && (
+              <Section title="Awards" icon={Award}>
+                <div className="space-y-5">
+                  {awards.map((award, idx) => (
+                    <AwardItem key={award.id || idx} award={award} />
+                  ))}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Volunteering" icon={Users}>
-              <div className="space-y-5">
-                {cvData.volunteering.map(vol => <TimelineItem key={vol.id} item={vol} />)}
-              </div>
-            </Section>
+            {volunteering.length > 0 && (
+              <Section title="Volunteering" icon={Users}>
+                <div className="space-y-5">
+                  {volunteering.map((vol, idx) => <TimelineItem key={vol.id || idx} item={vol} />)}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Languages" icon={Users}>
-              <div className="grid grid-cols-2 gap-4">
-                {cvData.languages.map((lang, idx) => (
-                  <div key={idx} className="language-item" style={{ margin: "12px 0 0 0" }}>
-                    <h4 className="language-name">{lang.name}</h4>
-                    <p className="language-level">{lang.level}</p>
-                  </div>
-                ))}
-              </div>
-            </Section>
+            {languages.length > 0 && (
+              <Section title="Languages" icon={Users}>
+                <div className="grid grid-cols-2 gap-4">
+                  {languages.map((lang, idx) => (
+                    <div key={idx} className="language-item" style={{ margin: "12px 0 0 0" }}>
+                      <h4 className="language-name">{lang.name || "Unknown Language"}</h4>
+                      <p className="language-level">{lang.level || "Unspecified Level"}</p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
         </div>
       </div>
     </section>

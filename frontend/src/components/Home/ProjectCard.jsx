@@ -1,8 +1,8 @@
-// frontend/frontend/src/components/Home/ProjectCard.jsx (updated)
+// Updated ProjectCard.jsx to handle base64 image data
 import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw } from 'lucide-react';
-import DefaultProjectImage from '../../assets/placeholder-project.png'; // Create this
+import DefaultProjectImage from '../../assets/placeholder-project.png';
 import { ThemeContext } from '../../contexts/ThemeContext';
 
 const StatusIndicator = ({ status }) => {
@@ -71,6 +71,14 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus }) => {
     tap: { scale: 0.9 }
   };
 
+  // Determine the image source
+  // The image might be a URL, a base64 data URL, or null
+  const imageSource = project.image_url || DefaultProjectImage;
+  
+  // Check if the image is a base64 data URL
+  const isBase64Image = typeof imageSource === 'string' && 
+    (imageSource.startsWith('data:image/') || imageSource.indexOf('base64') !== -1);
+
   return (
     <motion.div
       variants={cardVariants}
@@ -83,7 +91,7 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus }) => {
       <div>
         <div className="relative overflow-hidden h-52">
           <motion.img 
-            src={project.image_url || DefaultProjectImage} 
+            src={isBase64Image ? imageSource : (project.image_url || DefaultProjectImage)} 
             alt={project.title} 
             className="w-full h-full object-cover" 
             onError={(e) => e.target.src = DefaultProjectImage}

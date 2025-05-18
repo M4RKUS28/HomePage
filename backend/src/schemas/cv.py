@@ -1,4 +1,4 @@
-# backend/src/schemas/cv.py
+# backend/src/schemas/cv.py (modified)
 from pydantic import BaseModel, HttpUrl, validator, Field
 from typing import List, Dict, Optional, Any, Union
 from datetime import datetime
@@ -32,6 +32,13 @@ class CVCreate(BaseModel):
 
 class CVUpdate(BaseModel):
     data: CVData
+
+# Image model for uploads
+class ImageUpload(BaseModel):
+    # Base64-encoded image data
+    image_data: str
+    image_type: str = "profile"  # "profile", "project", etc.
+    project_id: Optional[int] = None  # For project images
 
 # Site Config models
 class SocialLink(BaseModel):

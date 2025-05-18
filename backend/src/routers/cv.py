@@ -1,7 +1,10 @@
-# backend/src/routers/cv.py
-from fastapi import APIRouter, Depends, HTTPException, status
+# backend/src/routers/cv.py (updated with image upload endpoint)
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import base64
+import os
+from datetime import datetime
 
 from ..schemas import cv as cv_schemas
 from ..models import db_cv as cv_model
@@ -58,6 +61,70 @@ async def update_cv_data(
     db.commit()
     db.refresh(db_cv)
     return db_cv.data
+
+@router.post("/upload-image", status_code=status.HTTP_200_OK)
+async def upload_image(
+    image_data: cv_schemas.ImageUpload,
+    db: Session = Depends(get_db),
+    current_user: user_model.User = Depends(auth.get_current_admin_user)
+):
+    """
+    Upload an image and store it in the appropriate place based on the image_type.
+    Only accessible by admin users.
+    """
+    # Handling for different image types
+    if image_data.image_type == "profile":
+        # Save profile image to site config
+        db_site_config = db.query(cv_model.SiteConfig).first()
+        
+        if not db_site_config:
+            # Create site config if it doesn't exist
+            db_site_config = cv_model.SiteConfig(
+                profile_image=image_data.image_data,
+                owner_id=current_user.id
+            )
+            db.add(db_site_config)
+        else:
+            db_site_config.profile_image = image_data.image_data
+            
+        db.commit()
+        db.refresh(db_site_config)
+        return {"success": True, "image_type": "profile"}
+        
+    elif image_data.image_type == "project":
+        if not image_data.project_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Project ID is required for project images"
+            )
+            
+        # Update the project's image in CV data
+        db_cv = db.query(cv_model.CV).first()
+        if not db_cv:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="CV data not found"
+            )
+            
+        # Find the project in the CV data and update its image
+        cv_data = db_cv.data
+        projects = cv_data.get("projectsHighlight", [])
+        
+        for project in projects:
+            if project.get("id") == image_data.project_id:
+                project["image_url"] = image_data.image_data
+                break
+        
+        db_cv.data = cv_data
+        db.commit()
+        db.refresh(db_cv)
+        return {"success": True, "image_type": "project", "project_id": image_data.project_id}
+    
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported image type: {image_data.image_type}"
+        )
 
 @router.get("/site-config", response_model=cv_schemas.SiteConfig)
 async def read_site_config(

@@ -1,6 +1,9 @@
+// frontend/src/components/Admin/ProjectForm.jsx (updated with image upload)
 import React, { useState, useEffect } from 'react';
 import { createProjectApi, updateProjectApi } from '../../api/projects';
+import { uploadImageApi } from '../../api/cv'; // Import the image upload API
 import Spinner from '../UI/Spinner';
+import ImageUpload from '../UI/ImageUpload'; // Import the new ImageUpload component
 
 const ProjectForm = ({ project, onFormSubmit }) => {
   const [formData, setFormData] = useState({
@@ -9,8 +12,9 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     link: '',
     image_url: '',
   });
+  const [imageData, setImageData] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState(null); // Use null for object or string for message
+  const [apiError, setApiError] = useState(null);
 
   useEffect(() => {
     if (project) {
@@ -20,59 +24,79 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         link: project.link || '',
         image_url: project.image_url || '',
       });
+      // Set initial image if it exists
+      setImageData(project.image_url || '');
     } else {
       setFormData({ title: '', description: '', link: '', image_url: '' });
+      setImageData('');
     }
-    setApiError(null); // Clear error when project changes or form resets
+    setApiError(null);
   }, [project]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (imageDataUrl) => {
+    // Store the image data for later upload
+    setImageData(imageDataUrl);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setApiError(null); // Clear previous errors
+    setApiError(null);
 
-    // Frontend validation for required fields (example for link)
-    if (!formData.link || formData.link.trim() === "") {
-        setApiError("Project Link is required.");
-        setIsLoading(false);
-        return;
+    // Frontend validation
+    if (!formData.title.trim()) {
+      setApiError("Project title is required.");
+      setIsLoading(false);
+      return;
     }
-    // You can add more frontend validation here for URLs if desired,
-    // but backend will catch it anyway.
 
+    if (!formData.link || formData.link.trim() === "") {
+      setApiError("Project Link is required.");
+      setIsLoading(false);
+      return;
+    }
+
+    // Prepare payload for project
     const payload = {
       title: formData.title,
       description: formData.description,
       link: formData.link,
-      // Only include image_url if it's not empty, to avoid Pydantic validating an empty string.
-      // This aligns with "Option B" from above.
-      // If you implemented "Option A" in the backend, you can just send:
-      // image_url: formData.image_url,
     };
-    if (formData.image_url && formData.image_url.trim() !== "") {
-      payload.image_url = formData.image_url.trim();
-    }
-
 
     try {
+      // Step 1: Create or update the project
+      let updatedProject;
+      
       if (project && project.id) {
-        await updateProjectApi(project.id, payload);
+        updatedProject = await updateProjectApi(project.id, payload);
       } else {
-        await createProjectApi(payload);
+        updatedProject = await createProjectApi(payload);
       }
-      onFormSubmit(true); // Pass true to indicate success and refresh
+
+      // Step 2: If we have an image, upload it
+      if (imageData && imageData !== project?.image_url) {
+        await uploadImageApi(
+          imageData,
+          'project',
+          updatedProject.id
+        );
+      }
+
+      onFormSubmit(true);
     } catch (err) {
-      console.error("ProjectForm Error:", err); // Log the full error for debugging
+      console.error("ProjectForm Error:", err);
+      
+      // Handle API errors
       if (err.response && err.response.data) {
         if (err.response.data.detail && Array.isArray(err.response.data.detail)) {
           // Handle FastAPI validation errors (422)
           const messages = err.response.data.detail.map(d => {
-            const field = d.loc && d.loc.length > 1 ? d.loc[1] : 'Field'; // Get field name
-            return `${field.toString().replace("_", " ")}: ${d.msg}`; // Capitalize field for display
+            const field = d.loc && d.loc.length > 1 ? d.loc[1] : 'Field';
+            return `${field.toString().replace("_", " ")}: ${d.msg}`;
           }).join('\n');
           setApiError(messages || "Validation Error. Please check your inputs.");
         } else if (err.response.data.detail) {
@@ -94,7 +118,6 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       {apiError && (
         <div className="text-sm text-red-300 bg-red-700/50 p-3 rounded whitespace-pre-line">
-          {/* Render apiError as a string. The whitespace-pre-line will respect newlines if any */}
           {apiError}
         </div>
       )}
@@ -106,10 +129,17 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         <label htmlFor="link" className="block text-sm font-medium text-gray-300">Project Link (URL) <span className="text-red-400">*</span></label>
         <input type="url" name="link" id="link" value={formData.link} onChange={handleChange} required className="input-field mt-1" placeholder="https://example.com" />
       </div>
-      <div>
-        <label htmlFor="image_url" className="block text-sm font-medium text-gray-300">Image URL (Optional)</label>
-        <input type="url" name="image_url" id="image_url" value={formData.image_url} onChange={handleChange} className="input-field mt-1" placeholder="https://example.com/image.jpg" />
-      </div>
+      
+      {/* Image Upload Component */}
+      <ImageUpload
+        initialImage={project?.image_url || ''}
+        onImageChange={handleImageChange}
+        label="Project Image"
+        aspectRatio="aspect-video"
+        placeholderText="Upload a project screenshot or logo"
+        maxSizeMB={2}
+      />
+      
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description</label>
         <textarea name="description" id="description" rows="3" value={formData.description} onChange={handleChange} className="input-field mt-1"></textarea>

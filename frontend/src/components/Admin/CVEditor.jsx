@@ -1,5 +1,5 @@
 // frontend/src/components/Admin/CVEditor.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../../contexts/ToastContext';
 import Spinner from '../UI/Spinner';
@@ -9,6 +9,9 @@ import {
   GraduationCap, Code, User, Link, Users, Zap
 } from 'lucide-react';
 import { getCVDataApi, updateCVDataApi } from '../../api/cv';
+
+import ImageUpload from '../UI/ImageUpload'; // Import the new ImageUpload component
+import { uploadImageApi } from '../../api/cv'; // Import the image upload API
 
 // Component for editing CV sections
 const CVEditor = () => {
@@ -25,143 +28,65 @@ const CVEditor = () => {
   // Initial data load
   useEffect(() => {
     fetchCVData();
-  }, []);
+    }, []);
 
-  const fetchCVData = async () => {
+    const fetchCVData = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getCVDataApi();
-      setCVData(data);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching CV data:", err);
-      setError('Failed to load CV data. Please try again.');
-      
-      // Use hardcoded data from the InteractiveCV component as fallback
-      // This is temporary and would be replaced with proper database saving/loading
-      const fallbackData = {
-        summary: "As a business informatics student, I combine a strong academic foundation with a passion for connecting business and technology. I enjoy working in collaborative, innovative environments and am motivated to keep learning and growing in the digital world.",
-        experience: [
-          {
-            id: 1,
-            role: "Working Student Data Analyst",
-            company: "Siemens Global Business Services",
-            period: "Nov 2024 – Mar 2025",
-            details: `
-- Data analysis and processing with KNIME  
-- Creation of dashboards and visualizations in Power BI  
-- Design and setup of database structures in Microsoft Access
-            `.trim(),
-          }
-        ],
-        education: [
-          {
-            id: 1,
-            degree: "B.Sc. in Business Informatics",
-            institution: "Technische Universität München",
-            period: "Oct 2023 – Present",
-            details: "Currently enrolled in the Bachelor of Science programme in Wirtschaftsinformatik.",
-          },
-          {
-            id: 2,
-            degree: "Abitur",
-            institution: "Luitpold Gymnasium Wasserburg",
-            period: "Sep 2015 – Jun 2023",
-            details: "",
-          },
-        ],
-        projectsHighlight: [
-          {
-            id: 2,
-            name: "Mandelbrot Set Visualizer",
-            period: "Oct 2022 – Present",
-            description: `
-- Realized theoretical investigations from W-Seminar paper  
-- Developed a C++/Qt application for interactive fractal rendering`,
-            links: [
-              {
-                text: "Live demo",
-                url: "https://m4rkus28.github.io/Fraktalgenerator"
-              }
-            ],
-          },{
-            id: 1,
-            name: "Barcode Scanner for Delicatessen",
-            period: "Apr 2022 – Dec 2022",
-            description: `
-- Programmed the software for a custom barcode scanner  
-- Built and connected the backend database and web server  
-- Designed a Qt-based GUI for end users`,
-            links: [
-              {
-                text: "Code & demo",
-                url: "https://github.com/Benefranko/Barcode-Scanner-Feinkost-"
-              }
-            ],
-          }
-        ],
-        awards: [
-          {
-            id: 1,
-            name: "1st Place, CHECK24 Challenge at TUM.ai Makeathon",
-            date: "Apr 2025",
-            details: "3-day AI hackathon solving real-world business cases. Project: SmartStay24.",
-            links: [
-              {
-                text: "GitHub",
-                url: "https://github.com/M4RKUS28/SmartStay24"
-              }
-            ],
-            awardingBody: "TUM.ai",
-          },
-          {
-            id: 2,
-            name: "GenDev IT Scholarship",
-            date: "Feb 2025",
-            awardingBody: "CHECK24",
-          },
-        ],
-        skills: [
-          { name: "Python", level: 90 },
-          { name: "C++ / Qt", level: 95 },
-          { name: "SQL", level: 85 },
-          { name: "HTML & CSS", level: 70 },
-          { name: "Git", level: 85 },
-        ],
-        volunteering: [
-          {
-            id: 1,
-            role: "Volunteer Leader Boy Scouts",
-            organization: "Scouts Stamm Marinus Rott am Inn",
-            period: "Feb 2023 – Present",
-            details: `
-- Organized and led youth meetings and outings  
-- Planned and executed community projects and events  
-- Liaised with parents and partner organizations`,
-          },
-        ],
-        languages: [
-          { name: "German", level: "C2" },
-          { name: "English", level: "B2" },
-        ],
-        personalInfo: {
-          name: "Markus",
-          title: "A Creative Full Stack Developer & Tech Enthusiast",
-          profileImage: "/path/to/profile-image.jpg",
-          socialLinks: [
-            { platform: "github", url: "https://github.com/M4RKUS28" },
-            { platform: "linkedin", url: "https://www.linkedin.com/in/markus-huber-0132282bb/" },
-            { platform: "email", url: "mailto:markus28.huber@tum.de" }
-          ],
-          headerText: "M4RKUS28"
+        const data = await getCVDataApi();
+        
+        // Initialize the CV data structure with empty arrays if they don't exist
+        const initializedData = {
+        summary: data?.summary || "",
+        experience: data?.experience || [],
+        education: data?.education || [],
+        projectsHighlight: data?.projectsHighlight || [],
+        awards: data?.awards || [],
+        skills: data?.skills || [],
+        volunteering: data?.volunteering || [],
+        languages: data?.languages || [],
+        personalInfo: data?.personalInfo || {
+            name: "",
+            title: "",
+            profileImage: "",
+            headerText: "",
+            socialLinks: []
         }
-      };
-      
-      setCVData(fallbackData);
+        };
+        
+        // Ensure personalInfo structure is complete
+        if (!initializedData.personalInfo.socialLinks) {
+        initializedData.personalInfo.socialLinks = [];
+        }
+        
+        setCVData(initializedData);
+        setError(null);
+    } catch (err) {
+        console.error("Error fetching CV data:", err);
+        setError('Failed to load CV data. Please try again.');
+        
+        // Initialize with an empty structure if fetch fails
+        setCVData({
+        summary: "",
+        experience: [],
+        education: [],
+        projectsHighlight: [],
+        awards: [],
+        skills: [],
+        volunteering: [],
+        languages: [],
+        personalInfo: {
+            name: "",
+            title: "",
+            profileImage: "",
+            headerText: "",
+            socialLinks: []
+        }
+        });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    }, []);
 
   const saveCV = async () => {
     setSaving(true);
@@ -454,98 +379,149 @@ const CVEditor = () => {
     </div>
   );
 
-  const renderPersonalInfoSection = () => (
+  
+    const renderPersonalInfoSection = () => (
     <div className="section-card">
-      <h3 className="section-title">Personal Information</h3>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Name</label>
-          <input
-            type="text"
-            className="input-field"
-            value={cvData.personalInfo.name}
-            onChange={(e) => handlePersonalInfoChange('name', e.target.value)}
-          />
+        <h3 className="section-title">Personal Information</h3>
+        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+            <label className="form-label">Name</label>
+            <input
+                type="text"
+                className="input-field"
+                value={cvData.personalInfo?.name || ''}
+                onChange={(e) => handlePersonalInfoChange('name', e.target.value)}
+            />
+            </div>
+            <div>
+            <label className="form-label">Title/Headline</label>
+            <input
+                type="text"
+                className="input-field"
+                value={cvData.personalInfo?.title || ''}
+                onChange={(e) => handlePersonalInfoChange('title', e.target.value)}
+            />
+            <p className="text-xs text-gray-400 mt-1">This appears under your name in the hero section</p>
+            </div>
         </div>
+        
+        {/* Profile Image Upload */}
         <div>
-          <label className="form-label">Title/Headline</label>
-          <input
+            <label className="form-label">Profile Image</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ImageUpload
+                initialImage={cvData.personalInfo?.profileImage || ''}
+                onImageChange={(imageData) => handleProfileImageChange(imageData)}
+                className="w-full max-w-[250px]" // Reduced size
+                aspectRatio="aspect-square"
+                placeholderText="Upload profile picture"
+                maxSizeMB={2}
+                maxWidth={200}
+                maxHeight={200}
+                />
+                <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-200">
+                    This image will appear in the hero section of your portfolio.
+                    <br /><br />
+                    • Recommended: Square image, at least 300x300 pixels
+                    <br />
+                    • Max file size: 2MB
+                    <br />
+                    • Supported formats: JPG, PNG, GIF
+                </p>
+                </div>
+            </div>
+            </div>
+        
+        <div>
+            <label className="form-label">Header Text</label>
+            <input
             type="text"
             className="input-field"
-            value={cvData.personalInfo.title}
-            onChange={(e) => handlePersonalInfoChange('title', e.target.value)}
-          />
-          <p className="text-xs text-gray-400 mt-1">This appears under your name in the hero section</p>
-        </div>
-        <div>
-          <label className="form-label">Profile Image URL</label>
-          <input
-            type="text"
-            className="input-field"
-            value={cvData.personalInfo.profileImage}
-            onChange={(e) => handlePersonalInfoChange('profileImage', e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="form-label">Header Text</label>
-          <input
-            type="text"
-            className="input-field"
-            value={cvData.personalInfo.headerText}
+            value={cvData.personalInfo?.headerText || ''}
             onChange={(e) => handlePersonalInfoChange('headerText', e.target.value)}
-          />
-          <p className="text-xs text-gray-400 mt-1">This appears in the top-left corner of the site (currently "M4RKUS28")</p>
+            />
+            <p className="text-xs text-gray-400 mt-1">This appears in the top-left corner of the site (currently "M4RKUS28")</p>
         </div>
         
         <div>
-          <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-2">
             <label className="form-label mb-0">Social Links</label>
             <button
-              type="button"
-              onClick={addSocialLink}
-              className="btn btn-sm bg-gray-700 text-gray-200 hover:bg-gray-600 flex items-center"
+                type="button"
+                onClick={addSocialLink}
+                className="btn btn-sm bg-gray-700 text-gray-200 hover:bg-gray-600 flex items-center"
             >
-              <Plus size={14} className="mr-1" /> Add Link
+                <Plus size={14} className="mr-1" /> Add Link
             </button>
-          </div>
-          
-          <div className="space-y-3">
-            {cvData.personalInfo.socialLinks.map((link, index) => (
-              <div key={index} className="flex space-x-2">
+            </div>
+            
+            <div className="space-y-3">
+            {cvData.personalInfo?.socialLinks?.map((link, index) => (
+                <div key={index} className="flex space-x-2">
                 <select
-                  className="input-field w-1/3"
-                  value={link.platform}
-                  onChange={(e) => handleSocialLinkChange(index, 'platform', e.target.value)}
+                    className="input-field w-1/3"
+                    value={link.platform || ''}
+                    onChange={(e) => handleSocialLinkChange(index, 'platform', e.target.value)}
                 >
-                  <option value="">Select Platform</option>
-                  <option value="github">GitHub</option>
-                  <option value="linkedin">LinkedIn</option>
-                  <option value="twitter">Twitter</option>
-                  <option value="email">Email</option>
-                  <option value="website">Website</option>
+                    <option value="">Select Platform</option>
+                    <option value="github">GitHub</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="email">Email</option>
+                    <option value="website">Website</option>
                 </select>
                 <input
-                  type="text"
-                  className="input-field flex-1"
-                  placeholder="URL"
-                  value={link.url}
-                  onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)}
+                    type="text"
+                    className="input-field flex-1"
+                    placeholder="URL"
+                    value={link.url || ''}
+                    onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)}
                 />
                 <button
-                  type="button"
-                  onClick={() => removeSocialLink(index)}
-                  className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70"
-                  title="Remove Link"
+                    type="button"
+                    onClick={() => removeSocialLink(index)}
+                    className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70"
+                    title="Remove Link"
                 >
-                  <Trash2 size={14} />
+                    <Trash2 size={14} />
                 </button>
-              </div>
+                </div>
             ))}
-          </div>
+            </div>
         </div>
-      </div>
+        </div>
     </div>
-  );
+    );
+    // Add this new function to handle profile image changes
+    const handleProfileImageChange = async (imageData) => {
+    // Update the CV data state
+    setCVData(prev => ({
+        ...prev,
+        personalInfo: {
+        ...prev.personalInfo,
+        profileImage: imageData
+        }
+    }));
+    
+    try {
+        // Upload the image (optional: you can also wait until the user saves all changes)
+        if (imageData) {
+        await uploadImageApi(imageData, 'profile');
+        showToast({ 
+            type: 'success', 
+            message: 'Profile image uploaded successfully'
+        });
+        }
+    } catch (error) {
+        console.error('Failed to upload profile image:', error);
+        showToast({ 
+        type: 'error', 
+        message: 'Failed to upload profile image'
+        });
+    }
+    };
 
   const renderSummarySection = () => (
     <div className="section-card">
