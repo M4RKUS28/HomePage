@@ -1,3 +1,4 @@
+// frontend/src/contexts/AuthContext.jsx (enhanced version)
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { loginUserApi, registerUserApi, fetchCurrentUserApi } from '../api/auth';
 import { jwtDecode } from 'jwt-decode';
@@ -6,8 +7,8 @@ export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loadingAuth, setLoadingAuth] = useState(true); // Changed from 'loading'
-  const [authError, setAuthError] = useState(null);   // Changed from 'error'
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   const clearAuthError = () => setAuthError(null);
 
@@ -51,7 +52,30 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(userData);
       return userData;
     } catch (err) {
-      setAuthError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      // Enhanced error handling
+      let errorMessage = 'Login failed. Please check your credentials.';
+      
+      if (err.response) {
+        // Server returned an error response
+        if (err.response.data?.detail) {
+          if (typeof err.response.data.detail === 'string') {
+            errorMessage = err.response.data.detail;
+          } else if (Array.isArray(err.response.data.detail)) {
+            // Format validation errors
+            errorMessage = err.response.data.detail
+              .map(e => {
+                const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
+                return `${field}: ${e.msg}`;
+              })
+              .join('\n');
+          }
+        }
+      } else if (err.request) {
+        // Request was made but no response received
+        errorMessage = 'No response from server. Please check your internet connection.';
+      }
+      
+      setAuthError(errorMessage);
       throw err;
     } finally {
       setLoadingAuth(false);
@@ -67,7 +91,30 @@ export const AuthProvider = ({ children }) => {
       // For now, just return data and let user log in separately
       return data;
     } catch (err) {
-      setAuthError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      // Enhanced error handling
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (err.response) {
+        // Server returned an error response
+        if (err.response.data?.detail) {
+          if (typeof err.response.data.detail === 'string') {
+            errorMessage = err.response.data.detail;
+          } else if (Array.isArray(err.response.data.detail)) {
+            // Format validation errors
+            errorMessage = err.response.data.detail
+              .map(e => {
+                const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
+                return `${field}: ${e.msg}`;
+              })
+              .join('\n');
+          }
+        }
+      } else if (err.request) {
+        // Request was made but no response received
+        errorMessage = 'No response from server. Please check your internet connection.';
+      }
+      
+      setAuthError(errorMessage);
       throw err;
     } finally {
       setLoadingAuth(false);
@@ -81,7 +128,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, loadingAuth, login, register, logout, authError, clearAuthError, loadUserFromToken }}>
+    <AuthContext.Provider value={{ 
+      currentUser, 
+      loadingAuth, 
+      login, 
+      register, 
+      logout, 
+      authError, 
+      clearAuthError, 
+      loadUserFromToken 
+    }}>
       {children}
     </AuthContext.Provider>
   );

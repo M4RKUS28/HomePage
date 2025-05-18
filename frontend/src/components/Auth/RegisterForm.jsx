@@ -1,9 +1,9 @@
-// frontend/frontend/src/components/Auth/RegisterForm.jsx (updated)
+// frontend/src/components/Auth/RegisterForm.jsx (updated with improved error handling)
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { UserPlus, Eye, EyeOff, Check, X } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, Check, X, AlertCircle } from 'lucide-react';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
 import LoadingButton from '../UI/LoadingButton';
@@ -35,10 +35,27 @@ const RegisterForm = () => {
     e.preventDefault();
     setFormError('');
     
+    // Client-side validation
+    if (!username.trim()) {
+      setFormError("Username is required.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setFormError("Email is required.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setFormError("Passwords do not match.");
       return;
     }
+    
     if (password.length < 3) { // Match backend MIN_PASSWORD_LENGTH
       setFormError("Password must be at least 3 characters long.");
       return;
@@ -52,9 +69,41 @@ const RegisterForm = () => {
       });
       navigate('/login');
     } catch (err) {
-      // authError will be set by the AuthContext
+      // Check specific error handling for registration issues
+      if (err.response && err.response.data) {
+        // If server provided a detail message, use it
+        if (typeof err.response.data.detail === 'string') {
+          setFormError(err.response.data.detail);
+        }
+        // If there's validation errors (422 status)
+        else if (err.response.status === 422 && err.response.data.detail) {
+          const validationErrors = err.response.data.detail;
+          // Format validation errors
+          if (Array.isArray(validationErrors)) {
+            const errorMessages = validationErrors.map(err => {
+              const field = err.loc && err.loc.length > 1 ? err.loc[1] : '';
+              return `${field}: ${err.msg}`;
+            }).join('\n');
+            setFormError(errorMessages);
+          } else {
+            setFormError('Validation error. Please check your inputs.');
+          }
+        }
+        // Handle case where username or email already exists
+        else if (err.response.status === 400) {
+          setFormError(err.response.data.detail || "Username or email already exists.");
+        }
+      } else {
+        // Fallback error message
+        setFormError('Registration failed. Please try again.');
+      }
       console.error("Registration failed:", err);
     }
+  };
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
   };
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
@@ -119,7 +168,7 @@ const RegisterForm = () => {
             type="text"
             autoComplete="username"
             required
-            className="input-field mt-1"
+            className={`input-field mt-1 ${!username.trim() && formError ? 'border-red-500 dark:border-red-500' : ''}`}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -134,7 +183,7 @@ const RegisterForm = () => {
             type="email"
             autoComplete="email"
             required
-            className="input-field mt-1"
+            className={`input-field mt-1 ${(!email.trim() || !validateEmail(email)) && formError ? 'border-red-500 dark:border-red-500' : ''}`}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -150,7 +199,7 @@ const RegisterForm = () => {
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               required
-              className="input-field pr-10"
+              className={`input-field pr-10 ${password.length < 3 && formError ? 'border-red-500 dark:border-red-500' : ''}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-describedby="password-requirements"
@@ -183,7 +232,7 @@ const RegisterForm = () => {
               type={showConfirmPassword ? "text" : "password"}
               autoComplete="new-password"
               required
-              className="input-field pr-10"
+              className={`input-field pr-10 ${confirmPassword && !passwordsMatch ? 'border-red-500 dark:border-red-500' : ''}`}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -229,6 +278,19 @@ const RegisterForm = () => {
           Sign in
         </Link>
       </p>
+      
+      {/* Add explanation about registration */}
+      <div className={`mt-4 p-4 rounded-lg text-sm ${
+        theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-600'
+      }`}>
+        <div className="flex items-start">
+          <AlertCircle size={16} className="text-primary mt-0.5 mr-2 flex-shrink-0" />
+          <p>
+            Creating an account lets you send me direct messages. This is great for project 
+            inquiries, collaboration opportunities, or any questions about my work.
+          </p>
+        </div>
+      </div>
     </motion.div>
   );
 };

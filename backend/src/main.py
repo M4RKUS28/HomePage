@@ -1,27 +1,30 @@
+# Updated section of backend/src/main.py to include the CV router
 import logging
-from fastapi import FastAPI, Depends, HTTPException, status, APIRouter # Import APIRouter
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
-import asyncio # For APScheduler
+import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from .schemas import user as user_schema
 from .models import db_user as user_model
-from .models import db_project as project_model # Import new models
-from .models import db_message as message_model # Import new models
+from .models import db_project as project_model
+from .models import db_message as message_model
+from .models import db_cv as cv_model  # Import new CV models
 from .schemas import token as token_schema
 
 from .utils import auth
-from .db.database import engine, get_db, SessionLocal # Import SessionLocal for scheduler
-from .routers import users, projects, messages # Import new routers
+from .db.database import engine, get_db, SessionLocal
+from .routers import users, projects, messages, cv  # Import the new cv router
 from .utils.email import notify_new_user
 
 # Create database tables
 user_model.Base.metadata.create_all(bind=engine)
-project_model.Base.metadata.create_all(bind=engine) # Ensure project table is created
-message_model.Base.metadata.create_all(bind=engine) # Ensure message table is created
+project_model.Base.metadata.create_all(bind=engine)
+message_model.Base.metadata.create_all(bind=engine)
+cv_model.Base.metadata.create_all(bind=engine)  # Create CV tables
 
 
 # Create the main app instance
@@ -45,8 +48,10 @@ api_router = APIRouter()
 
 # Include your existing routers under this api_router
 api_router.include_router(users.router)
-api_router.include_router(projects.router) # Add projects router
-api_router.include_router(messages.router) # Add messages router
+api_router.include_router(projects.router)
+api_router.include_router(messages.router)
+api_router.include_router(cv.router)  # Add the CV router
+
 
 # Define /token and /register directly under api_router if you want them prefixed
 @api_router.post("/token", response_model=token_schema.Token, tags=["authentication"])
@@ -162,3 +167,80 @@ async def shutdown_scheduler():
     if scheduler.running:
         scheduler.shutdown()
         logging.info("APScheduler shut down.")
+
+
+
+@app.on_event("startup")
+async def init_cv_data():
+    """Initialize default CV data and site config if they don't exist"""
+    db = SessionLocal()
+    try:
+        # Check if CV data exists
+        cv_data = db.query(cv_model.CV).first()
+        if not cv_data:
+            # Find admin user
+            admin_user = db.query(user_model.User).filter(user_model.User.is_admin == True).first()
+            if not admin_user:
+                logging.warning("No admin user found for CV data initialization")
+                # Try to get any user
+                admin_user = db.query(user_model.User).first()
+                if not admin_user:
+                    logging.warning("No users found for CV data initialization")
+                    return
+            
+            # Default CV data - minimal version
+            default_cv_data = {
+                "summary": "As a business informatics student, I combine a strong academic foundation with a passion for connecting business and technology.",
+                "experience": [],
+                "education": [],
+                "projectsHighlight": [],
+                "skills": [],
+                "personalInfo": {
+                    "name": "Markus",
+                    "title": "A Creative Full Stack Developer & Tech Enthusiast",
+                    "profileImage": "",
+                    "headerText": "M4RKUS28",
+                    "socialLinks": [
+                        {"platform": "github", "url": "https://github.com/M4RKUS28"},
+                        {"platform": "email", "url": "mailto:markus28.huber@tum.de"}
+                    ]
+                }
+            }
+            
+            # Create CV data entry
+            new_cv = cv_model.CV(
+                data=default_cv_data,
+                owner_id=admin_user.id
+            )
+            db.add(new_cv)
+            db.commit()
+            logging.info("Initialized default CV data")
+        
+        # Check if site config exists
+        site_config = db.query(cv_model.SiteConfig).first()
+        if not site_config:
+            # Find admin user
+            admin_user = db.query(user_model.User).filter(user_model.User.is_admin == True).first()
+            if not admin_user:
+                admin_user = db.query(user_model.User).first()
+            
+            # Create default site config
+            new_config = cv_model.SiteConfig(
+                header_text="M4RKUS28",
+                profile_name="Markus",
+                profile_title="A Creative Full Stack Developer & Tech Enthusiast",
+                show_register_callout=True,
+                social_links=[
+                    {"platform": "github", "url": "https://github.com/M4RKUS28"},
+                    {"platform": "email", "url": "mailto:markus28.huber@tum.de"}
+                ],
+                owner_id=admin_user.id if admin_user else None
+            )
+            db.add(new_config)
+            db.commit()
+            logging.info("Initialized default site configuration")
+            
+    except Exception as e:
+        logging.error(f"Error initializing CV data: {e}")
+    finally:
+        db.close()

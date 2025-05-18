@@ -1,9 +1,9 @@
-// frontend/frontend/src/components/Auth/LoginForm.jsx (updated)
+// frontend/src/components/Auth/LoginForm.jsx (updated with improved error handling)
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
 import LoadingButton from '../UI/LoadingButton';
@@ -13,6 +13,7 @@ const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState(''); // Local form error state
   const { login, loadingAuth, authError, clearAuthError } = useAuth();
   const { theme } = useContext(ThemeContext);
   const { showToast } = useToast();
@@ -25,6 +26,19 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError(''); // Clear local form errors
+    
+    // Simple client-side validation
+    if (!username.trim()) {
+      setFormError('Username is required');
+      return;
+    }
+    
+    if (!password) {
+      setFormError('Password is required');
+      return;
+    }
+    
     try {
       await login(username, password);
       showToast({ 
@@ -33,8 +47,31 @@ const LoginForm = () => {
       });
       navigate('/dashboard'); // Or wherever you want to redirect after login
     } catch (err) {
-      // Error is handled by authError state
-      console.error("Login failed:", err);
+      // Check if error has a response from the server
+      if (err.response && err.response.data) {
+        // If server provided a detail message, use it
+        if (err.response.data.detail) {
+          // Don't set authError directly, it's managed by the auth context
+          console.error("Login error:", err.response.data.detail);
+        }
+        // If there's validation errors (422 status)
+        else if (err.response.status === 422 && err.response.data.detail) {
+          const validationErrors = err.response.data.detail;
+          // Format validation errors
+          if (Array.isArray(validationErrors)) {
+            const errorMessages = validationErrors.map(err => {
+              const field = err.loc && err.loc.length > 1 ? err.loc[1] : '';
+              return `${field}: ${err.msg}`;
+            }).join('\n');
+            setFormError(errorMessages);
+          } else {
+            setFormError('Validation error. Please check your inputs.');
+          }
+        }
+      } else {
+        // Fallback error message
+        setFormError('An error occurred during login. Please try again.');
+      }
     }
   };
 
@@ -81,9 +118,13 @@ const LoginForm = () => {
         className="mt-8 space-y-6" 
         onSubmit={handleSubmit}
       >
+        {/* Show either context auth error or local form error */}
         <ErrorMessage 
-          message={authError} 
-          onClose={clearAuthError}
+          message={authError || formError} 
+          onClose={() => {
+            clearAuthError();
+            setFormError('');
+          }}
         />
         
         <div>
@@ -96,7 +137,7 @@ const LoginForm = () => {
             type="text"
             autoComplete="username"
             required
-            className="input-field mt-1"
+            className={`input-field mt-1 ${username.trim() === '' && formError ? 'border-red-500 dark:border-red-500' : ''}`}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -112,7 +153,7 @@ const LoginForm = () => {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              className="input-field pr-10"
+              className={`input-field pr-10 ${password === '' && formError ? 'border-red-500 dark:border-red-500' : ''}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -151,6 +192,19 @@ const LoginForm = () => {
           Create an account
         </Link>
       </p>
+      
+      {/* Add explanation about registration */}
+      <div className={`mt-4 p-4 rounded-lg text-sm ${
+        theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-600'
+      }`}>
+        <div className="flex items-start">
+          <AlertCircle size={16} className="text-primary mt-0.5 mr-2 flex-shrink-0" />
+          <p>
+            Creating an account allows you to send me direct messages for collaborations, 
+            project inquiries, or just to connect!
+          </p>
+        </div>
+      </div>
     </motion.div>
   );
 };

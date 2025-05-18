@@ -1,9 +1,10 @@
-// frontend/frontend/src/pages/HomePage.jsx (updated)
+// frontend/src/pages/HomePage.jsx (updated)
 import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '../components/Home/HeroSection';
 import ProjectsGrid from '../components/Home/ProjectsGrid';
 import InteractiveCV from '../components/Home/InteractiveCV';
+import RegisterCallout from '../components/Home/RegisterCallout'; // Import new component
 import { MessageSquareText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -34,9 +35,13 @@ const HomePage = () => {
       >
         <HeroSection />
         <ProjectsGrid /> {/* id="projects" is inside this component */}
+        
+        {/* Register Callout - will only show for non-logged in users */}
+        <RegisterCallout />
+        
         <InteractiveCV /> {/* id="cv" is inside this component */}
 
-        {/* Call to Action for messaging - Example */}
+        {/* Call to Action for messaging - Example - only show for logged in non-admin users */}
         {currentUser && !currentUser.is_admin && (
           <motion.section 
             initial={{ opacity: 0, y: 50 }}

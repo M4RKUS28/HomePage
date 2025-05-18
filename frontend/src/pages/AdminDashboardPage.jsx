@@ -1,11 +1,13 @@
-import React, {useContext,  useState } from 'react';
+// frontend/src/pages/AdminDashboardPage.jsx (updated)
+import React, {useContext, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import ProjectsGrid from '../components/Home/ProjectsGrid'; // Re-using for project management
 import MessageList from '../components/Admin/MessageList';
-import { Briefcase, MessageCircle, Settings } from 'lucide-react'; // Example icons for tabs
+import UserManagement from '../components/Admin/UserManagement'; // Import the new component
+import CVEditor from '../components/Admin/CVEditor'; // Import the new component
+import { Briefcase, MessageCircle, UserCog, FileEdit } from 'lucide-react'; // Updated icons
 import { ThemeContext } from '../contexts/ThemeContext';
-
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -29,7 +31,7 @@ const TabButton = ({ children, onClick, isActive }) => (
 
 const AdminDashboardPage = () => {
   const { currentUser } = useAuth();
-  const [activeTab, setActiveTab] = useState('projects'); // 'projects', 'messages', 'settings'
+  const [activeTab, setActiveTab] = useState('projects'); // 'projects', 'messages', 'users', 'cv'
   const { theme } = useContext(ThemeContext);
   
   const renderContent = () => {
@@ -38,8 +40,10 @@ const AdminDashboardPage = () => {
         return <ProjectsGrid />; // Already has admin controls (add/edit/delete)
       case 'messages':
         return <MessageList />;
-      case 'settings':
-        return <div className="p-6 bg-gray-800 rounded-lg shadow-xl"><h3 className="text-xl font-semibold text-white">Site Settings</h3><p className="text-gray-400 mt-2">User management, site configuration, etc. (To be implemented)</p></div>;
+      case 'users':
+        return <UserManagement />;
+      case 'cv':
+        return <CVEditor />;
       default:
         return null;
     }
@@ -65,16 +69,19 @@ const AdminDashboardPage = () => {
         <p className="text-lg text-gray-400 mt-2">Manage your site, {currentUser?.username}.</p>
       </div>
 
-      <div className="mb-8 flex justify-center space-x-2 sm:space-x-4 p-2 bg-gray-800/50 rounded-lg max-w-md mx-auto">
+      <div className="mb-8 flex flex-wrap justify-center gap-2 p-2 bg-gray-800/50 rounded-lg max-w-2xl mx-auto">
         <TabButton onClick={() => setActiveTab('projects')} isActive={activeTab === 'projects'}>
           <Briefcase size={16} className="inline mr-1.5" /> Projects
         </TabButton>
         <TabButton onClick={() => setActiveTab('messages')} isActive={activeTab === 'messages'}>
           <MessageCircle size={16} className="inline mr-1.5" /> Messages
         </TabButton>
-        {/* <TabButton onClick={() => setActiveTab('settings')} isActive={activeTab === 'settings'}>
-          <Settings size={16} className="inline mr-1.5" /> Settings
-        </TabButton> */}
+        <TabButton onClick={() => setActiveTab('users')} isActive={activeTab === 'users'}>
+          <UserCog size={16} className="inline mr-1.5" /> Users
+        </TabButton>
+        <TabButton onClick={() => setActiveTab('cv')} isActive={activeTab === 'cv'}>
+          <FileEdit size={16} className="inline mr-1.5" /> CV & Profile
+        </TabButton>
       </div>
 
       <AnimatePresence mode="wait">

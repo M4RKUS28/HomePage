@@ -450,3 +450,40 @@
 .animate-pulse-fast {
   animation: pulse-fast 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+
+
+@layer components {
+  /* CV Editor specific styles */
+  .section-card {
+    @apply bg-card rounded-lg shadow-lg p-6 mb-6;
+  }
+  
+  .section-title {
+    @apply text-xl font-semibold text-mode-primary mb-4;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-300 mb-2;
+  }
+  
+  .nav-button {
+    @apply px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center text-center;
+  }
+  
+  .dark .nav-button {
+    @apply text-gray-300 bg-gray-800 hover:bg-gray-700;
+  }
+  
+  .light .nav-button {
+    @apply text-gray-700 bg-gray-200 hover:bg-gray-300;
+  }
+  
+  .dark .nav-button.active {
+    @apply bg-primary/80 text-white;
+  }
+  
+  .light .nav-button.active {
+    @apply bg-primary text-white;
+  }
+}
