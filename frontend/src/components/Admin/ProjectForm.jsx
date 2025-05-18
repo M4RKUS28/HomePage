@@ -80,7 +80,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       // Step 2: If we have an image, upload it
       if (imageData && imageData !== project?.image_url) {
         await uploadImageApi(
-          imageData,
+          imageData,  // This is the full base64 string
           'project',
           updatedProject.id
         );
@@ -137,7 +137,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         label="Project Image"
         aspectRatio="aspect-video"
         placeholderText="Upload a project screenshot or logo"
-        maxSizeMB={2}
+        maxSizeMB={5}
       />
       
       <div>

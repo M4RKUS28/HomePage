@@ -10,9 +10,7 @@ const ImageUpload = ({
   aspectRatio = 'aspect-square',
   label = 'Upload Image',
   placeholderText = 'Click or drag an image here',
-  maxSizeMB = 5,
-  maxWidth = 1920,
-  maxHeight = 1080
+  maxSizeMB = 5
 }) => {
   const [previewUrl, setPreviewUrl] = useState(initialImage || '');
   const [isDragging, setIsDragging] = useState(false);
@@ -25,40 +23,30 @@ const ImageUpload = ({
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file (JPG, PNG, GIF, etc.)');
-      return;
+        setError('Please select an image file (JPG, PNG, GIF, etc.)');
+        return;
     }
     
     // Validate file size
     if (file.size > maxSizeMB * 1024 * 1024) {
-      setError(`Image must be smaller than ${maxSizeMB}MB`);
-      return;
+        setError(`Image must be smaller than ${maxSizeMB}MB`);
+        return;
     }
     
     // Reset error
     setError('');
     
-    // Create preview
+    // Create base64 representation directly
     const reader = new FileReader();
     reader.onload = (event) => {
-      setPreviewUrl(event.target.result);
-      
-      // Load image to check dimensions
-      const img = new Image();
-      img.onload = () => {
-        // Resize if needed
-        if (img.width > maxWidth || img.height > maxHeight) {
-          resizeImage(img, file.type, maxWidth, maxHeight);
-        } else {
-          // Use original image if it's within size limits
-          onImageChange(event.target.result);
-        }
-      };
-      img.src = event.target.result;
+        const base64Data = event.target.result;
+        setPreviewUrl(base64Data);
+        // Pass the full base64 string to parent component
+        onImageChange(base64Data);
     };
     reader.readAsDataURL(file);
-  };
-  
+    };
+    
   const resizeImage = (img, fileType, maxWidth, maxHeight) => {
     const canvas = document.createElement('canvas');
     let width = img.width;

@@ -91,7 +91,7 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus }) => {
       <div>
         <div className="relative overflow-hidden h-52">
           <motion.img 
-            src={isBase64Image ? imageSource : (project.image_url || DefaultProjectImage)} 
+            src={imageSource} 
             alt={project.title} 
             className="w-full h-full object-cover" 
             onError={(e) => e.target.src = DefaultProjectImage}

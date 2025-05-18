@@ -69,8 +69,8 @@ async def upload_image(
     current_user: user_model.User = Depends(auth.get_current_admin_user)
 ):
     """
-    Upload an image and store it in the appropriate place based on the image_type.
-    Only accessible by admin users.
+    Upload an image and store it directly in the database as base64 string.
+    No compression or file storage - just store the raw base64 data.
     """
     # Handling for different image types
     if image_data.image_type == "profile":
@@ -80,12 +80,12 @@ async def upload_image(
         if not db_site_config:
             # Create site config if it doesn't exist
             db_site_config = cv_model.SiteConfig(
-                profile_image=image_data.image_data,
+                profile_image=image_data.image_data,  # Store raw base64 data
                 owner_id=current_user.id
             )
             db.add(db_site_config)
         else:
-            db_site_config.profile_image = image_data.image_data
+            db_site_config.profile_image = image_data.image_data  # Store raw base64 data
             
         db.commit()
         db.refresh(db_site_config)
@@ -112,7 +112,7 @@ async def upload_image(
         
         for project in projects:
             if project.get("id") == image_data.project_id:
-                project["image_url"] = image_data.image_data
+                project["image_url"] = image_data.image_data  # Store raw base64 data
                 break
         
         db_cv.data = cv_data
