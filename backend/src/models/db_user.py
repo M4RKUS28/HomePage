@@ -18,4 +18,3 @@ class User(Base):
     sent_messages = relationship("Message", back_populates="sender")
     # Add relationships to the new models
     cv_data = relationship("CV", back_populates="owner")
-    site_config = relationship("SiteConfig", back_populates="owner")

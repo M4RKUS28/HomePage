@@ -39,29 +39,3 @@ class ImageUpload(BaseModel):
     image_data: str
     image_type: str = "profile"  # "profile", "project", etc.
     project_id: Optional[int] = None  # For project images
-
-# Site Config models
-class SocialLink(BaseModel):
-    platform: str
-    url: str
-
-class SiteConfigBase(BaseModel):
-    header_text: Optional[str] = None
-    profile_name: Optional[str] = None
-    profile_title: Optional[str] = None
-    profile_image: Optional[str] = None
-    show_register_callout: Optional[bool] = None
-    social_links: Optional[List[SocialLink]] = None
-
-class SiteConfig(SiteConfigBase):
-    id: int
-    owner_id: int
-
-    class Config:
-        from_attributes = True
-
-class SiteConfigCreate(SiteConfigBase):
-    pass
-
-class SiteConfigUpdate(SiteConfigBase):
-    pass

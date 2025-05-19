@@ -216,30 +216,6 @@ async def init_cv_data():
             db.commit()
             logging.info("Initialized default CV data")
         
-        # Check if site config exists
-        site_config = db.query(cv_model.SiteConfig).first()
-        if not site_config:
-            # Find admin user
-            admin_user = db.query(user_model.User).filter(user_model.User.is_admin == True).first()
-            if not admin_user:
-                admin_user = db.query(user_model.User).first()
-            
-            # Create default site config
-            new_config = cv_model.SiteConfig(
-                header_text="M4RKUS28",
-                profile_name="Markus",
-                profile_title="A Creative Full Stack Developer & Tech Enthusiast",
-                show_register_callout=True,
-                social_links=[
-                    {"platform": "github", "url": "https://github.com/M4RKUS28"},
-                    {"platform": "email", "url": "mailto:markus28.huber@tum.de"}
-                ],
-                owner_id=admin_user.id if admin_user else None
-            )
-            db.add(new_config)
-            db.commit()
-            logging.info("Initialized default site configuration")
-            
     except Exception as e:
         logging.error(f"Error initializing CV data: {e}")
     finally:

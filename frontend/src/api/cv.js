@@ -11,16 +11,6 @@ export const updateCVDataApi = async (cvData) => {
     return response.data;
 };
 
-export const getSiteConfigApi = async () => {
-    const response = await apiClient.get('/cv/site-config');
-    return response.data;
-};
-
-export const updateSiteConfigApi = async (configData) => {
-    const response = await apiClient.put('/cv/site-config', configData);
-    return response.data;
-};
-
 export const uploadImageApi = async (imageData, imageType, projectId = null) => {
     // Check if token exists in localStorage
     const token = localStorage.getItem('accessToken');
