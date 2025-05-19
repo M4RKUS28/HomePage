@@ -22,7 +22,7 @@ const BackgroundParticles = () => {
     // Create particles
     const generateParticles = () => {
       particles = [];
-      const particleCount = Math.floor(window.innerWidth * window.innerHeight / 12000);
+      const particleCount = Math.floor(window.innerWidth * window.innerHeight / 20000);
       
       for (let i = 0; i < particleCount; i++) {
         particles.push({

@@ -505,22 +505,6 @@ const CVEditor = () => {
         }
     }));
     
-    try {
-        // Upload the image (optional: you can also wait until the user saves all changes)
-        if (imageData) {
-        await uploadImageApi(imageData, 'profile');
-        showToast({ 
-            type: 'success', 
-            message: 'Profile image uploaded successfully'
-        });
-        }
-    } catch (error) {
-        console.error('Failed to upload profile image:', error);
-        showToast({ 
-        type: 'error', 
-        message: 'Failed to upload profile image'
-        });
-    }
     };
 
   const renderSummarySection = () => (
@@ -788,6 +772,19 @@ const CVEditor = () => {
             Use markdown-style formatting: lines starting with "- " will be shown as bullet points
           </p>
         </div>
+
+        {/* Add this new field for logo */}
+        <div>
+          <label className="form-label">Company Logo URL (Optional)</label>
+          <input
+            type="text"
+            className="input-field"
+            value={currentItem.logo || ''}
+            onChange={(e) => handleItemChange('logo', e.target.value)}
+            placeholder="e.g. https://example.com/company-logo.png"
+          />
+        </div>
+
       </div>
     </>
   );
@@ -836,6 +833,22 @@ const CVEditor = () => {
             placeholder="Additional information about your education..."
           />
         </div>
+
+        {/* Add this new field for logo */}
+        <div>
+          <label className="form-label">Logo URL (Optional)</label>
+          <input
+            type="text"
+            className="input-field"
+            value={currentItem.logo || ''}
+            onChange={(e) => handleItemChange('logo', e.target.value)}
+            placeholder="e.g. https://example.com/logo.png"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Enter a URL for the institution's logo if available
+          </p>
+        </div>
+
       </div>
     </>
   );
@@ -977,7 +990,7 @@ const CVEditor = () => {
               <Plus size={14} className="mr-1" /> Add Link
             </button>
           </div>
-          
+
           <div className="space-y-3">
             {currentItem.links?.map((link, index) => (
               <div key={index} className="flex space-x-2">
@@ -1093,6 +1106,19 @@ const CVEditor = () => {
             Use markdown-style formatting: lines starting with "- " will be shown as bullet points
           </p>
         </div>
+
+        {/* Add this new field for logo */}
+        <div>
+          <label className="form-label">Organization Logo URL (Optional)</label>
+          <input
+            type="text"
+            className="input-field"
+            value={currentItem.logo || ''}
+            onChange={(e) => handleItemChange('logo', e.target.value)}
+            placeholder="e.g. https://example.com/org-logo.png"
+          />
+        </div>
+
       </div>
     </>
   );
