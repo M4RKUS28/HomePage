@@ -196,13 +196,13 @@ async def init_cv_data():
                 "projectsHighlight": [],
                 "skills": [],
                 "personalInfo": {
-                    "name": "Markus",
+                    "name": "[Your Name]",
                     "title": "A Creative Full Stack Developer & Tech Enthusiast",
                     "profileImage": "",
                     "headerText": "M4RKUS28",
                     "socialLinks": [
-                        {"platform": "github", "url": "https://github.com/M4RKUS28"},
-                        {"platform": "email", "url": "mailto:markus28.huber@tum.de"}
+                        {"platform": "github", "url": "https://github.com/[Your Name]"},
+                        {"platform": "email", "url": "mailto:[Your Name]@[Your Domain].de"}
                     ]
                 }
             }

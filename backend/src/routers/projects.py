@@ -72,7 +72,7 @@ async def create_project(
         title=project_data.get("title"),
         description=project_data.get("description"),
         link=str(project_data.get("link")) if project_data.get("link") else None, # Convert link to str
-        image_url=str(project_data.get("image_url")) if project_data.get("image_url") else None, # Convert image_url to str
+        image=str(project_data.get("image")) if project_data.get("image") else None, # Convert image to str
         owner_id=current_user.id
         # status will default in the model or be set by background task
     )
@@ -137,7 +137,7 @@ async def update_project(
             if db_project.link != str(value): # Compare string form
                 link_changed = True
             setattr(db_project, key, str(value)) # Store as string
-        elif key == "image_url" and value is not None:
+        elif key == "image":
             setattr(db_project, key, str(value)) # Store as string
         elif value is not None: # For other fields or if value is None (to clear optional fields)
              setattr(db_project, key, value)

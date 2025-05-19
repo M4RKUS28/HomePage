@@ -9,8 +9,12 @@ from datetime import datetime
 from ..schemas import cv as cv_schemas
 from ..models import db_cv as cv_model
 from ..models import db_user as user_model
+from ..models import db_project as project_model
 from ..utils import auth
 from ..db.database import get_db
+
+
+import logging
 
 router = APIRouter(
     prefix="/cv",
@@ -62,6 +66,7 @@ async def update_cv_data(
     db.refresh(db_cv)
     return db_cv.data
 
+
 @router.post("/upload-image", status_code=status.HTTP_200_OK)
 async def upload_image(
     image_data: cv_schemas.ImageUpload,
@@ -69,8 +74,7 @@ async def upload_image(
     current_user: user_model.User = Depends(auth.get_current_admin_user)
 ):
     """
-    Upload an image and store it directly in the database as base64 string.
-    No compression or file storage - just store the raw base64 data.
+    Upload an image and store it directly in the database.
     """
     # Handling for different image types
     if image_data.image_type == "profile":
@@ -80,12 +84,12 @@ async def upload_image(
         if not db_site_config:
             # Create site config if it doesn't exist
             db_site_config = cv_model.SiteConfig(
-                profile_image=image_data.image_data,  # Store raw base64 data
+                profile_image=image_data.image_data,
                 owner_id=current_user.id
             )
             db.add(db_site_config)
         else:
-            db_site_config.profile_image = image_data.image_data  # Store raw base64 data
+            db_site_config.profile_image = image_data.image_data
             
         db.commit()
         db.refresh(db_site_config)
@@ -98,27 +102,46 @@ async def upload_image(
                 detail="Project ID is required for project images"
             )
             
-        # Update the project's image in CV data
-        db_cv = db.query(cv_model.CV).first()
-        if not db_cv:
+        # First, check if this project exists in the actual projects table
+        db_project = db.query(project_model.Project).filter(project_model.Project.id == image_data.project_id).first()
+        if not db_project:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, 
-                detail="CV data not found"
+                detail=f"Project with ID {image_data.project_id} not found"
             )
             
-        # Find the project in the CV data and update its image
-        cv_data = db_cv.data
-        projects = cv_data.get("projectsHighlight", [])
-        
-        for project in projects:
-            if project.get("id") == image_data.project_id:
-                project["image_url"] = image_data.image_data  # Store raw base64 data
-                break
-        
-        db_cv.data = cv_data
+        # Update the project's image in the projects table
+        db_project.image = image_data.image_data
         db.commit()
-        db.refresh(db_cv)
-        return {"success": True, "image_type": "project", "project_id": image_data.project_id}
+        db.refresh(db_project)
+        
+        # Also update the project in CV data if it exists there
+        db_cv = db.query(cv_model.CV).first()
+        if db_cv:
+            try:
+                cv_data = db_cv.data
+                projects = cv_data.get("projectsHighlight", [])
+                
+                project_updated = False
+                for project in projects:
+                    if project.get("id") == image_data.project_id:
+                        project["image"] = image_data.image_data
+                        project_updated = True
+                        break
+                        
+                if project_updated:
+                    db_cv.data = cv_data
+                    db.commit()
+                    db.refresh(db_cv)
+            except Exception as e:
+                # Log error but don't fail - the image is already saved to the project
+                logging.error(f"Failed to update project image in CV data: {e}")
+                
+        return {
+            "success": True, 
+            "image_type": "project", 
+            "project_id": image_data.project_id
+        }
     
     else:
         raise HTTPException(

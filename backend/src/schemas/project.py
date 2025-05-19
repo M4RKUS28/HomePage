@@ -7,14 +7,7 @@ class ProjectBase(BaseModel):
     title: str
     description: Optional[str] = None
     link: HttpUrl # Validate URL
-    image_url: Optional[HttpUrl] = None # Validate URL
-
-    @field_validator('image_url', mode='before')
-    @classmethod
-    def empty_str_to_none(cls, v: str) -> Optional[str]:
-        if isinstance(v, str) and v.strip() == "":
-            return None # Convert empty string to None before HttpUrl validation
-        return v
+    image: Optional[str] = None # Validate URL
 
 class ProjectCreate(ProjectBase):
     pass

@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
+from sqlalchemy.dialects.mysql import LONGTEXT  # For storing large base64 images
 
 from ..db.database import Base
 
@@ -18,7 +19,7 @@ class Project(Base):
     title = Column(String(100), nullable=False, index=True)
     description = Column(Text, nullable=True)
     link = Column(String(255), nullable=False)
-    image_url = Column(String(255), nullable=True) # Or store image blobs if preferred
+    image = Column(LONGTEXT, nullable=True) # Or store image blobs if preferred
     status = Column(SQLAlchemyEnum(ProjectStatus), default=ProjectStatus.UNKNOWN)
     last_checked = Column(DateTime(timezone=True), server_default=func.now())
     owner_id = Column(Integer, ForeignKey("users.id"))

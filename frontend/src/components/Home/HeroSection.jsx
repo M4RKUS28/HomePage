@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import AnimatedTextCharacter from '../UI/AnimatedTextCharacter';
-import ProfilePicPlaceholder from '../../assets/placeholder-profile.jpg';
+import ProfilePicPlaceholder from '../../assets/placeholder-profile.jpeg';
 import { getCVDataApi } from '../../api/cv';
 import Spinner from '../UI/Spinner';
 import { AlertTriangle } from 'lucide-react';
