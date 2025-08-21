@@ -56,7 +56,7 @@ export default function Contact() {
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Have a project in mind? I'd love to hear about it. 
-            Let's discuss how we can work together.
+            Let&apos;s discuss how we can work together.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default function Contact() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" key="contact-form">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Name *
@@ -154,7 +154,7 @@ export default function Contact() {
           <div className="space-y-8">
             <div className="bg-blue-50 rounded-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Let's Connect
+                Let&apos;s Connect
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">

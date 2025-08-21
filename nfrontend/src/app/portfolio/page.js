@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 
 export default function Portfolio() {
@@ -69,15 +71,15 @@ export default function Portfolio() {
             My Portfolio
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            A showcase of my recent projects and the technologies I've worked with
+            A showcase of my recent projects and the technologies I&apos;ve worked with
           </p>
         </div>
 
         {/* Filter Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <button
-              key={category}
+              key={`category-${category}-${index}`}
               className="px-6 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors"
             >
               {category}
@@ -163,13 +165,13 @@ export default function Portfolio() {
             Interested in Working Together?
           </h2>
           <p className="mb-6">
-            I'd love to discuss your project and see how I can help
+            I&apos;d love to discuss your project and see how I can help
           </p>
           <a
             href="/contact"
             className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-block"
           >
-            Let's Talk
+            Let&apos;s Talk
           </a>
         </div>
       </div>

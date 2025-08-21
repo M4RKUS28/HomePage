@@ -25,8 +25,9 @@ function ErrorProneComponent({ shouldError }) {
   );
 }
 
-export default function Demo({ searchParams }) {
-  const showError = searchParams?.error === 'true';
+export default async function Demo({ searchParams }) {
+  const params = await searchParams;
+  const showError = params?.error === 'true';
   
   return (
     <div className="min-h-screen py-20">
@@ -75,7 +76,7 @@ export default function Demo({ searchParams }) {
           <h3 className="text-xl font-semibold mb-4">How to Test:</h3>
           <ul className="space-y-2 text-gray-700">
             <li>• Refresh the page to see loading states</li>
-            <li>• Click "Trigger Error" to see error boundary</li>
+            <li>• Click &quot;Trigger Error&quot; to see error boundary</li>
             <li>• Navigate between pages to see route loading</li>
             <li>• Try visiting /nonexistent to see 404 page</li>
           </ul>

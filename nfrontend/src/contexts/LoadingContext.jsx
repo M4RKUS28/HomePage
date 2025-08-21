@@ -16,20 +16,28 @@ export const useLoading = () => {
 
 export const LoadingProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
 
+  // Handle hydration
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    
     setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 500); // Simulate loading time
+    }, 300); // Reduced loading time
 
     return () => clearTimeout(timer);
-  }, [pathname]);
+  }, [pathname, isMounted]);
 
   return (
     <LoadingContext.Provider value={{ isLoading, setIsLoading }}>
-      {isLoading && <LoadingSpinner />}
+      {isMounted && isLoading && <LoadingSpinner />}
       {children}
     </LoadingContext.Provider>
   );

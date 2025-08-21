@@ -16,7 +16,7 @@ export default function About() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">My Story</h2>
             <div className="space-y-4 text-gray-600">
               <p>
-                With over 5 years of experience in web development, I've had the privilege 
+                With over 5 years of experience in web development, I&apos;ve had the privilege 
                 of working on diverse projects ranging from small business websites to 
                 large-scale enterprise applications.
               </p>
@@ -84,7 +84,7 @@ export default function About() {
 
         <div className="text-center bg-blue-50 rounded-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Let's Work Together
+            Let&apos;s Work Together
           </h2>
           <p className="text-gray-600 mb-6">
             I'm always excited to take on new challenges and collaborate on interesting projects.

@@ -158,7 +158,7 @@ export default function Services() {
             Ready to Start Your Project?
           </h2>
           <p className="mb-6">
-            Let's discuss how I can help bring your ideas to life
+            Let&apos;s discuss how I can help bring your ideas to life
           </p>
           <a
             href="/contact"
