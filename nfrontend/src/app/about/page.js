@@ -87,7 +87,7 @@ export default function About() {
             Let&apos;s Work Together
           </h2>
           <p className="text-gray-600 mb-6">
-            I'm always excited to take on new challenges and collaborate on interesting projects.
+            I&apos;m always excited to take on new challenges and collaborate on interesting projects.
           </p>
           <a
             href="/contact"
