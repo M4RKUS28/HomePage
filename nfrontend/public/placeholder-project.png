@@ -1,0 +1,12 @@
+<!-- This is a placeholder SVG that will be displayed when the actual image is not found -->
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#f3f4f6"/>
+  <g transform="translate(200,150)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#6b7280">
+      Project Image
+    </text>
+    <text x="0" y="20" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#9ca3af">
+      400 × 300
+    </text>
+  </g>
+</svg>
