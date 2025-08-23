@@ -208,51 +208,84 @@ const CVEditor = () => {
     setShowItemModal(true);
   };
 
-  const removeItem = (sectionKey, itemId) => {
+  const removeItem = async (sectionKey, itemId) => {
     if (!window.confirm('Are you sure you want to remove this item?')) return;
     
-    setCVData(prev => ({
-      ...prev,
-      [sectionKey]: prev[sectionKey].filter(item => item.id !== itemId)
-    }));
-    
-    showToast({ 
-      type: 'success', 
-      message: 'Item removed successfully'
+    // Update state and get the new data
+    const updatedCVData = await new Promise((resolve) => {
+      setCVData(prev => {
+        const newData = {
+          ...prev,
+          [sectionKey]: prev[sectionKey].filter(item => item.id !== itemId)
+        };
+        resolve(newData);
+        return newData;
+      });
     });
+    
+    // Automatically save to backend
+    try {
+      await updateCVDataApi(updatedCVData);
+      showToast({ 
+        type: 'success', 
+        message: 'Item removed and synced successfully'
+      });
+    } catch (err) {
+      console.error("Error auto-saving CV data after removal:", err);
+      showToast({ 
+        type: 'error', 
+        message: 'Item removed locally but failed to sync. Please try "Save All Changes" manually.'
+      });
+    }
   };
 
-  const handleItemSave = () => {
+  const handleItemSave = async () => {
     if (!currentItem || !currentSectionKey) return;
     
     // Update existing or add new
-    setCVData(prev => {
-      const existingItemIndex = prev[currentSectionKey].findIndex(item => item.id === currentItem.id);
-      
-      if (existingItemIndex >= 0) {
-        // Update existing
-        const updatedItems = [...prev[currentSectionKey]];
-        updatedItems[existingItemIndex] = currentItem;
-        return {
-          ...prev,
-          [currentSectionKey]: updatedItems
-        };
-      } else {
-        // Add new
-        return {
-          ...prev,
-          [currentSectionKey]: [...prev[currentSectionKey], currentItem]
-        };
-      }
+    const updatedCVData = await new Promise((resolve) => {
+      setCVData(prev => {
+        const existingItemIndex = prev[currentSectionKey].findIndex(item => item.id === currentItem.id);
+        
+        let newData;
+        if (existingItemIndex >= 0) {
+          // Update existing
+          const updatedItems = [...prev[currentSectionKey]];
+          updatedItems[existingItemIndex] = currentItem;
+          newData = {
+            ...prev,
+            [currentSectionKey]: updatedItems
+          };
+        } else {
+          // Add new
+          newData = {
+            ...prev,
+            [currentSectionKey]: [...prev[currentSectionKey], currentItem]
+          };
+        }
+        
+        resolve(newData);
+        return newData;
+      });
     });
+    
+    // Automatically save to backend
+    try {
+      await updateCVDataApi(updatedCVData);
+      showToast({ 
+        type: 'success', 
+        message: 'Item saved and synced successfully'
+      });
+    } catch (err) {
+      console.error("Error auto-saving CV data:", err);
+      showToast({ 
+        type: 'error', 
+        message: 'Item saved locally but failed to sync. Please try "Save All Changes" manually.'
+      });
+    }
     
     setShowItemModal(false);
     setCurrentItem(null);
-    
-    showToast({ 
-      type: 'success', 
-      message: 'Item saved successfully'
-    });
   };
 
   const handleItemChange = (field, value) => {
