@@ -44,10 +44,16 @@
   }
   
   body {
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    font-weight: 300;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-optical-sizing: auto;
+    color: rgb(var(--color-text));
+    background-color: rgb(var(--color-background));
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
   }
   
   body.dark {
@@ -389,20 +395,41 @@
     color: rgb(var(--color-primary));
   }
   
-  /* Gradient utilities */
-  .from-primary {
-    --tw-gradient-from: rgb(var(--color-primary)) var(--tw-gradient-from-position);
-    --tw-gradient-to: rgba(var(--color-primary), 0) var(--tw-gradient-to-position);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  /* Gradient utilities - High specificity overrides */
+  .bg-gradient-to-r.from-primary {
+    --tw-gradient-from: rgb(16 185 129) !important;
+    --tw-gradient-to: rgba(16, 185, 129, 0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
   }
   
-  .via-secondary {
-    --tw-gradient-to: rgba(var(--color-secondary), 0) var(--tw-gradient-to-position);
-    --tw-gradient-stops: var(--tw-gradient-from), rgb(var(--color-secondary)) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  .bg-gradient-to-r.from-primary.via-secondary {
+    --tw-gradient-to: rgba(37, 99, 235, 0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), rgb(37 99 235) var(--tw-gradient-via-position, 50%), var(--tw-gradient-to) !important;
   }
   
-  .to-accent {
-    --tw-gradient-to: rgb(var(--color-accent)) var(--tw-gradient-to-position);
+  .bg-gradient-to-r.from-primary.via-secondary.to-accent {
+    --tw-gradient-to: rgb(219 39 119) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), rgb(37 99 235) var(--tw-gradient-via-position, 50%), var(--tw-gradient-to) !important;
+  }
+  
+  .bg-gradient-to-r.from-primary.to-secondary {
+    --tw-gradient-to: rgb(37 99 235) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  }
+  
+  /* Alternative using specific gradient classes */
+  .hero-gradient {
+    background: linear-gradient(to right, rgb(16 185 129), rgb(37 99 235), rgb(219 39 119)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+  }
+  
+  .projects-gradient {
+    background: linear-gradient(to right, rgb(16 185 129), rgb(37 99 235)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
   }
   
   /* Project card styles */
