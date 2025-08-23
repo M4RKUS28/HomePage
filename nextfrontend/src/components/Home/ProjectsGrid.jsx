@@ -180,7 +180,7 @@ const ProjectsGrid = () => {
           whileInView={{ opacity:1, y:0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl md:text-5xl font-bold text-center mb-12 projects-gradient"
+          className="text-4xl md:text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
         >
           My Creations and Projects
         </motion.h2>

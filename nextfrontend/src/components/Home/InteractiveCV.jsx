@@ -165,7 +165,7 @@ const SkillBar = ({ skill, index }) => (
     </div>
     <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden dark:bg-gray-700 light:bg-gray-300">
       <motion.div
-        className="bg-gradient-to-r from-primary to-teal-400 h-full rounded-full"
+        className="bg-primary h-full rounded-full"
         initial={{ width: 0 }}
         whileInView={{ width: `${skill.level || 0}%` }}
         viewport={{ once: true, amount: 0.8 }}

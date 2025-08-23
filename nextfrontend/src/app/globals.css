@@ -25,18 +25,18 @@
     --color-accent-dark: 190 24 93; /* pink-700 */
     --color-accent-light: 236 72 153; /* pink-500 */
     
-    /* Neutral colors - True neutral grays */
-    --color-neutral-50: 250 250 250; /* neutral-50 */
-    --color-neutral-100: 245 245 245; /* neutral-100 */
-    --color-neutral-200: 229 229 229; /* neutral-200 */
-    --color-neutral-300: 212 212 212; /* neutral-300 */
-    --color-neutral-400: 163 163 163; /* neutral-400 */
-    --color-neutral-500: 115 115 115; /* neutral-500 */
-    --color-neutral-600: 82 82 82; /* neutral-600 */
-    --color-neutral-700: 64 64 64; /* neutral-700 */
-    --color-neutral-800: 38 38 38; /* neutral-800 */
-    --color-neutral-900: 23 23 23; /* neutral-900 */
-    --color-neutral-950: 10 10 10; /* neutral-950 */
+    /* Neutral colors */
+    --color-neutral-50: 249 250 251;
+    --color-neutral-100: 243 244 246;
+    --color-neutral-200: 229 231 235;
+    --color-neutral-300: 209 213 219;
+    --color-neutral-400: 156 163 175;
+    --color-neutral-500: 107 114 128;
+    --color-neutral-600: 75 85 99;
+    --color-neutral-700: 55 65 81;
+    --color-neutral-800: 31 41 55;
+    --color-neutral-900: 17 24 39;
+    --color-neutral-950: 3 7 18;
   }
   
   html {
@@ -45,10 +45,9 @@
   
   body {
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-    font-weight: 300;
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-optical-sizing: auto;
     color: rgb(var(--color-text));
     background-color: rgb(var(--color-background));
     line-height: 1.6;
@@ -395,41 +394,49 @@
     color: rgb(var(--color-primary));
   }
   
-  /* Gradient utilities - High specificity overrides */
-  .bg-gradient-to-r.from-primary {
-    --tw-gradient-from: rgb(16 185 129) !important;
-    --tw-gradient-to: rgba(16, 185, 129, 0) !important;
+  /* Background utilities */
+  .bg-primary {
+    background-color: rgb(var(--color-primary)) !important;
+  }
+  
+  /* Gradient utilities with higher specificity */
+  .from-primary {
+    --tw-gradient-from: rgb(var(--color-primary)) var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgba(var(--color-primary), 0) var(--tw-gradient-to-position) !important;
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
   }
   
-  .bg-gradient-to-r.from-primary.via-secondary {
-    --tw-gradient-to: rgba(37, 99, 235, 0) !important;
-    --tw-gradient-stops: var(--tw-gradient-from), rgb(37 99 235) var(--tw-gradient-via-position, 50%), var(--tw-gradient-to) !important;
+  .via-secondary {
+    --tw-gradient-to: rgba(var(--color-secondary), 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), rgb(var(--color-secondary)) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
   }
   
-  .bg-gradient-to-r.from-primary.via-secondary.to-accent {
+  .to-accent {
+    --tw-gradient-to: rgb(var(--color-accent)) var(--tw-gradient-to-position) !important;
+  }
+  
+  .to-secondary {
+    --tw-gradient-to: rgb(var(--color-secondary)) var(--tw-gradient-to-position) !important;
+  }
+  
+  /* Specific gradient combinations with high specificity */
+  .bg-gradient-to-r.from-primary.via-secondary.to-accent,
+  h1.bg-gradient-to-r.from-primary.via-secondary.to-accent,
+  .bg-clip-text.bg-gradient-to-r.from-primary.via-secondary.to-accent {
+    background-image: linear-gradient(to right, rgb(16 185 129), rgb(37 99 235), rgb(219 39 119)) !important;
+    --tw-gradient-from: rgb(16 185 129) !important;
+    --tw-gradient-via: rgb(37 99 235) !important;
     --tw-gradient-to: rgb(219 39 119) !important;
-    --tw-gradient-stops: var(--tw-gradient-from), rgb(37 99 235) var(--tw-gradient-via-position, 50%), var(--tw-gradient-to) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via) 50%, var(--tw-gradient-to) !important;
   }
   
-  .bg-gradient-to-r.from-primary.to-secondary {
+  .bg-gradient-to-r.from-primary.to-secondary,
+  h2.bg-gradient-to-r.from-primary.to-secondary,
+  .bg-clip-text.bg-gradient-to-r.from-primary.to-secondary {
+    background-image: linear-gradient(to right, rgb(16 185 129), rgb(37 99 235)) !important;
+    --tw-gradient-from: rgb(16 185 129) !important;
     --tw-gradient-to: rgb(37 99 235) !important;
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
-  }
-  
-  /* Alternative using specific gradient classes */
-  .hero-gradient {
-    background: linear-gradient(to right, rgb(16 185 129), rgb(37 99 235), rgb(219 39 119)) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    color: transparent !important;
-  }
-  
-  .projects-gradient {
-    background: linear-gradient(to right, rgb(16 185 129), rgb(37 99 235)) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    color: transparent !important;
   }
   
   /* Project card styles */
@@ -678,25 +685,22 @@
     text-align: center;
     background-color: transparent;
     border: none;
-    cursor: pointer;
   }
   
   .dark .nav-button {
     color: rgb(209 213 219); /* gray-300 */
-    background-color: rgba(55, 65, 81, 0.6); /* gray-700/60 - subtle background */
   }
   
   .dark .nav-button:hover:not(.active) {
-    background-color: rgba(55, 65, 81, 0.8); /* gray-700/80 */
+    background-color: rgba(55, 65, 81, 0.5); /* gray-700/50 */
   }
   
   .light .nav-button {
     color: rgb(55 65 81); /* gray-700 */
-    background-color: rgba(229, 231, 235, 0.6); /* gray-200/60 - subtle background */
   }
   
   .light .nav-button:hover:not(.active) {
-    background-color: rgba(209, 213, 219, 0.8); /* gray-300/80 */
+    background-color: rgba(209, 213, 219, 0.5); /* gray-300/50 */
   }
   
   .dark .nav-button.active {
