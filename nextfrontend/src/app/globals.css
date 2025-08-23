@@ -649,34 +649,36 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    background-color: transparent;
+    border: none;
   }
   
   .dark .nav-button {
     color: rgb(209 213 219); /* gray-300 */
-    background-color: rgb(31 41 55); /* gray-800 */
   }
   
-  .dark .nav-button:hover {
-    background-color: rgb(55 65 81); /* gray-700 */
+  .dark .nav-button:hover:not(.active) {
+    background-color: rgba(55, 65, 81, 0.5); /* gray-700/50 */
   }
   
   .light .nav-button {
     color: rgb(55 65 81); /* gray-700 */
-    background-color: rgb(229 231 235); /* gray-200 */
   }
   
-  .light .nav-button:hover {
-    background-color: rgb(209 213 219); /* gray-300 */
+  .light .nav-button:hover:not(.active) {
+    background-color: rgba(209, 213, 219, 0.5); /* gray-300/50 */
   }
   
   .dark .nav-button.active {
-    background-color: rgba(var(--color-primary), 0.8);
+    background-color: rgb(var(--color-primary));
     color: white;
+    box-shadow: 0 4px 6px -1px rgba(var(--color-primary), 0.2);
   }
   
   .light .nav-button.active {
     background-color: rgb(var(--color-primary));
     color: white;
+    box-shadow: 0 4px 6px -1px rgba(var(--color-primary), 0.2);
   }
 }
 
