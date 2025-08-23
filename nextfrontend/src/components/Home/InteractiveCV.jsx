@@ -121,7 +121,7 @@ const TimelineItem = ({ item }) => {
               <div className="mt-2 flex flex-wrap gap-2">
                 {links.map((link, idx) => (
                   <a 
-                    key={idx}
+                    key={`link-${link.url || idx}-${link.text || idx}`}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -291,7 +291,7 @@ const InteractiveCV = () => {
             {experience.length > 0 && (
               <Section title="Professional Experience" icon={Briefcase}>
                 <div className="space-y-5">
-                  {experience.map((exp, idx) => <TimelineItem key={exp.id || idx} item={exp} />)}
+                  {experience.map((exp, idx) => <TimelineItem key={`exp-${exp.id || idx}-${exp.title || exp.company || idx}`} item={exp} />)}
                 </div>
               </Section>
             )}
@@ -299,7 +299,7 @@ const InteractiveCV = () => {
             {education.length > 0 && (
               <Section title="Education" icon={GraduationCap}>
                 <div className="space-y-5">
-                  {education.map((edu, idx) => <TimelineItem key={edu.id || idx} item={edu} />)}
+                  {education.map((edu, idx) => <TimelineItem key={`edu-${edu.id || idx}-${edu.institution || edu.degree || idx}`} item={edu} />)}
                 </div>
               </Section>
             )}
@@ -308,7 +308,7 @@ const InteractiveCV = () => {
               <Section title="Projects" icon={Code}>
                 <div className="space-y-5">
                   {projects.map((proj, idx) => (
-                    <ProjectItem key={proj.id || idx} project={proj} />
+                    <ProjectItem key={`proj-${proj.id || idx}-${proj.name || proj.title || idx}`} project={proj} />
                   ))}
                 </div>
               </Section>
@@ -336,7 +336,7 @@ const InteractiveCV = () => {
               <Section title="Languages" icon={Users}>
                 <div className="grid grid-cols-2 gap-4">
                   {languages.map((lang, idx) => (
-                    <div key={idx} className="language-item" style={{ margin: "12px 0 0 0" }}>
+                    <div key={`lang-${lang.name || idx}-${lang.level || idx}`} className="language-item" style={{ margin: "12px 0 0 0" }}>
                       <h4 className="language-name">{lang.name || "Unknown Language"}</h4>
                       <p className="language-level">{lang.level || "Unspecified Level"}</p>
                     </div>
