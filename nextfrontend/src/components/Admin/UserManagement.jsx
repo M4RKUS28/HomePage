@@ -255,7 +255,13 @@ const UserManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        user.is_active 
+                          ? theme === 'dark' 
+                            ? 'bg-green-900/30 text-green-400' 
+                            : 'bg-green-200 text-green-800'
+                          : theme === 'dark'
+                            ? 'bg-red-900/30 text-red-400'
+                            : 'bg-red-200 text-red-800'
                       }`}>
                         {user.is_active ? 'Active' : 'Inactive'}
                       </span>
