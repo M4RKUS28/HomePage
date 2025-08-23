@@ -211,21 +211,21 @@ const UserManagement = () => {
       <div className="bg-card rounded-lg shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-700 dark:divide-gray-700">
-            <thead className="bg-gray-800 dark:bg-gray-800 light:bg-gray-50">
+            <thead className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
+                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                   Username
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
+                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                   Email
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
+                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
+                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                   Role
                 </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
+                <th scope="col" className={`px-6 py-3 text-right text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                   Actions
                 </th>
               </tr>
@@ -242,7 +242,7 @@ const UserManagement = () => {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                           {user.username}
                           {user.id === currentUser.id && (
                             <span className="ml-2 text-xs text-emerald-500">(you)</span>
@@ -250,7 +250,7 @@ const UserManagement = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 dark:text-gray-300 light:text-gray-600">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -260,7 +260,7 @@ const UserManagement = () => {
                         {user.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 dark:text-gray-300 light:text-gray-600">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                       {user.is_admin ? (
                         <span className="text-yellow-500 flex items-center">
                           <Shield size={16} className="mr-1" /> Admin
