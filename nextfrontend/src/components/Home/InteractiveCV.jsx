@@ -257,12 +257,50 @@ const InteractiveCV = () => {
   }
 
   // Add default icon functions to each section
-  const experience = (cvData.experience || []).map(item => ({ ...item, icon: Briefcase }));
-  const education = (cvData.education || []).map(item => ({ ...item, icon: GraduationCap }));
-  const projects = cvData.projectsHighlight || [];
-  const awards = cvData.awards || [];
+  const experience = (cvData.experience || [])
+    .sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      return (a.id || 0) - (b.id || 0);
+    })
+    .map(item => ({ ...item, icon: Briefcase }));
+    
+  const education = (cvData.education || [])
+    .sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      return (a.id || 0) - (b.id || 0);
+    })
+    .map(item => ({ ...item, icon: GraduationCap }));
+    
+  const projects = (cvData.projectsHighlight || [])
+    .sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      return (a.id || 0) - (b.id || 0);
+    });
+    
+  const awards = (cvData.awards || [])
+    .sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      return (a.id || 0) - (b.id || 0);
+    });
+    
   const skills = cvData.skills || [];
-  const volunteering = (cvData.volunteering || []).map(item => ({ ...item, icon: Users }));
+  
+  const volunteering = (cvData.volunteering || [])
+    .sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      return (a.id || 0) - (b.id || 0);
+    })
+    .map(item => ({ ...item, icon: Users }));
   const languages = cvData.languages || [];
 
   return (

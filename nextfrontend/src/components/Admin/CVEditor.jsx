@@ -6,7 +6,8 @@ import Spinner from '../UI/Spinner';
 import Modal from '../UI/Modal';
 import { 
   Plus, Edit, Trash2, Save, RefreshCw, Award, Briefcase, 
-  GraduationCap, Code, User, Link, Users, Zap, Download
+  GraduationCap, Code, User, Link, Users, Zap, Download,
+  ArrowUp, ArrowDown
 } from 'lucide-react';
 import { getCVDataApi, updateCVDataApi } from '../../api/cv';
 
@@ -177,8 +178,12 @@ const CVEditor = () => {
   const addItem = (sectionKey) => {
     setCurrentSectionKey(sectionKey);
     
+    // Get current items to determine next position
+    const currentItems = cvData[sectionKey] || [];
+    const nextPosition = currentItems.length;
+    
     // Create a new blank item based on section type
-    let newItem = { id: Date.now() }; // Temporary id for frontend
+    let newItem = { id: Date.now(), position: nextPosition }; // Temporary id for frontend
     
     switch(sectionKey) {
       case 'experience':
@@ -188,7 +193,7 @@ const CVEditor = () => {
         newItem = { ...newItem, degree: "", institution: "", period: "", details: "", logo: "" };
         break;
       case 'projectsHighlight':
-        newItem = { ...newItem, name: "", period: "", description: "", links: [] };
+        newItem = { ...newItem, name: "", period: "", description: "", links: [], logo: "" };
         break;
       case 'awards':
         newItem = { ...newItem, name: "", date: "", awardingBody: "", details: "", links: [], logo: "" };
@@ -197,7 +202,7 @@ const CVEditor = () => {
         newItem = { ...newItem, name: "", level: 50 };
         break;
       case 'volunteering':
-        newItem = { ...newItem, role: "", organization: "", period: "", details: "" };
+        newItem = { ...newItem, role: "", organization: "", period: "", details: "", logo: "" };
         break;
       case 'languages':
         newItem = { ...newItem, name: "", level: "" };
@@ -243,6 +248,92 @@ const CVEditor = () => {
       showToast({ 
         type: 'error', 
         message: 'Item removed locally but failed to sync. Please try "Save All Changes" manually.'
+      });
+    }
+  };
+
+  const moveItemUp = async (sectionKey, itemId) => {
+    const items = cvData[sectionKey] || [];
+    const currentIndex = items.findIndex(item => item.id === itemId);
+    
+    if (currentIndex <= 0) return; // Can't move up if it's already first
+    
+    // Update state and get the new data
+    const updatedCVData = await new Promise((resolve) => {
+      setCVData(prev => {
+        const newItems = [...prev[sectionKey]];
+        // Swap with previous item
+        [newItems[currentIndex], newItems[currentIndex - 1]] = [newItems[currentIndex - 1], newItems[currentIndex]];
+        
+        // Update position values to match array index
+        newItems.forEach((item, index) => {
+          item.position = index;
+        });
+        
+        const newData = {
+          ...prev,
+          [sectionKey]: newItems
+        };
+        resolve(newData);
+        return newData;
+      });
+    });
+    
+    // Automatically save to backend
+    try {
+      await updateCVDataApi(updatedCVData);
+      showToast({ 
+        type: 'success', 
+        message: 'Item moved up and synced successfully'
+      });
+    } catch (err) {
+      console.error("Error auto-saving CV data after move:", err);
+      showToast({ 
+        type: 'error', 
+        message: 'Item moved locally but failed to sync. Please try "Save All Changes" manually.'
+      });
+    }
+  };
+
+  const moveItemDown = async (sectionKey, itemId) => {
+    const items = cvData[sectionKey] || [];
+    const currentIndex = items.findIndex(item => item.id === itemId);
+    
+    if (currentIndex < 0 || currentIndex >= items.length - 1) return; // Can't move down if it's already last
+    
+    // Update state and get the new data
+    const updatedCVData = await new Promise((resolve) => {
+      setCVData(prev => {
+        const newItems = [...prev[sectionKey]];
+        // Swap with next item
+        [newItems[currentIndex], newItems[currentIndex + 1]] = [newItems[currentIndex + 1], newItems[currentIndex]];
+        
+        // Update position values to match array index
+        newItems.forEach((item, index) => {
+          item.position = index;
+        });
+        
+        const newData = {
+          ...prev,
+          [sectionKey]: newItems
+        };
+        resolve(newData);
+        return newData;
+      });
+    });
+    
+    // Automatically save to backend
+    try {
+      await updateCVDataApi(updatedCVData);
+      showToast({ 
+        type: 'success', 
+        message: 'Item moved down and synced successfully'
+      });
+    } catch (err) {
+      console.error("Error auto-saving CV data after move:", err);
+      showToast({ 
+        type: 'error', 
+        message: 'Item moved locally but failed to sync. Please try "Save All Changes" manually.'
       });
     }
   };
@@ -569,6 +660,15 @@ const CVEditor = () => {
   const renderListSection = (sectionKey, title, itemRenderer) => {
     const items = cvData[sectionKey] || [];
     
+    // Sort items by position, fallback to creation order if no position
+    const sortedItems = [...items].sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      // Fallback to id-based sorting if no position
+      return (a.id || 0) - (b.id || 0);
+    });
+    
     return (
       <div className="section-card">
         <div className="flex justify-between items-center mb-4">
@@ -582,26 +682,56 @@ const CVEditor = () => {
           </button>
         </div>
         
-        {items.length > 0 ? (
+        {sortedItems.length > 0 ? (
           <div className="space-y-4">
-            {items.map(item => (
+            {sortedItems.map((item, index) => (
               <div key={item.id} className="border border-gray-700 rounded-md p-4 bg-gray-800/50">
                 {itemRenderer(item)}
-                <div className="flex justify-end space-x-2 mt-3">
-                  <button
-                    type="button"
-                    onClick={() => editItem(sectionKey, item)}
-                    className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
-                  >
-                    <Edit size={14} className="mr-1" /> Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeItem(sectionKey, item.id)}
-                    className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70 flex items-center"
-                  >
-                    <Trash2 size={14} className="mr-1" /> Remove
-                  </button>
+                <div className="flex justify-between items-center mt-3">
+                  <div className="flex space-x-1">
+                    <button
+                      type="button"
+                      onClick={() => moveItemUp(sectionKey, item.id)}
+                      disabled={index === 0}
+                      className={`btn btn-sm flex items-center ${
+                        index === 0 
+                          ? 'bg-gray-600/50 text-gray-500 cursor-not-allowed' 
+                          : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700/70'
+                      }`}
+                      title="Move up"
+                    >
+                      <ArrowUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveItemDown(sectionKey, item.id)}
+                      disabled={index === sortedItems.length - 1}
+                      className={`btn btn-sm flex items-center ${
+                        index === sortedItems.length - 1 
+                          ? 'bg-gray-600/50 text-gray-500 cursor-not-allowed' 
+                          : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700/70'
+                      }`}
+                      title="Move down"
+                    >
+                      <ArrowDown size={14} />
+                    </button>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => editItem(sectionKey, item)}
+                      className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
+                    >
+                      <Edit size={14} className="mr-1" /> Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(sectionKey, item.id)}
+                      className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70 flex items-center"
+                    >
+                      <Trash2 size={14} className="mr-1" /> Remove
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

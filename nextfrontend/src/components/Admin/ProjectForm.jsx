@@ -11,6 +11,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     title: '',
     description: '',
     link: '',
+    position: 0,
   });
   const [imageData, setImageData] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -24,11 +25,12 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         title: project.title || '',
         description: project.description || '',
         link: project.link || '',
+        position: project.position || 0,
       });
       // Set initial image if it exists
       setImageData(project.image || '');
     } else {
-      setFormData({ title: '', description: '', link: '' });
+      setFormData({ title: '', description: '', link: '', position: 0 });
       setImageData('');
     }
     setApiError(null);
@@ -148,6 +150,21 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       <div>
         <label htmlFor="link" className="block text-sm font-medium text-gray-300">Project Link (URL) <span className="text-red-400">*</span></label>
         <input type="url" name="link" id="link" value={formData.link} onChange={handleChange} required className="input-field mt-1" placeholder="https://example.com" />
+      </div>
+      
+      <div>
+        <label htmlFor="position" className="block text-sm font-medium text-gray-300">Display Position</label>
+        <input 
+          type="number" 
+          name="position" 
+          id="position" 
+          value={formData.position} 
+          onChange={handleChange} 
+          min="0"
+          className="input-field mt-1" 
+          placeholder="0"
+        />
+        <p className="text-xs text-gray-400 mt-1">Lower numbers display first (0 = first position)</p>
       </div>
       
       {/* Image Upload Component */}

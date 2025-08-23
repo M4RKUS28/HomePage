@@ -123,16 +123,25 @@ const ProjectsGrid = () => {
           animate="visible"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {projects.map(project => (
-            <ProjectCard 
-              key={project.id} 
-              project={project} 
-              isAdmin={currentUser?.is_admin}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-              onCheckStatus={handleCheckStatus}
-            />
-          ))}
+          {projects
+            .sort((a, b) => {
+              // Sort by position if available, otherwise by id
+              if (a.position !== undefined && b.position !== undefined) {
+                return a.position - b.position;
+              }
+              return (a.id || 0) - (b.id || 0);
+            })
+            .map(project => (
+              <ProjectCard 
+                key={project.id} 
+                project={project} 
+                isAdmin={currentUser?.is_admin}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onCheckStatus={handleCheckStatus}
+              />
+            ))
+          }
         </motion.div>
       </div>
       {showModal && (
