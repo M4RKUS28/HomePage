@@ -893,7 +893,7 @@ const CVEditor = () => {
       {cvData.skills.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {cvData.skills.map(skill => (
-            <div key={skill.id || skill.name} className="cv-item-card">
+            <div key={skill.id || skill.name} className={`cv-item-card border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} rounded-md p-4`}>
               <div className="flex justify-between items-center">
                 <span className="cv-title">{skill.name || "Untitled Skill"}</span>
                 <span className="text-primary text-sm">{skill.level}%</span>
