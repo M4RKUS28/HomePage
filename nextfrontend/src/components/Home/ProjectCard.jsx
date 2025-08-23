@@ -1,7 +1,7 @@
 // frontend/src/components/Home/ProjectCard.jsx (improved image handling)
 import React, { useContext, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw } from 'lucide-react';
+import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw, ArrowUp, ArrowDown } from 'lucide-react';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
 import { ThemeContext } from '../../contexts/ThemeContext';
 
@@ -57,7 +57,7 @@ const StatusIndicator = ({ status }) => {
   );
 };
 
-const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus }) => {
+const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMoveUp, onMoveDown, isFirst, isLast }) => {
   const { theme } = useContext(ThemeContext);
   const [imageError, setImageError] = useState(false);
   
@@ -142,6 +142,42 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus }) => {
           </motion.a>
           {isAdmin && (
             <div className="flex space-x-2">
+              <motion.button 
+                onClick={() => onMoveUp(project.id)} 
+                title="Move Up" 
+                disabled={isFirst}
+                className={`p-1.5 transition-colors ${
+                  isFirst 
+                    ? 'text-gray-500 cursor-not-allowed opacity-50'
+                    : theme === 'dark' 
+                      ? 'text-gray-400 hover:text-gray-300' 
+                      : 'text-gray-500 hover:text-gray-700'
+                }`}
+                variants={buttonVariants}
+                initial="rest"
+                whileHover={!isFirst ? "hover" : "rest"}
+                whileTap={!isFirst ? "tap" : "rest"}
+              >
+                <ArrowUp size={18}/>
+              </motion.button>
+              <motion.button 
+                onClick={() => onMoveDown(project.id)} 
+                title="Move Down" 
+                disabled={isLast}
+                className={`p-1.5 transition-colors ${
+                  isLast 
+                    ? 'text-gray-500 cursor-not-allowed opacity-50'
+                    : theme === 'dark' 
+                      ? 'text-gray-400 hover:text-gray-300' 
+                      : 'text-gray-500 hover:text-gray-700'
+                }`}
+                variants={buttonVariants}
+                initial="rest"
+                whileHover={!isLast ? "hover" : "rest"}
+                whileTap={!isLast ? "tap" : "rest"}
+              >
+                <ArrowDown size={18}/>
+              </motion.button>
               <motion.button 
                 onClick={() => onCheckStatus(project.id)} 
                 title="Re-check Status" 

@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import ProjectCard from './ProjectCard';
-import { getProjectsApi, deleteProjectApi, checkProjectStatusApi } from '../../api/projects';
+import { getProjectsApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
 import { useAuth } from '../../hooks/useAuth';
 import Spinner from '../UI/Spinner';
 import ProjectForm from '../Admin/ProjectForm'; // For add/edit modal
 import Modal from '../UI/Modal'; // Generic Modal
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ArrowUp, ArrowDown } from 'lucide-react';
 
 
 const ProjectsGrid = () => {
@@ -70,6 +70,90 @@ const ProjectsGrid = () => {
   const handleEdit = (project) => { setEditingProject(project); setShowModal(true); }
   const handleAdd = () => { setEditingProject(null); setShowModal(true); }
   
+  const moveProjectUp = async (projectId) => {
+    const sortedProjects = [...projects].sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      return (a.id || 0) - (b.id || 0);
+    });
+    
+    const currentIndex = sortedProjects.findIndex(p => p.id === projectId);
+    if (currentIndex <= 0) return; // Can't move up if it's already first
+    
+    try {
+      const currentProject = sortedProjects[currentIndex];
+      const previousProject = sortedProjects[currentIndex - 1];
+      
+      // Swap positions
+      const updatedCurrentProject = { 
+        ...currentProject, 
+        position: previousProject.position !== undefined ? previousProject.position : currentIndex - 1 
+      };
+      const updatedPreviousProject = { 
+        ...previousProject, 
+        position: currentProject.position !== undefined ? currentProject.position : currentIndex 
+      };
+      
+      // Update both projects in the API
+      await Promise.all([
+        updateProjectApi(updatedCurrentProject.id, updatedCurrentProject),
+        updateProjectApi(updatedPreviousProject.id, updatedPreviousProject)
+      ]);
+      
+      // Update local state
+      setProjects(prev => prev.map(p => {
+        if (p.id === updatedCurrentProject.id) return updatedCurrentProject;
+        if (p.id === updatedPreviousProject.id) return updatedPreviousProject;
+        return p;
+      }));
+    } catch (err) {
+      alert("Failed to move project: " + (err.response?.data?.detail || err.message));
+    }
+  };
+
+  const moveProjectDown = async (projectId) => {
+    const sortedProjects = [...projects].sort((a, b) => {
+      if (a.position !== undefined && b.position !== undefined) {
+        return a.position - b.position;
+      }
+      return (a.id || 0) - (b.id || 0);
+    });
+    
+    const currentIndex = sortedProjects.findIndex(p => p.id === projectId);
+    if (currentIndex < 0 || currentIndex >= sortedProjects.length - 1) return; // Can't move down if it's already last
+    
+    try {
+      const currentProject = sortedProjects[currentIndex];
+      const nextProject = sortedProjects[currentIndex + 1];
+      
+      // Swap positions
+      const updatedCurrentProject = { 
+        ...currentProject, 
+        position: nextProject.position !== undefined ? nextProject.position : currentIndex + 1 
+      };
+      const updatedNextProject = { 
+        ...nextProject, 
+        position: currentProject.position !== undefined ? currentProject.position : currentIndex 
+      };
+      
+      // Update both projects in the API
+      await Promise.all([
+        updateProjectApi(updatedCurrentProject.id, updatedCurrentProject),
+        updateProjectApi(updatedNextProject.id, updatedNextProject)
+      ]);
+      
+      // Update local state
+      setProjects(prev => prev.map(p => {
+        if (p.id === updatedCurrentProject.id) return updatedCurrentProject;
+        if (p.id === updatedNextProject.id) return updatedNextProject;
+        return p;
+      }));
+    } catch (err) {
+      alert("Failed to move project: " + (err.response?.data?.detail || err.message));
+    }
+  };
+  
   const handleModalClose = (refresh = false) => { 
     setShowModal(false); 
     setEditingProject(null);
@@ -131,7 +215,7 @@ const ProjectsGrid = () => {
               }
               return (a.id || 0) - (b.id || 0);
             })
-            .map(project => (
+            .map((project, index, sortedArray) => (
               <ProjectCard 
                 key={project.id} 
                 project={project} 
@@ -139,6 +223,10 @@ const ProjectsGrid = () => {
                 onDelete={handleDelete}
                 onEdit={handleEdit}
                 onCheckStatus={handleCheckStatus}
+                onMoveUp={moveProjectUp}
+                onMoveDown={moveProjectDown}
+                isFirst={index === 0}
+                isLast={index === sortedArray.length - 1}
               />
             ))
           }

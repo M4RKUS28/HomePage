@@ -11,7 +11,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     title: '',
     description: '',
     link: '',
-    position: 0,
+    position: '',  // Empty string means auto-assign position
   });
   const [imageData, setImageData] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -25,12 +25,12 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         title: project.title || '',
         description: project.description || '',
         link: project.link || '',
-        position: project.position || 0,
+        position: project.position !== undefined ? project.position : '',
       });
       // Set initial image if it exists
       setImageData(project.image || '');
     } else {
-      setFormData({ title: '', description: '', link: '', position: 0 });
+      setFormData({ title: '', description: '', link: '', position: '' });  // Empty position for auto-assign
       setImageData('');
     }
     setApiError(null);
@@ -153,7 +153,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       </div>
       
       <div>
-        <label htmlFor="position" className="block text-sm font-medium text-gray-300">Display Position</label>
+        <label htmlFor="position" className="block text-sm font-medium text-gray-300">Display Position (Optional)</label>
         <input 
           type="number" 
           name="position" 
@@ -162,9 +162,11 @@ const ProjectForm = ({ project, onFormSubmit }) => {
           onChange={handleChange} 
           min="0"
           className="input-field mt-1" 
-          placeholder="0"
+          placeholder="Auto-assign to last position"
         />
-        <p className="text-xs text-gray-400 mt-1">Lower numbers display first (0 = first position)</p>
+        <p className="text-xs text-gray-400 mt-1">
+          Leave empty to automatically place at the end. Lower numbers display first (0 = first position).
+        </p>
       </div>
       
       {/* Image Upload Component */}

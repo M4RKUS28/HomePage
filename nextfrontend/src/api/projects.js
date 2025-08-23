@@ -19,6 +19,11 @@ export const createProjectApi = async (projectData) => {
         link: projectData.link
     };
     
+    // Only include position if it's explicitly set (not empty)
+    if (projectData.position !== '' && projectData.position !== undefined && projectData.position !== null) {
+        essentialData.position = parseInt(projectData.position);
+    }
+    
     const response = await apiClient.post('/projects/', essentialData);
     return response.data;
 };
@@ -29,7 +34,8 @@ export const updateProjectApi = async (projectId, projectData) => {
     const essentialData = {
         title: projectData.title,
         description: projectData.description,
-        link: projectData.link
+        link: projectData.link,
+        position: projectData.position
     };
     
     // Filter out any undefined values

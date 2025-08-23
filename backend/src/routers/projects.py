@@ -67,12 +67,22 @@ async def create_project(
 ):
     project_data = project.model_dump() # Get a dictionary from the Pydantic model
 
+    # Determine the next available position if not specified
+    specified_position = project_data.get("position")
+    if specified_position is None or specified_position == 0:
+        # Get the highest current position and add 1
+        max_position = db.query(func.max(project_model.Project.position)).scalar() or 0
+        next_position = max_position + 1
+    else:
+        next_position = specified_position
+
     # Convert HttpUrl fields to strings before creating the SQLAlchemy model
     db_project = project_model.Project(
         title=project_data.get("title"),
         description=project_data.get("description"),
         link=str(project_data.get("link")) if project_data.get("link") else None, # Convert link to str
         image=str(project_data.get("image")) if project_data.get("image") else None, # Convert image to str
+        position=next_position,  # Use calculated next position
         owner_id=current_user.id
         # status will default in the model or be set by background task
     )
@@ -89,7 +99,7 @@ async def read_projects(
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
-    projects = db.query(project_model.Project).order_by(project_model.Project.id.desc()).offset(skip).limit(limit).all()
+    projects = db.query(project_model.Project).order_by(project_model.Project.position.asc(), project_model.Project.id.asc()).offset(skip).limit(limit).all()
     return projects
 
 @router.get("/{project_id}", response_model=project_schemas.Project)

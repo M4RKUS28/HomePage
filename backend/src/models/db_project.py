@@ -22,6 +22,7 @@ class Project(Base):
     image = Column(LONGTEXT, nullable=True) # Or store image blobs if preferred
     status = Column(SQLAlchemyEnum(ProjectStatus), default=ProjectStatus.UNKNOWN)
     last_checked = Column(DateTime(timezone=True), server_default=func.now())
+    position = Column(Integer, nullable=True, default=0)  # For ordering projects
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User")
