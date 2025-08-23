@@ -1,8 +1,8 @@
 'use client';
 // Client component for Footer with SSR initial data
-import React, { useContext } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import { Github, Linkedin, Mail, Globe, Twitter } from 'lucide-react';
 
 const Footer = ({ 
@@ -10,7 +10,7 @@ const Footer = ({
   socialLinks = [], 
   ownerName = "Portfolio" 
 }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const currentYear = new Date().getFullYear();
   
   // Map platform names to Lucide icons

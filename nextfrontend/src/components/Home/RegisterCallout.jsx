@@ -1,15 +1,15 @@
 // frontend/src/components/Home/RegisterCallout.jsx
 'use client';
 
-import React, { useContext } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import Link from 'next/link';
 import { UserPlus, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const RegisterCallout = () => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const { currentUser } = useAuth();
   
   // Don't show this component if user is already logged in

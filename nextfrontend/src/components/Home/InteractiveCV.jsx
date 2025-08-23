@@ -1,7 +1,7 @@
 // Updated InteractiveCV.jsx to fetch data from backend
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import Spinner from '../UI/Spinner';
 import { getCVDataApi } from '../../api/cv';
 
@@ -204,7 +204,7 @@ const AwardItem = ({ award, index = 0 }) => {
 };
 
 const InteractiveCV = () => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const [cvData, setCvData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

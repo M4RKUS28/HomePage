@@ -9,7 +9,7 @@ export const AuthContext = createContext(null);
 export const AuthProvider = ({ children, initialUser = null }) => {
   // Ermöglicht Initialisierung mit SSR-User
   const [currentUser, setCurrentUser] = useState(initialUser);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [loadingAuth, setLoadingAuth] = useState(!initialUser); // If we have initialUser, don't show loading
   const [authError, setAuthError] = useState(null);
 
   const clearAuthError = () => setAuthError(null);

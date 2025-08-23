@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { LogIn, LogOut, UserPlus, LayoutDashboard, ShieldCheck, Menu, X, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import ThemeToggle from '../UI/ThemeToggle';
 
 const NavLink = ({ href, children, onClick }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   
   return (
     <Link
@@ -36,7 +36,7 @@ const NavLink = ({ href, children, onClick }) => {
 };
 
 const MobileNavLink = ({ href, children, onClick }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   
   return (
     <Link
@@ -55,7 +55,7 @@ const MobileNavLink = ({ href, children, onClick }) => {
 
 const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
   const { currentUser, logout } = useAuth();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 

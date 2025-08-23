@@ -1,11 +1,11 @@
 // frontend/frontend/src/components/UI/ThemeToggle.jsx
-import React, { useContext } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme } = useTheme();
   
   return (
     <motion.button

@@ -1,5 +1,5 @@
 'use client';
-import React, { useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '../components/Home/HeroSection';
 import ProjectsGrid from '../components/Home/ProjectsGrid';
@@ -8,7 +8,7 @@ import RegisterCallout from '../components/Home/RegisterCallout';
 import { MessageSquareText } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '../hooks/useAuth';
-import { ThemeContext } from '../contexts/ThemeContext';
+import { useTheme } from '../hooks/useTheme';
 import BackgroundParticles from '../components/UI/BackgroundParticles';
 
 const pageVariants = {
@@ -20,7 +20,13 @@ const pageTransition = { type: "tween", ease: "anticipate", duration: 0.5 };
 
 export default function HomePage() {
   const { currentUser } = useAuth();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   return (
     <>
@@ -57,7 +63,18 @@ export default function HomePage() {
                 </p>
                 
                 <div className="space-y-4">
-                  {currentUser ? (
+                  {!mounted ? (
+                    // Show neutral state during hydration to prevent mismatch
+                    <div className="space-y-4">
+                      <div className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium transition-colors mr-4 opacity-50">
+                        <MessageSquareText className="w-5 h-5" />
+                        <span>Loading...</span>
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Loading authentication state...
+                      </p>
+                    </div>
+                  ) : currentUser ? (
                     <Link 
                       href="/dashboard"
                       className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium transition-colors"
@@ -85,7 +102,7 @@ export default function HomePage() {
           </section>
           
           {/* Registration Callout - Only show for non-registered users */}
-          {!currentUser && <RegisterCallout />}
+          {mounted && !currentUser && <RegisterCallout />}
         </div>
       </motion.div>
     </>

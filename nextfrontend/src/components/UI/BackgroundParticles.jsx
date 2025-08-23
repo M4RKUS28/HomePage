@@ -1,10 +1,10 @@
 // frontend/frontend/src/components/UI/BackgroundParticles.jsx
-import React, { useContext, useRef, useEffect } from 'react';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import React, { useRef, useEffect } from 'react';
+import { useTheme } from '../../hooks/useTheme';
 
 const BackgroundParticles = () => {
   const canvasRef = useRef(null);
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   
   useEffect(() => {
     const canvas = canvasRef.current;
