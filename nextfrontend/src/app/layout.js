@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { ToastProvider } from "../contexts/ToastContext";
-import MainLayout from "../components/layouts/MainLayout";
+import MainLayout from "../layouts/MainLayout";
 import ToastNotification from "../components/UI/ToastNotification";
 
 const geistSans = Geist({

@@ -1,3 +1,4 @@
+'use client';
 // Updated Footer.jsx to use social links from CV data
 import React, { useContext, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
