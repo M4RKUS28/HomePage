@@ -687,7 +687,19 @@ const CVEditor = () => {
   const renderVolunteeringItem = (item) => (
     <>
       <div className="flex justify-between">
-        <h4 className="text-lg font-medium text-white">{item.role || "Untitled Role"}</h4>
+        <div className="flex items-center">
+          {item.logo && (
+            <img 
+              src={item.logo} 
+              alt={`${item.organization} logo`} 
+              className="w-8 h-8 object-contain mr-3 rounded"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          <h4 className="text-lg font-medium text-white">{item.role || "Untitled Role"}</h4>
+        </div>
         <span className="text-sm text-gray-400">{item.period || "No Date"}</span>
       </div>
       <div className="text-primary">{item.organization || "Untitled Organization"}</div>
