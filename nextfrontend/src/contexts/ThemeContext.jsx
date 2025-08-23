@@ -4,19 +4,26 @@ import React, { createContext, useState, useEffect } from 'react';
 export const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  // Check if user has saved a theme preference or set dark as default
-  const [theme, setTheme] = useState(() => {
-    // Check if we're on the client side
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme');
-      // Default to the user's system preference if no saved theme
-      return savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    }
-    return 'light'; // Default for server-side rendering
-  });
+  // Always start with light theme to avoid hydration mismatch
+  const [theme, setTheme] = useState('light');
+  const [mounted, setMounted] = useState(false);
 
   // Apply theme change to DOM
   useEffect(() => {
+    setMounted(true);
+    
+    // Check if user has saved a theme preference or use system preference
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const preferredTheme = savedTheme || systemPreference;
+      setTheme(preferredTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const root = document.documentElement;
     const body = document.body;
     
@@ -33,11 +40,20 @@ export const ThemeProvider = ({ children }) => {
     }
     
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
+
+  // Prevent hydration mismatch by not rendering theme-dependent content until mounted
+  if (!mounted) {
+    return (
+      <ThemeContext.Provider value={{ theme: 'light', toggleTheme }}>
+        {children}
+      </ThemeContext.Provider>
+    );
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

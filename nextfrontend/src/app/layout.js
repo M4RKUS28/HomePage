@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
 import { cookies } from 'next/headers';
+import { fetchCVDataSSR } from '../lib/server-api';
 
 // Serverseitige User-Fetch-Funktion (direkter fetch statt axios)
 async function fetchCurrentUserServer(token) {
@@ -47,6 +48,10 @@ export default async function RootLayout({ children }) {
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
   const initialUser = await fetchCurrentUserServer(token);
+  
+  // Fetch CV data for header text
+  const cvData = await fetchCVDataSSR();
+  const headerText = cvData?.personalInfo?.headerText || 'Portfolio';
   return (
     <html lang="en">
       <body
@@ -55,7 +60,7 @@ export default async function RootLayout({ children }) {
         <ThemeProvider>
           <ToastProvider>
             <AuthProvider initialUser={initialUser}>
-              <MainLayout>
+              <MainLayout headerText={headerText}>
                 {children}
               </MainLayout>
               <ToastNotification />

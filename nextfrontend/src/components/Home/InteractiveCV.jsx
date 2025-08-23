@@ -318,7 +318,7 @@ const InteractiveCV = () => {
               <Section title="Awards" icon={Award}>
                 <div className="space-y-5">
                   {awards.map((award, idx) => (
-                    <AwardItem key={award.id || idx} award={award} />
+                    <AwardItem key={`award-${award.id || idx}-${award.title || idx}`} award={award} />
                   ))}
                 </div>
               </Section>
@@ -327,7 +327,7 @@ const InteractiveCV = () => {
             {volunteering.length > 0 && (
               <Section title="Volunteering" icon={Users}>
                 <div className="space-y-5">
-                  {volunteering.map((vol, idx) => <TimelineItem key={vol.id || idx} item={vol} />)}
+                  {volunteering.map((vol, idx) => <TimelineItem key={`vol-${vol.id || idx}-${vol.title || idx}`} item={vol} />)}
                 </div>
               </Section>
             )}
