@@ -687,7 +687,7 @@ const CVEditor = () => {
         {sortedItems.length > 0 ? (
           <div className="space-y-4">
             {sortedItems.map((item, index) => (
-              <div key={item.id} className="cv-item-card">
+              <div key={item.id} className={`cv-item-card border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} rounded-md p-4`}>
                 {itemRenderer(item)}
                 <div className="flex justify-between items-center mt-3">
                   <div className="flex space-x-1">
