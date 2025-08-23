@@ -368,60 +368,60 @@ const CVEditor = () => {
   if (!cvData) return null;
 
   const renderSectionNav = () => (
-    <div className="mb-8 flex flex-wrap gap-1 sm:gap-2">
+    <div className="mb-8 flex gap-2">
       <button 
         onClick={() => setActiveSection('personalInfo')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'personalInfo' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'personalInfo' ? 'active' : ''}`}
       >
-        <User size={14} className="mr-1" /> Personal
+        <User size={15} className="mr-1.5" /> Personal
       </button>
       <button 
         onClick={() => setActiveSection('summary')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'summary' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'summary' ? 'active' : ''}`}
       >
-        <User size={14} className="mr-1" /> Summary
+        <User size={15} className="mr-1.5" /> Summary
       </button>
       <button 
         onClick={() => setActiveSection('skills')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'skills' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'skills' ? 'active' : ''}`}
       >
-        <Zap size={14} className="mr-1" /> Skills
+        <Zap size={15} className="mr-1.5" /> Skills
       </button>
       <button 
         onClick={() => setActiveSection('experience')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'experience' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'experience' ? 'active' : ''}`}
       >
-        <Briefcase size={14} className="mr-1" /> Experience
+        <Briefcase size={15} className="mr-1.5" /> Experience
       </button>
       <button 
         onClick={() => setActiveSection('education')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'education' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'education' ? 'active' : ''}`}
       >
-        <GraduationCap size={14} className="mr-1" /> Education
+        <GraduationCap size={15} className="mr-1.5" /> Education
       </button>
       <button 
         onClick={() => setActiveSection('projectsHighlight')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'projectsHighlight' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'projectsHighlight' ? 'active' : ''}`}
       >
-        <Code size={14} className="mr-1" /> Projects
+        <Code size={15} className="mr-1.5" /> Projects
       </button>
       <button 
         onClick={() => setActiveSection('awards')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'awards' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'awards' ? 'active' : ''}`}
       >
-        <Award size={14} className="mr-1" /> Awards
+        <Award size={15} className="mr-1.5" /> Awards
       </button>
       <button 
         onClick={() => setActiveSection('volunteering')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'volunteering' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'volunteering' ? 'active' : ''}`}
       >
-        <Users size={14} className="mr-1" /> Volunteering
+        <Users size={15} className="mr-1.5" /> Volunteering
       </button>
       <button 
         onClick={() => setActiveSection('rawData')}
-        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'rawData' ? 'active' : ''}`}
+        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'rawData' ? 'active' : ''}`}
       >
-        <Code size={14} className="mr-1" /> Raw Data
+        <Code size={15} className="mr-1.5" /> Raw Data
       </button>
     </div>
   );
@@ -872,11 +872,12 @@ const CVEditor = () => {
         </p>
         
         <textarea
-          className="input-field w-full h-[600px] font-mono text-sm"
+          className="input-field w-full min-h-[800px] font-mono text-sm resize-y"
           value={rawDataText}
           onChange={(e) => handleRawDataChange(e.target.value)}
           placeholder="Loading CV data..."
           spellCheck={false}
+          style={{ height: '800px' }}
         />
         
         <div className="flex justify-between text-xs text-gray-500">
