@@ -14,11 +14,17 @@ const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
 
   return (
     <motion.div 
-      layout
-      initial={{ opacity: 0, y:10 }}
-      animate={{ opacity: 1, y:0 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ 
+        type: "spring", 
+        stiffness: 500, 
+        damping: 30,
+        mass: 1 
+      }}
       className={`message-item ${!message.is_read ? 'unread' : ''}`}
+      style={{ willChange: 'transform, opacity' }}
     >
       <div className="flex justify-between items-start cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
         <div>
@@ -55,14 +61,21 @@ const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
         </div>
       </div>
       
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isExpanded && (
           <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 pt-4 border-t dark:border-gray-700 light:border-gray-300"
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            exit={{ opacity: 0, scaleY: 0 }}
+            transition={{ 
+              duration: 0.15,
+              ease: "easeOut"
+            }}
+            className="pt-4 border-t dark:border-gray-700 light:border-gray-300"
+            style={{ 
+              transformOrigin: 'top',
+              willChange: 'transform, opacity'
+            }}
           >
             <h4 className="text-sm font-medium dark:text-gray-300 light:text-gray-700 mb-2">Message:</h4>
             <div className="message-content">
@@ -131,7 +144,7 @@ const MessageList = () => {
       {messages.length === 0 ? (
         <p className="text-mode-secondary text-center py-6">No messages yet.</p>
       ) : (
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
         {messages.map(message => (
           <MessageItem 
             key={message.id} 
