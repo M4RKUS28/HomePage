@@ -45,7 +45,7 @@ const Section = ({ title, children, icon: IconComponent }) => (
   <motion.div 
     initial={{ opacity: 0, y: 50 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.2 }}
+    viewport={{ once: true, amount: 0.1 }}
     transition={{ duration: 0.6, ease: "easeOut" }}
     className="mb-12"
   >
@@ -57,7 +57,7 @@ const Section = ({ title, children, icon: IconComponent }) => (
   </motion.div>
 );
 
-const TimelineItem = ({ item }) => {
+const TimelineItem = ({ item, index = 0 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ItemIcon = item.icon;
   
@@ -81,8 +81,8 @@ const TimelineItem = ({ item }) => {
       onClick={() => setIsOpen(!isOpen)}
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, amount: 0.5 }}
-      transition={{ duration: 0.5, delay: item.id * 0.1 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
     >
       <div className="timeline-dot">
         {ItemIcon && <ItemIcon size={10} className="timeline-dot-icon" />}
@@ -168,7 +168,7 @@ const SkillBar = ({ skill, index }) => (
   </motion.div>
 );
 
-const ProjectItem = ({ project }) => {
+const ProjectItem = ({ project, index = 0 }) => {
   return (
     <TimelineItem 
       item={{
@@ -180,11 +180,12 @@ const ProjectItem = ({ project }) => {
         icon: Code,
         logo: project.logo
       }}
+      index={index}
     />
   );
 };
 
-const AwardItem = ({ award }) => {
+const AwardItem = ({ award, index = 0 }) => {
   return (
     <TimelineItem 
       item={{
@@ -197,6 +198,7 @@ const AwardItem = ({ award }) => {
         icon: Award,
         logo: award.logo
       }}
+      index={index}
     />
   );
 };
@@ -291,7 +293,7 @@ const InteractiveCV = () => {
             {experience.length > 0 && (
               <Section title="Professional Experience" icon={Briefcase}>
                 <div className="space-y-5">
-                  {experience.map((exp, idx) => <TimelineItem key={`exp-${exp.id || idx}-${exp.title || exp.company || idx}`} item={exp} />)}
+                  {experience.map((exp, idx) => <TimelineItem key={`exp-${exp.id || idx}-${exp.title || exp.company || idx}`} item={exp} index={idx} />)}
                 </div>
               </Section>
             )}
@@ -299,7 +301,7 @@ const InteractiveCV = () => {
             {education.length > 0 && (
               <Section title="Education" icon={GraduationCap}>
                 <div className="space-y-5">
-                  {education.map((edu, idx) => <TimelineItem key={`edu-${edu.id || idx}-${edu.institution || edu.degree || idx}`} item={edu} />)}
+                  {education.map((edu, idx) => <TimelineItem key={`edu-${edu.id || idx}-${edu.institution || edu.degree || idx}`} item={edu} index={idx} />)}
                 </div>
               </Section>
             )}
@@ -308,7 +310,7 @@ const InteractiveCV = () => {
               <Section title="Projects" icon={Code}>
                 <div className="space-y-5">
                   {projects.map((proj, idx) => (
-                    <ProjectItem key={`proj-${proj.id || idx}-${proj.name || proj.title || idx}`} project={proj} />
+                    <ProjectItem key={`proj-${proj.id || idx}-${proj.name || proj.title || idx}`} project={proj} index={idx} />
                   ))}
                 </div>
               </Section>
@@ -318,7 +320,7 @@ const InteractiveCV = () => {
               <Section title="Awards" icon={Award}>
                 <div className="space-y-5">
                   {awards.map((award, idx) => (
-                    <AwardItem key={`award-${award.id || idx}-${award.title || idx}`} award={award} />
+                    <AwardItem key={`award-${award.id || idx}-${award.title || idx}`} award={award} index={idx} />
                   ))}
                 </div>
               </Section>
@@ -327,7 +329,7 @@ const InteractiveCV = () => {
             {volunteering.length > 0 && (
               <Section title="Volunteering" icon={Users}>
                 <div className="space-y-5">
-                  {volunteering.map((vol, idx) => <TimelineItem key={`vol-${vol.id || idx}-${vol.title || idx}`} item={vol} />)}
+                  {volunteering.map((vol, idx) => <TimelineItem key={`vol-${vol.id || idx}-${vol.title || idx}`} item={vol} index={idx} />)}
                 </div>
               </Section>
             )}
