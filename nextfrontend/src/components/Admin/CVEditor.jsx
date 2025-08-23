@@ -6,7 +6,7 @@ import Spinner from '../UI/Spinner';
 import Modal from '../UI/Modal';
 import { 
   Plus, Edit, Trash2, Save, RefreshCw, Award, Briefcase, 
-  GraduationCap, Code, User, Link, Users, Zap
+  GraduationCap, Code, User, Link, Users, Zap, Download
 } from 'lucide-react';
 import { getCVDataApi, updateCVDataApi } from '../../api/cv';
 
@@ -23,6 +23,7 @@ const CVEditor = () => {
   const [showItemModal, setShowItemModal] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
   const [currentSectionKey, setCurrentSectionKey] = useState(null);
+  const [rawDataText, setRawDataText] = useState('');
   const { showToast } = useToast();
 
   // Initial data load
@@ -87,6 +88,13 @@ const CVEditor = () => {
         setLoading(false);
     }
     }, []);
+
+  // Sync raw data text with cvData changes
+  useEffect(() => {
+    if (cvData) {
+      setRawDataText(JSON.stringify(cvData, null, 2));
+    }
+  }, [cvData]);
 
   const saveCV = async () => {
     setSaving(true);
@@ -360,7 +368,7 @@ const CVEditor = () => {
   if (!cvData) return null;
 
   const renderSectionNav = () => (
-    <div className="mb-8 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
+    <div className="mb-8 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-9 gap-2">
       <button 
         onClick={() => setActiveSection('personalInfo')}
         className={`nav-button ${activeSection === 'personalInfo' ? 'active' : ''}`}
@@ -408,6 +416,12 @@ const CVEditor = () => {
         className={`nav-button ${activeSection === 'volunteering' ? 'active' : ''}`}
       >
         <Users size={16} className="mr-1" /> Volunteering
+      </button>
+      <button 
+        onClick={() => setActiveSection('rawData')}
+        className={`nav-button ${activeSection === 'rawData' ? 'active' : ''}`}
+      >
+        <Code size={16} className="mr-1" /> Raw Data
       </button>
     </div>
   );
@@ -759,6 +773,87 @@ const CVEditor = () => {
     </div>
   );
 
+  const handleRawDataChange = (value) => {
+    setRawDataText(value);
+  };
+
+  const applyRawDataChanges = () => {
+    try {
+      const parsedData = JSON.parse(rawDataText);
+      setCVData(parsedData);
+      showToast({ 
+        type: 'success', 
+        message: 'Raw data applied successfully'
+      });
+    } catch (error) {
+      showToast({ 
+        type: 'error', 
+        message: 'Invalid JSON format. Please check your syntax.'
+      });
+    }
+  };
+
+  const downloadRawData = () => {
+    const dataStr = JSON.stringify(cvData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'cv-data.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showToast({ 
+      type: 'success', 
+      message: 'CV data downloaded successfully'
+    });
+  };
+
+  const renderRawDataSection = () => (
+    <div className="section-card">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="section-title mb-0">Raw CV Data</h3>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={applyRawDataChanges}
+            className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
+          >
+            <Save size={14} className="mr-1" /> Apply Changes
+          </button>
+          <button
+            type="button"
+            onClick={downloadRawData}
+            className="btn btn-sm bg-green-900/50 text-green-300 hover:bg-green-900/70 flex items-center"
+          >
+            <Download size={14} className="mr-1" /> Download JSON
+          </button>
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        <p className="text-sm text-gray-400">
+          Edit the raw JSON data directly. Be careful with the syntax - invalid JSON will be rejected.
+        </p>
+        
+        <textarea
+          className="input-field w-full h-96 font-mono text-sm"
+          value={rawDataText}
+          onChange={(e) => handleRawDataChange(e.target.value)}
+          placeholder="Loading CV data..."
+          spellCheck={false}
+        />
+        
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>Use Ctrl+A to select all, Ctrl+C to copy</span>
+          <span>Lines: {rawDataText.split('\n').length} | Characters: {rawDataText.length}</span>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'personalInfo':
@@ -777,6 +872,8 @@ const CVEditor = () => {
         return renderSkillsSection();
       case 'volunteering':
         return renderListSection('volunteering', 'Volunteering', renderVolunteeringItem);
+      case 'rawData':
+        return renderRawDataSection();
       default:
         return <p>Select a section to edit</p>;
     }
