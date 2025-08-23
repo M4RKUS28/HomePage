@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -17,11 +17,12 @@
     "framer-motion": "^12.11.3",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.510.0",
-    "uuid": "^11.1.0"
-  },
-  "devDependencies": {
+    "uuid": "^11.1.0",
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
+    "autoprefixer": "^10.4.20"
+  },
+  "devDependencies": {
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
     "@eslint/eslintrc": "^3"

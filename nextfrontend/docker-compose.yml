@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  nextfrontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextfrontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PM2_INSTANCES=${PM2_INSTANCES:-2}
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  logs:
