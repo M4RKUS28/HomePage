@@ -191,7 +191,7 @@ const CVEditor = () => {
         newItem = { ...newItem, name: "", period: "", description: "", links: [] };
         break;
       case 'awards':
-        newItem = { ...newItem, name: "", date: "", awardingBody: "", details: "", links: [] };
+        newItem = { ...newItem, name: "", date: "", awardingBody: "", details: "", links: [], logo: "" };
         break;
       case 'skills':
         newItem = { ...newItem, name: "", level: 50 };
@@ -687,7 +687,19 @@ const CVEditor = () => {
   const renderAwardItem = (item) => (
     <>
       <div className="flex justify-between">
-        <h4 className="text-lg font-medium text-white">{item.name || "Untitled Award"}</h4>
+        <div className="flex items-center">
+          {item.logo && (
+            <img 
+              src={item.logo} 
+              alt={`${item.awardingBody} logo`} 
+              className="w-8 h-8 object-contain mr-3 rounded"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          <h4 className="text-lg font-medium text-white">{item.name || "Untitled Award"}</h4>
+        </div>
         <span className="text-sm text-gray-400">{item.date || "No Date"}</span>
       </div>
       <div className="text-primary">{item.awardingBody || "Untitled Organization"}</div>
@@ -1191,6 +1203,20 @@ const CVEditor = () => {
             onChange={(e) => handleItemChange('details', e.target.value)}
             placeholder="Additional information about the award..."
           />
+        </div>
+        
+        <div>
+          <label className="form-label">Logo URL (Optional)</label>
+          <input
+            type="text"
+            className="input-field"
+            value={currentItem.logo || ''}
+            onChange={(e) => handleItemChange('logo', e.target.value)}
+            placeholder="e.g. https://example.com/logo.png"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Enter a URL for the awarding organization's logo if available
+          </p>
         </div>
         
         <div>

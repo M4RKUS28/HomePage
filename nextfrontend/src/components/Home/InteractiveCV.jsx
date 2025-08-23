@@ -90,7 +90,14 @@ const TimelineItem = ({ item, index = 0 }) => {
       
       <div className="flex items-center">
         {item.logo && (
-          <img src={item.logo} className="w-6 h-6 mr-2 object-contain" alt="" />
+          <img 
+            src={item.logo} 
+            className="w-6 h-6 mr-2 object-contain" 
+            alt={`${title} logo`}
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
         )}
         <motion.h4 layout="position" className="project-title">{title || "Untitled"}</motion.h4>
       </div>
