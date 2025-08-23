@@ -128,37 +128,20 @@ const HeroSection = () => {
       transition={{ duration: 0.5 }}
       className="min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center text-center px-4 relative overflow-hidden"
     >
-      {/* Background elements */}
-      <div className="absolute inset-0 z-0">
-        <motion.div 
-          className="absolute inset-0 bg-gradient-to-br from-neutral-dark via-gray-900 to-neutral-dark"
-          animate={{
-            backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-          }}
-          transition={{
-            duration: 20,
-            ease: "linear",
-            repeat: Infinity,
-          }}
-          style={{ backgroundSize: '400% 400%' }}
-        />
-      </div>
 
-      <div className="relative z-10 max-w-4xl">
+      <div className="max-w-4xl">
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8, type: "spring", stiffness: 100 }}
         >
           <img 
-            src={profileImage || ProfilePicPlaceholder} 
+            src={profileImage || ProfilePicPlaceholder}
             alt={profileName}
             className="w-36 h-36 md:w-48 md:h-48 rounded-full mx-auto mb-6 border-4 border-primary shadow-2xl object-cover" 
             onError={(e) => e.target.src = ProfilePicPlaceholder}
           />
-        </motion.div>
-        
-        <AnimatedTextCharacter 
+        </motion.div>        <AnimatedTextCharacter 
           text={profileName} 
           el="h1" 
           className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent"

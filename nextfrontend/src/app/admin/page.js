@@ -22,8 +22,8 @@ const TabButton = ({ children, onClick, isActive }) => (
         onClick={onClick}
         className={`px-4 py-2.5 font-medium text-sm rounded-md transition-all duration-300
                     ${isActive 
-                        ? 'bg-primary text-white shadow-lg' 
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        ? 'nav-button active' 
+                        : 'nav-button'
                     }`}
     >
         {children}

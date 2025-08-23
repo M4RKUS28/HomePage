@@ -50,7 +50,7 @@ const Section = ({ title, children, icon: IconComponent }) => (
     className="mb-12"
   >
     <div className="flex items-center mb-6">
-      {IconComponent && <IconComponent size={32} className="mr-3 text-primary" />}
+      {IconComponent && <IconComponent size={32} className="mr-3 section-icon" />}
       <h3 className="text-3xl font-semibold text-sky-400">{title}</h3>
     </div>
     {children}
