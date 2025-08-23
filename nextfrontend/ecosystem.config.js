@@ -12,9 +12,9 @@ module.exports = {
     max_memory_restart: '500M',
     node_args: '--max_old_space_size=400',
     // Logging
-    log_file: '/app/logs/app.log',
-    out_file: '/app/logs/out.log',
-    error_file: '/app/logs/error.log',
+    log_file: '/dev/stdout',
+    out_file: '/dev/stdout',
+    error_file: '/dev/stderr',
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     // Restart policy
     autorestart: true,
