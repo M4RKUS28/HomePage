@@ -49,9 +49,11 @@ export default async function RootLayout({ children }) {
   const token = cookieStore.get('accessToken')?.value;
   const initialUser = await fetchCurrentUserServer(token);
   
-  // Fetch CV data for header text
+  // Fetch CV data for header text and footer data
   const cvData = await fetchCVDataSSR();
   const headerText = cvData?.personalInfo?.headerText || 'Portfolio';
+  const socialLinks = cvData?.personalInfo?.socialLinks || [];
+  const ownerName = cvData?.personalInfo?.name || 'Portfolio';
   return (
     <html lang="en">
       <body
@@ -60,7 +62,11 @@ export default async function RootLayout({ children }) {
         <ThemeProvider>
           <ToastProvider>
             <AuthProvider initialUser={initialUser}>
-              <MainLayout headerText={headerText}>
+              <MainLayout 
+                headerText={headerText}
+                socialLinks={socialLinks}
+                ownerName={ownerName}
+              >
                 {children}
               </MainLayout>
               <ToastNotification />

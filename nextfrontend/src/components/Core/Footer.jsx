@@ -1,34 +1,17 @@
 'use client';
-// Updated Footer.jsx to use social links from CV data
-import React, { useContext, useState, useEffect } from 'react';
+// Client component for Footer with SSR initial data
+import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { Github, Linkedin, Mail, Globe, Twitter, AlertCircle } from 'lucide-react';
-import { getCVDataApi } from '../../api/cv';
+import { Github, Linkedin, Mail, Globe, Twitter } from 'lucide-react';
 
-const Footer = () => {
+const Footer = ({ 
+  headerText = "Portfolio", 
+  socialLinks = [], 
+  ownerName = "Portfolio" 
+}) => {
   const { theme } = useContext(ThemeContext);
   const currentYear = new Date().getFullYear();
-  const [cvData, setCvData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getCVDataApi();
-        setCvData(data);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching CV data for footer:", err);
-        setError('Failed to load social links.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
   
   // Map platform names to Lucide icons
   const getIconForPlatform = (platform) => {
@@ -46,10 +29,7 @@ const Footer = () => {
         return Globe;
     }
   };
-  
-  // Get social links from CV data
-  const socialLinks = cvData?.personalInfo?.socialLinks || [];
-  
+
   // Create social link components
   const socialLinkComponents = socialLinks.map((link, index) => {
     const Icon = getIconForPlatform(link.platform);
@@ -59,7 +39,7 @@ const Footer = () => {
       label: link.platform
     };
   });
-  
+
   return (
     <footer className={`py-8 border-t transition-colors ${
       theme === 'dark' 
@@ -74,24 +54,17 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
               className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
             >
-              {cvData?.personalInfo?.headerText || "Portfolio"}
+              {headerText}
             </motion.div>
           </div>
           
           <div className="flex space-x-4">
-            {loading ? (
-              <span className="text-sm opacity-70">Loading social links...</span>
-            ) : error ? (
-              <div className="flex items-center text-sm text-red-400">
-                <AlertCircle size={16} className="mr-1" />
-                Failed to load social links
-              </div>
-            ) : socialLinkComponents.length > 0 ? (
+            {socialLinkComponents.length > 0 ? (
               socialLinkComponents.map((social, index) => {
                 const Icon = social.icon;
                 return (
                   <motion.a
-                    key={index}
+                    key={`social-${social.label}-${index}`}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -116,7 +89,7 @@ const Footer = () => {
         
         <div className="mt-8 pt-4 text-center text-sm border-t border-gray-700">
           <p>
-            © {currentYear} {cvData?.personalInfo?.name || "Portfolio"}. All rights reserved.
+            © {currentYear} {ownerName}. All rights reserved.
           </p>
         </div>
       </div>
