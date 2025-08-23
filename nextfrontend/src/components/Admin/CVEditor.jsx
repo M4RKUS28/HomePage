@@ -368,60 +368,60 @@ const CVEditor = () => {
   if (!cvData) return null;
 
   const renderSectionNav = () => (
-    <div className="mb-8 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-9 gap-2">
+    <div className="mb-8 flex flex-wrap gap-1 sm:gap-2">
       <button 
         onClick={() => setActiveSection('personalInfo')}
-        className={`nav-button ${activeSection === 'personalInfo' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'personalInfo' ? 'active' : ''}`}
       >
-        <User size={16} className="mr-1" /> Personal
+        <User size={14} className="mr-1" /> Personal
       </button>
       <button 
         onClick={() => setActiveSection('summary')}
-        className={`nav-button ${activeSection === 'summary' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'summary' ? 'active' : ''}`}
       >
-        <User size={16} className="mr-1" /> Summary
+        <User size={14} className="mr-1" /> Summary
       </button>
       <button 
         onClick={() => setActiveSection('skills')}
-        className={`nav-button ${activeSection === 'skills' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'skills' ? 'active' : ''}`}
       >
-        <Zap size={16} className="mr-1" /> Skills
+        <Zap size={14} className="mr-1" /> Skills
       </button>
       <button 
         onClick={() => setActiveSection('experience')}
-        className={`nav-button ${activeSection === 'experience' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'experience' ? 'active' : ''}`}
       >
-        <Briefcase size={16} className="mr-1" /> Experience
+        <Briefcase size={14} className="mr-1" /> Experience
       </button>
       <button 
         onClick={() => setActiveSection('education')}
-        className={`nav-button ${activeSection === 'education' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'education' ? 'active' : ''}`}
       >
-        <GraduationCap size={16} className="mr-1" /> Education
+        <GraduationCap size={14} className="mr-1" /> Education
       </button>
       <button 
         onClick={() => setActiveSection('projectsHighlight')}
-        className={`nav-button ${activeSection === 'projectsHighlight' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'projectsHighlight' ? 'active' : ''}`}
       >
-        <Code size={16} className="mr-1" /> Projects
+        <Code size={14} className="mr-1" /> Projects
       </button>
       <button 
         onClick={() => setActiveSection('awards')}
-        className={`nav-button ${activeSection === 'awards' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'awards' ? 'active' : ''}`}
       >
-        <Award size={16} className="mr-1" /> Awards
+        <Award size={14} className="mr-1" /> Awards
       </button>
       <button 
         onClick={() => setActiveSection('volunteering')}
-        className={`nav-button ${activeSection === 'volunteering' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'volunteering' ? 'active' : ''}`}
       >
-        <Users size={16} className="mr-1" /> Volunteering
+        <Users size={14} className="mr-1" /> Volunteering
       </button>
       <button 
         onClick={() => setActiveSection('rawData')}
-        className={`nav-button ${activeSection === 'rawData' ? 'active' : ''}`}
+        className={`nav-button text-xs sm:text-sm px-2 sm:px-3 py-2 ${activeSection === 'rawData' ? 'active' : ''}`}
       >
-        <Code size={16} className="mr-1" /> Raw Data
+        <Code size={14} className="mr-1" /> Raw Data
       </button>
     </div>
   );
@@ -779,16 +779,49 @@ const CVEditor = () => {
 
   const applyRawDataChanges = () => {
     try {
-      const parsedData = JSON.parse(rawDataText);
+      // Trim whitespace and check if empty
+      const trimmedText = rawDataText.trim();
+      if (!trimmedText) {
+        showToast({ 
+          type: 'error', 
+          message: 'JSON data cannot be empty'
+        });
+        return;
+      }
+
+      // Parse JSON with detailed error handling
+      const parsedData = JSON.parse(trimmedText);
+      
+      // Basic structure validation
+      if (typeof parsedData !== 'object' || parsedData === null) {
+        showToast({ 
+          type: 'error', 
+          message: 'JSON must be a valid object structure'
+        });
+        return;
+      }
+
       setCVData(parsedData);
       showToast({ 
         type: 'success', 
         message: 'Raw data applied successfully'
       });
     } catch (error) {
+      let errorMessage = 'Invalid JSON format';
+      
+      // Provide more specific error messages
+      if (error.message.includes('Unexpected token')) {
+        errorMessage = `JSON Syntax Error: ${error.message}`;
+      } else if (error.message.includes('Unexpected end')) {
+        errorMessage = 'JSON Error: Unexpected end of data - missing closing bracket or quote';
+      } else if (error.message.includes('position')) {
+        errorMessage = `JSON Error: ${error.message}`;
+      }
+      
       showToast({ 
         type: 'error', 
-        message: 'Invalid JSON format. Please check your syntax.'
+        message: errorMessage,
+        duration: 6000 // Longer duration for error messages
       });
     }
   };
@@ -839,7 +872,7 @@ const CVEditor = () => {
         </p>
         
         <textarea
-          className="input-field w-full h-96 font-mono text-sm"
+          className="input-field w-full h-[600px] font-mono text-sm"
           value={rawDataText}
           onChange={(e) => handleRawDataChange(e.target.value)}
           placeholder="Loading CV data..."
