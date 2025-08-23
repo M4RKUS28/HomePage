@@ -2,40 +2,55 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { loginUserApi, registerUserApi, fetchCurrentUserApi } from '../api/auth';
 import { jwtDecode } from 'jwt-decode';
+import { setCookie, getCookie, removeCookie } from '../lib/cookies';
 
 export const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+export const AuthProvider = ({ children, initialUser = null }) => {
+  // Ermöglicht Initialisierung mit SSR-User
+  const [currentUser, setCurrentUser] = useState(initialUser);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
 
   const clearAuthError = () => setAuthError(null);
 
   const loadUserFromToken = useCallback(async () => {
-    const token = localStorage.getItem('accessToken');
+    // Wenn initialUser gesetzt ist (SSR), nicht erneut laden
+    if (currentUser) {
+      setLoadingAuth(false);
+      return;
+    }
+    
+    // Try cookies first, then localStorage
+    let token = getCookie('accessToken') || (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null);
+    
     if (token) {
       try {
-        // Check if token is expired
         const decodedToken = jwtDecode(token);
         if (decodedToken.exp * 1000 < Date.now()) {
-          localStorage.removeItem('accessToken');
+          // Token expired - clean up both storage methods
+          removeCookie('accessToken');
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('accessToken');
+          }
           setCurrentUser(null);
           setLoadingAuth(false);
           return;
         }
-        // If you store user details in token, you can set it here,
-        // but it's better to fetch from /users/me for up-to-date info
-        const userData = await fetchCurrentUserApi(); // Assumes API client handles token
+        const userData = await fetchCurrentUserApi();
         setCurrentUser(userData);
       } catch (err) {
         console.error("Failed to load user from token", err);
-        localStorage.removeItem('accessToken'); // Invalid token
+        // Clean up both storage methods on error
+        removeCookie('accessToken');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+        }
         setCurrentUser(null);
       }
     }
     setLoadingAuth(false);
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     loadUserFromToken();
@@ -46,7 +61,13 @@ export const AuthProvider = ({ children }) => {
       setAuthError(null);
       setLoadingAuth(true);
       const data = await loginUserApi(username, password);
-      localStorage.setItem('accessToken', data.access_token);
+      
+      // Set token in both localStorage and cookies for SSR compatibility
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', data.access_token);
+      }
+      setCookie('accessToken', data.access_token, 7); // 7 days
+      
       // Fetch user details after login to ensure fresh data
       const userData = await fetchCurrentUserApi();
       setCurrentUser(userData);
@@ -135,7 +156,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('accessToken');
+    // Clean up both storage methods
+    removeCookie('accessToken');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+    }
     setCurrentUser(null);
   };
 
