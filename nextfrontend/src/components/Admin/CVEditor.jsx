@@ -622,7 +622,11 @@ const CVEditor = () => {
                 <button
                     type="button"
                     onClick={() => removeSocialLink(index)}
-                    className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70"
+                    className={`btn btn-sm ${
+                      theme === 'dark' 
+                        ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' 
+                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                    }`}
                     title="Remove Link"
                 >
                     <Trash2 size={14} />
@@ -722,14 +726,22 @@ const CVEditor = () => {
                     <button
                       type="button"
                       onClick={() => editItem(sectionKey, item)}
-                      className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
+                      className={`btn btn-sm flex items-center ${
+                        theme === 'dark' 
+                          ? 'bg-blue-900/50 text-blue-300 hover:bg-blue-900/70' 
+                          : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                      }`}
                     >
                       <Edit size={14} className="mr-1" /> Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => removeItem(sectionKey, item.id)}
-                      className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70 flex items-center"
+                      className={`btn btn-sm flex items-center ${
+                        theme === 'dark' 
+                          ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' 
+                          : 'bg-red-100 text-red-800 hover:bg-red-200'
+                      }`}
                     >
                       <Trash2 size={14} className="mr-1" /> Remove
                     </button>
@@ -908,14 +920,22 @@ const CVEditor = () => {
                 <button
                   type="button"
                   onClick={() => editItem('skills', skill)}
-                  className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
+                  className={`btn btn-sm flex items-center ${
+                    theme === 'dark' 
+                      ? 'bg-blue-900/50 text-blue-300 hover:bg-blue-900/70' 
+                      : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                  }`}
                 >
                   <Edit size={14} className="mr-1" /> Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => removeItem('skills', skill.id)}
-                  className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70 flex items-center"
+                  className={`btn btn-sm flex items-center ${
+                    theme === 'dark' 
+                      ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' 
+                      : 'bg-red-100 text-red-800 hover:bg-red-200'
+                  }`}
                 >
                   <Trash2 size={14} className="mr-1" /> Remove
                 </button>
