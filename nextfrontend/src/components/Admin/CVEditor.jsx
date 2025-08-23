@@ -591,7 +591,19 @@ const CVEditor = () => {
   const renderProjectItem = (item) => (
     <>
       <div className="flex justify-between">
-        <h4 className="text-lg font-medium text-white">{item.name || "Untitled Project"}</h4>
+        <div className="flex items-center">
+          {item.logo && (
+            <img 
+              src={item.logo} 
+              alt={`${item.name} logo`} 
+              className="w-8 h-8 object-contain mr-3 rounded"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          <h4 className="text-lg font-medium text-white">{item.name || "Untitled Project"}</h4>
+        </div>
         <span className="text-sm text-gray-400">{item.period || "No Date"}</span>
       </div>
       <div className="mt-2 text-sm text-gray-300 whitespace-pre-line">{item.description || "No description"}</div>
@@ -887,6 +899,20 @@ const CVEditor = () => {
           />
           <p className="text-xs text-gray-400 mt-1">
             Use markdown-style formatting: lines starting with "- " will be shown as bullet points
+          </p>
+        </div>
+
+        <div>
+          <label className="form-label">Project Logo/Icon URL (Optional)</label>
+          <input
+            type="text"
+            className="input-field"
+            value={currentItem.logo || ''}
+            onChange={(e) => handleItemChange('logo', e.target.value)}
+            placeholder="e.g. https://example.com/project-icon.png"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Enter a URL for the project's logo or icon if available
           </p>
         </div>
         
