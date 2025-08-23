@@ -25,18 +25,18 @@
     --color-accent-dark: 190 24 93; /* pink-700 */
     --color-accent-light: 236 72 153; /* pink-500 */
     
-    /* Neutral colors */
-    --color-neutral-50: 249 250 251;
-    --color-neutral-100: 243 244 246;
-    --color-neutral-200: 229 231 235;
-    --color-neutral-300: 209 213 219;
-    --color-neutral-400: 156 163 175;
-    --color-neutral-500: 107 114 128;
-    --color-neutral-600: 75 85 99;
-    --color-neutral-700: 55 65 81;
-    --color-neutral-800: 31 41 55;
-    --color-neutral-900: 17 24 39;
-    --color-neutral-950: 3 7 18;
+    /* Neutral colors - True neutral grays */
+    --color-neutral-50: 250 250 250; /* neutral-50 */
+    --color-neutral-100: 245 245 245; /* neutral-100 */
+    --color-neutral-200: 229 229 229; /* neutral-200 */
+    --color-neutral-300: 212 212 212; /* neutral-300 */
+    --color-neutral-400: 163 163 163; /* neutral-400 */
+    --color-neutral-500: 115 115 115; /* neutral-500 */
+    --color-neutral-600: 82 82 82; /* neutral-600 */
+    --color-neutral-700: 64 64 64; /* neutral-700 */
+    --color-neutral-800: 38 38 38; /* neutral-800 */
+    --color-neutral-900: 23 23 23; /* neutral-900 */
+    --color-neutral-950: 10 10 10; /* neutral-950 */
   }
   
   html {
@@ -51,8 +51,8 @@
   }
   
   body.dark {
-    background-color: rgb(17 24 39); /* gray-900 */
-    color: rgb(243 244 246); /* gray-100 */
+    background-color: rgb(var(--color-neutral-900)); /* neutral-900 */
+    color: rgb(var(--color-neutral-100)); /* neutral-100 */
     color-scheme: dark;
     
     /* Dark mode text colors */
@@ -79,8 +79,8 @@
   }
   
   body.light {
-    background-color: rgb(249 250 251); /* neutral-50 */
-    color: rgb(17 24 39); /* neutral-900 */
+    background-color: rgb(var(--color-neutral-50)); /* neutral-50 */
+    color: rgb(var(--color-neutral-900)); /* neutral-900 */
     color-scheme: light;
     
     /* Light mode text colors */
@@ -651,22 +651,25 @@
     text-align: center;
     background-color: transparent;
     border: none;
+    cursor: pointer;
   }
   
   .dark .nav-button {
     color: rgb(209 213 219); /* gray-300 */
+    background-color: rgba(55, 65, 81, 0.6); /* gray-700/60 - subtle background */
   }
   
   .dark .nav-button:hover:not(.active) {
-    background-color: rgba(55, 65, 81, 0.5); /* gray-700/50 */
+    background-color: rgba(55, 65, 81, 0.8); /* gray-700/80 */
   }
   
   .light .nav-button {
     color: rgb(55 65 81); /* gray-700 */
+    background-color: rgba(229, 231, 235, 0.6); /* gray-200/60 - subtle background */
   }
   
   .light .nav-button:hover:not(.active) {
-    background-color: rgba(209, 213, 219, 0.5); /* gray-300/50 */
+    background-color: rgba(209, 213, 219, 0.8); /* gray-300/80 */
   }
   
   .dark .nav-button.active {
