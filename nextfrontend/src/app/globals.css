@@ -18,7 +18,296 @@
     /* Secondary colors */
     --color-secondary: 37 99 235; /* blue-600 */
     --color-secondary-dark: 29 78 216; /* blue-700 */
-    --color-secondary-light: 59 130 246; /* blue-500 */
+    --color-secondary-light: 59.animate-pulse-fast {
+  animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* CV Editor Item Cards - Theme Aware */
+@layer components {
+  .cv-item-card {
+    border-radius: 0.375rem;
+    padding: 1rem;
+    border: 1px solid;
+  }
+  
+  .dark .cv-item-card {
+    background-color: rgba(31, 41, 55, 0.5); /* gray-800/50 */
+    border-color: rgb(75, 85, 99); /* gray-600 */
+  }
+  
+  .light .cv-item-card {
+    background-color: rgba(255, 255, 255, 0.8); /* white/80 with slight transparency */
+    border-color: rgb(229, 231, 235); /* gray-200 */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Theme-aware text classes */
+  .cv-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  
+  .dark .cv-title {
+    color: rgb(255, 255, 255); /* white */
+  }
+  
+  .light .cv-title {
+    color: rgb(17, 24, 39); /* gray-900 */
+  }
+  
+  .cv-subtitle {
+    font-size: 0.875rem;
+  }
+  
+  .dark .cv-subtitle {
+    color: rgb(156, 163, 175); /* gray-400 */
+  }
+  
+  .light .cv-subtitle {
+    color: rgb(107, 114, 128); /* gray-500 */
+  }
+  
+  .cv-text {
+    font-size: 0.875rem;
+    white-space: pre-line;
+  }
+  
+  .dark .cv-text {
+    color: rgb(209, 213, 219); /* gray-300 */
+  }
+  
+  .light .cv-text {
+    color: rgb(55, 65, 81); /* gray-700 */
+  }
+  
+  .cv-hint-text {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+  
+  .dark .cv-hint-text {
+    color: rgb(156, 163, 175); /* gray-400 */
+  }
+  
+  .light .cv-hint-text {
+    color: rgb(107, 114, 128); /* gray-500 */
+  }
+  
+  .cv-empty-state {
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+  
+  .dark .cv-empty-state {
+    color: rgb(156, 163, 175); /* gray-400 */
+  }
+  
+  .light .cv-empty-state {
+    color: rgb(107, 114, 128); /* gray-500 */
+  }
+  
+  /* CV Action buttons */
+  .cv-btn-secondary {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s;
+    border: 1px solid;
+  }
+  
+  .dark .cv-btn-secondary {
+    background-color: rgba(75, 85, 99, 0.5); /* gray-600/50 */
+    color: rgb(209, 213, 219); /* gray-300 */
+    border-color: rgb(75, 85, 99); /* gray-600 */
+  }
+  
+  .dark .cv-btn-secondary:hover {
+    background-color: rgba(75, 85, 99, 0.7); /* gray-600/70 */
+  }
+  
+  .light .cv-btn-secondary {
+    background-color: rgba(243, 244, 246, 0.8); /* gray-100/80 */
+    color: rgb(55, 65, 81); /* gray-700 */
+    border-color: rgb(209, 213, 219); /* gray-300 */
+  }
+  
+  .light .cv-btn-secondary:hover {
+    background-color: rgb(229, 231, 235); /* gray-200 */
+  }
+  
+  /* CV Tags/Pills */
+  .cv-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid;
+  }
+  
+  .dark .cv-tag {
+    background-color: rgb(75, 85, 99); /* gray-600 */
+    color: rgb(255, 255, 255); /* white */
+    border-color: rgb(107, 114, 128); /* gray-500 */
+  }
+  
+  .light .cv-tag {
+    background-color: rgb(243, 244, 246); /* gray-100 */
+    color: rgb(55, 65, 81); /* gray-700 */
+    border-color: rgb(209, 213, 219); /* gray-300 */
+  }
+  
+  /* Theme-aware table styles for original design */
+  .bg-card {
+    background-color: rgb(55, 65, 81); /* dark mode default */
+  }
+  
+  .light .bg-card {
+    background-color: rgb(255, 255, 255); /* light mode */
+    border: 1px solid rgb(229, 231, 235); /* Add border for light mode */
+  }
+  
+  /* Override for min-w-full table - add light mode support */
+  .light thead {
+    background-color: rgb(249, 250, 251) !important; /* gray-50 */
+  }
+  
+  .light tbody {
+    background-color: rgb(255, 255, 255); /* white */
+  }
+  
+  .light .divide-gray-700 {
+    border-color: rgb(229, 231, 235) !important; /* gray-200 */
+  }
+  
+  /* Light mode text color fixes */
+  .light .text-gray-300 {
+    color: rgb(75, 85, 99) !important; /* gray-600 */
+  }
+  
+  .light .text-white {
+    color: rgb(17, 24, 39) !important; /* gray-900 */
+  }
+  
+  /* Specific fix for username visibility */
+  .light td .text-white {
+    color: rgb(17, 24, 39) !important; /* Ensure usernames are visible */
+  }
+  
+  .dark .user-table-header {
+    background: linear-gradient(135deg, rgb(17, 24, 39), rgb(31, 41, 55));
+    border-bottom: 2px solid rgb(55, 65, 81);
+  }
+  
+  .light .user-table-header {
+    background: linear-gradient(135deg, rgb(249, 250, 251), rgb(243, 244, 246));
+    border-bottom: 2px solid rgb(229, 231, 235);
+  }
+  
+  .user-table-header-cell {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+  }
+  
+  .dark .user-table-header-cell {
+    color: rgb(156, 163, 175); /* gray-400 */
+  }
+  
+  .light .user-table-header-cell {
+    color: rgb(75, 85, 99); /* gray-600 */
+  }
+  
+  .user-table-row {
+    border-bottom: 1px solid;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .dark .user-table-row {
+    border-color: rgb(55, 65, 81); /* gray-700 */
+  }
+  
+  .light .user-table-row {
+    border-color: rgb(229, 231, 235); /* gray-200 */
+  }
+  
+  .dark .user-table-row:hover {
+    background-color: rgba(55, 65, 81, 0.3);
+  }
+  
+  .light .user-table-row:hover {
+    background-color: rgba(243, 244, 246, 0.5);
+  }
+  
+  .user-table-cell {
+    padding: 1.25rem 1.5rem;
+    font-size: 0.8125rem; /* Reduced from 0.875rem */
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .dark .user-table-cell {
+    color: rgb(209, 213, 219); /* gray-300 */
+  }
+  
+  .light .user-table-cell {
+    color: rgb(55, 65, 81); /* gray-700 */
+  }
+  
+  .user-table-name {
+    font-weight: 600;
+    font-size: 0.8125rem; /* Reduced from 0.95rem */
+  }
+  
+  .dark .user-table-name {
+    color: rgb(255, 255, 255); /* white */
+  }
+  
+  .light .user-table-name {
+    color: rgb(17, 24, 39); /* gray-900 */
+  }
+  
+  .user-current-row {
+    position: relative;
+    background-color: rgba(16, 185, 129, 0.05) !important;
+  }
+  
+  .user-current-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, rgb(16, 185, 129), rgb(5, 150, 105));
+  }
+  
+  /* Form labels for modals */
+  .modal-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .dark .modal-label {
+    color: rgb(209, 213, 219); /* gray-300 */
+  }
+  
+  .light .modal-label {
+    color: rgb(55, 65, 81); /* gray-700 */
+  }
+}0 246; /* blue-500 */
     
     /* Accent colors */
     --color-accent: 219 39 119; /* pink-600 */

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../../contexts/ToastContext';
+import { useTheme } from '../../hooks/useTheme';
 import Spinner from '../UI/Spinner';
 import Modal from '../UI/Modal';
 import { 
@@ -11,6 +12,7 @@ import { getUsersApi, updateUserApi, deleteUserApi } from '../../api/users';
 import { useAuth } from '../../hooks/useAuth';
 
 const UserManagement = () => {
+  const { theme } = useTheme();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -208,27 +210,27 @@ const UserManagement = () => {
 
       <div className="bg-card rounded-lg shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-800">
+          <table className="min-w-full divide-y divide-gray-700 dark:divide-gray-700">
+            <thead className="bg-gray-800 dark:bg-gray-800 light:bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
                   Username
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
                   Email
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
                   Role
                 </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
+            <tbody className="divide-y divide-gray-700 dark:divide-gray-700 light:divide-gray-200">
               <AnimatePresence>
                 {users.map(user => (
                   <motion.tr 
@@ -236,29 +238,29 @@ const UserManagement = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className={`${user.id === currentUser.id ? 'bg-gray-700/30' : ''}`}
+                    className={`${user.id === currentUser.id ? 'bg-gray-700/30 dark:bg-gray-700/30 light:bg-emerald-50/50' : ''}`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="text-sm font-medium text-white">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {user.username}
                           {user.id === currentUser.id && (
-                            <span className="ml-2 text-xs text-primary">(you)</span>
+                            <span className="ml-2 text-xs text-emerald-500">(you)</span>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 dark:text-gray-300 light:text-gray-600">
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        user.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                       }`}>
                         {user.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 dark:text-gray-300 light:text-gray-600">
                       {user.is_admin ? (
                         <span className="text-yellow-500 flex items-center">
                           <Shield size={16} className="mr-1" /> Admin
@@ -275,26 +277,26 @@ const UserManagement = () => {
                           className="text-indigo-400 hover:text-indigo-300 transition-colors"
                           title="Change Password"
                         >
-                          <Lock size={18} />
+                          <Lock size={16} />
                         </button>
                         
                         {user.is_active ? (
                           <button
                             onClick={() => handleToggleActive(user.id, false)}
                             disabled={actionLoading}
-                            className="text-yellow-500 hover:text-yellow-400 transition-colors"
+                            className="text-amber-400 hover:text-amber-300 transition-colors"
                             title="Deactivate User"
                           >
-                            <UserX size={18} />
+                            <UserX size={16} />
                           </button>
                         ) : (
                           <button
                             onClick={() => handleToggleActive(user.id, true)}
                             disabled={actionLoading}
-                            className="text-green-500 hover:text-green-400 transition-colors"
+                            className="text-emerald-400 hover:text-emerald-300 transition-colors"
                             title="Activate User"
                           >
-                            <UserCheck size={18} />
+                            <UserCheck size={16} />
                           </button>
                         )}
                         
@@ -302,31 +304,31 @@ const UserManagement = () => {
                           <button
                             onClick={() => handleSetAdmin(user.id, false)}
                             disabled={actionLoading}
-                            className="text-yellow-500 hover:text-yellow-400 transition-colors"
+                            className="text-amber-400 hover:text-amber-300 transition-colors"
                             title="Remove Admin"
                           >
-                            <ShieldOff size={18} />
+                            <ShieldOff size={16} />
                           </button>
                         ) : (
                           <button
                             onClick={() => handleSetAdmin(user.id, true)}
                             disabled={actionLoading}
-                            className="text-green-500 hover:text-green-400 transition-colors"
+                            className="text-emerald-400 hover:text-emerald-300 transition-colors"
                             title="Make Admin"
                           >
-                            <Shield size={18} />
+                            <Shield size={16} />
                           </button>
                         )}
                         
                         <button
                           onClick={() => handleDelete(user.id)}
                           disabled={actionLoading || user.id === currentUser.id}
-                          className={`text-red-500 hover:text-red-400 transition-colors ${
+                          className={`text-red-400 hover:text-red-300 transition-colors ${
                             user.id === currentUser.id ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                           title={user.id === currentUser.id ? "Cannot delete your own account" : "Delete User"}
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -351,7 +353,7 @@ const UserManagement = () => {
               </div>
             )}
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="new-password" className="modal-label">
                 New Password
               </label>
               <input
@@ -365,7 +367,7 @@ const UserManagement = () => {
               />
             </div>
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="confirm-password" className="modal-label">
                 Confirm New Password
               </label>
               <input
@@ -381,7 +383,7 @@ const UserManagement = () => {
               <button
                 type="button"
                 onClick={() => setShowPasswordModal(false)}
-                className="btn text-gray-300 bg-gray-700 hover:bg-gray-600"
+                className="cv-btn-secondary"
               >
                 Cancel
               </button>

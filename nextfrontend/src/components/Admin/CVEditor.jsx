@@ -2,6 +2,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../../contexts/ToastContext';
+import { useTheme } from '../../hooks/useTheme';
 import Spinner from '../UI/Spinner';
 import Modal from '../UI/Modal';
 import { 
@@ -16,6 +17,7 @@ import { uploadImageApi } from '../../api/cv'; // Import the image upload API
 
 // Component for editing CV sections
 const CVEditor = () => {
+  const { theme } = useTheme();
   const [cvData, setCVData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -540,7 +542,7 @@ const CVEditor = () => {
                 value={cvData.personalInfo?.title || ''}
                 onChange={(e) => handlePersonalInfoChange('title', e.target.value)}
             />
-            <p className="text-xs text-gray-400 mt-1">This appears under your name in the hero section</p>
+            <p className="cv-hint-text">This appears under your name in the hero section</p>
             </div>
         </div>
         
@@ -559,7 +561,7 @@ const CVEditor = () => {
                 maxHeight={200}
                 />
                 <div className="flex flex-col justify-center">
-                <p className="text-sm text-gray-200">
+                <p className="cv-text">
                     This image will appear in the hero section of your portfolio.
                     <br /><br />
                     • Recommended: Square image, at least 300x300 pixels
@@ -580,7 +582,7 @@ const CVEditor = () => {
             value={cvData.personalInfo?.headerText || ''}
             onChange={(e) => handlePersonalInfoChange('headerText', e.target.value)}
             />
-            <p className="text-xs text-gray-400 mt-1">This appears in the top-left corner of the site (currently "M4RKUS28")</p>
+            <p className="cv-hint-text">This appears in the top-left corner of the site (currently "M4RKUS28")</p>
         </div>
         
         <div>
@@ -589,7 +591,7 @@ const CVEditor = () => {
             <button
                 type="button"
                 onClick={addSocialLink}
-                className="btn btn-sm bg-gray-700 text-gray-200 hover:bg-gray-600 flex items-center"
+                className="cv-btn-secondary"
             >
                 <Plus size={14} className="mr-1" /> Add Link
             </button>
@@ -685,7 +687,7 @@ const CVEditor = () => {
         {sortedItems.length > 0 ? (
           <div className="space-y-4">
             {sortedItems.map((item, index) => (
-              <div key={item.id} className="border border-gray-700 rounded-md p-4 bg-gray-800/50">
+              <div key={item.id} className="cv-item-card">
                 {itemRenderer(item)}
                 <div className="flex justify-between items-center mt-3">
                   <div className="flex space-x-1">
@@ -695,8 +697,8 @@ const CVEditor = () => {
                       disabled={index === 0}
                       className={`btn btn-sm flex items-center ${
                         index === 0 
-                          ? 'bg-gray-600/50 text-gray-500 cursor-not-allowed' 
-                          : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700/70'
+                          ? 'cv-btn-secondary opacity-50 cursor-not-allowed' 
+                          : 'cv-btn-secondary'
                       }`}
                       title="Move up"
                     >
@@ -708,8 +710,8 @@ const CVEditor = () => {
                       disabled={index === sortedItems.length - 1}
                       className={`btn btn-sm flex items-center ${
                         index === sortedItems.length - 1 
-                          ? 'bg-gray-600/50 text-gray-500 cursor-not-allowed' 
-                          : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700/70'
+                          ? 'cv-btn-secondary opacity-50 cursor-not-allowed' 
+                          : 'cv-btn-secondary'
                       }`}
                       title="Move down"
                     >
@@ -737,7 +739,7 @@ const CVEditor = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-400 text-center py-6">No items yet. Click "Add Item" to get started.</p>
+          <p className="cv-empty-state">No items yet. Click "Add Item" to get started.</p>
         )}
       </div>
     );
@@ -746,11 +748,11 @@ const CVEditor = () => {
   const renderExperienceItem = (item) => (
     <>
       <div className="flex justify-between">
-        <h4 className="text-lg font-medium text-white">{item.role || "Untitled Role"}</h4>
-        <span className="text-sm text-gray-400">{item.period || "No Date"}</span>
+        <h4 className="cv-title">{item.role || "Untitled Role"}</h4>
+        <span className="cv-subtitle">{item.period || "No Date"}</span>
       </div>
       <div className="text-primary">{item.company || "Untitled Company"}</div>
-      <div className="mt-2 text-sm text-gray-300 whitespace-pre-line">{item.details || "No details"}</div>
+      <div className="cv-text mt-2">{item.details || "No details"}</div>
     </>
   );
 
@@ -768,12 +770,12 @@ const CVEditor = () => {
               }}
             />
           )}
-          <h4 className="text-lg font-medium text-white">{item.degree || "Untitled Degree"}</h4>
+          <h4 className="cv-title">{item.degree || "Untitled Degree"}</h4>
         </div>
-        <span className="text-sm text-gray-400">{item.period || "No Date"}</span>
+        <span className="cv-subtitle">{item.period || "No Date"}</span>
       </div>
       <div className="text-primary">{item.institution || "Untitled Institution"}</div>
-      {item.details && <div className="mt-2 text-sm text-gray-300">{item.details}</div>}
+      {item.details && <div className="cv-text mt-2">{item.details}</div>}
     </>
   );
 
@@ -791,11 +793,11 @@ const CVEditor = () => {
               }}
             />
           )}
-          <h4 className="text-lg font-medium text-white">{item.name || "Untitled Project"}</h4>
+          <h4 className="cv-title">{item.name || "Untitled Project"}</h4>
         </div>
-        <span className="text-sm text-gray-400">{item.period || "No Date"}</span>
+        <span className="cv-subtitle">{item.period || "No Date"}</span>
       </div>
-      <div className="mt-2 text-sm text-gray-300 whitespace-pre-line">{item.description || "No description"}</div>
+      <div className="cv-text mt-2">{item.description || "No description"}</div>
       {item.links && item.links.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
           {item.links.map((link, idx) => (
@@ -828,12 +830,12 @@ const CVEditor = () => {
               }}
             />
           )}
-          <h4 className="text-lg font-medium text-white">{item.name || "Untitled Award"}</h4>
+          <h4 className="cv-title">{item.name || "Untitled Award"}</h4>
         </div>
-        <span className="text-sm text-gray-400">{item.date || "No Date"}</span>
+        <span className="cv-subtitle">{item.date || "No Date"}</span>
       </div>
       <div className="text-primary">{item.awardingBody || "Untitled Organization"}</div>
-      {item.details && <div className="mt-2 text-sm text-gray-300">{item.details}</div>}
+      {item.details && <div className="cv-text mt-2">{item.details}</div>}
       {item.links && item.links.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
           {item.links.map((link, idx) => (
@@ -842,7 +844,7 @@ const CVEditor = () => {
               href={link.url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-700 text-white"
+              className="cv-tag"
             >
               <Link size={12} className="mr-1" /> {link.text || "Link"}
             </a>
@@ -891,9 +893,9 @@ const CVEditor = () => {
       {cvData.skills.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {cvData.skills.map(skill => (
-            <div key={skill.id || skill.name} className="border border-gray-700 rounded-md p-3 bg-gray-800/50">
+            <div key={skill.id || skill.name} className="cv-item-card">
               <div className="flex justify-between items-center">
-                <span className="font-medium text-white">{skill.name || "Untitled Skill"}</span>
+                <span className="cv-title">{skill.name || "Untitled Skill"}</span>
                 <span className="text-primary text-sm">{skill.level}%</span>
               </div>
               <div className="mt-2 w-full bg-gray-700 rounded-full h-2">
@@ -1252,7 +1254,7 @@ const CVEditor = () => {
             <button
               type="button"
               onClick={addLink}
-              className="btn btn-sm bg-gray-700 text-gray-200 hover:bg-gray-600 flex items-center"
+              className="cv-btn-secondary"
             >
               <Plus size={14} className="mr-1" /> Add Link
             </button>
@@ -1355,7 +1357,7 @@ const CVEditor = () => {
             <button
               type="button"
               onClick={addLink}
-              className="btn btn-sm bg-gray-700 text-gray-200 hover:bg-gray-600 flex items-center"
+              className="cv-btn-secondary"
             >
               <Plus size={14} className="mr-1" /> Add Link
             </button>
@@ -1579,7 +1581,7 @@ const CVEditor = () => {
             <button
               type="button"
               onClick={() => setShowItemModal(false)}
-              className="btn text-gray-300 bg-gray-700 hover:bg-gray-600"
+              className="cv-btn-secondary"
             >
               Cancel
             </button>
