@@ -41,6 +41,9 @@ RUN npm install pm2 -g
 # Copy ecosystem config with proper ownership
 COPY --chown=nextjs:nodejs ecosystem.config.js ./
 
+# Change ownership of the app directory
+RUN chown -R nextjs:nodejs /app
+
 # Switch to nextjs user
 USER nextjs
 
