@@ -6,7 +6,7 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
+# Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
 
@@ -16,39 +16,37 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build Next.js application
 RUN npm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV production
 
-# Create nextjs user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Create logs directory and set permissions
-RUN mkdir -p /app/logs && chown -R node:node /app/logs && chmod 755 /app/logs
+# Create logs directory with proper permissions
+RUN mkdir -p /app/logs && chown -R nextjs:nodejs /app/logs && chmod 755 /app/logs
 
-# Copy built application
 COPY --from=builder /app/public ./public
+
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Install PM2 globally
 RUN npm install pm2 -g
 
-# Copy PM2 ecosystem file
-COPY ecosystem.config.js ./
+# Copy ecosystem config with proper ownership
+COPY --chown=nextjs:nodejs ecosystem.config.js ./
 
 # Switch to nextjs user
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
-# Start application with PM2
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]
