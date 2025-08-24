@@ -52,7 +52,7 @@ async def update_cv_data(
     
     if db_cv:
         # Update existing CV data
-        db_cv.data = cv_data.model_dump()
+        db_cv.data = cv_data.model_dump() # type: ignore
         db_cv.owner_id = current_user.id
     else:
         # Create new CV data

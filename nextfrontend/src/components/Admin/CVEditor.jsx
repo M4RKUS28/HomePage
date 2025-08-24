@@ -12,9 +12,6 @@ import {
 } from 'lucide-react';
 import { getCVDataApi, updateCVDataApi } from '../../api/cv';
 
-import ImageUpload from '../UI/ImageUpload'; // Import the new ImageUpload component
-import { uploadImageApi } from '../../api/cv'; // Import the image upload API
-
 // Component for editing CV sections
 const CVEditor = () => {
   const { theme } = useTheme();
@@ -546,33 +543,45 @@ const CVEditor = () => {
             </div>
         </div>
         
-        {/* Profile Image Upload */}
+        {/* Profile Image URL */}
         <div>
-            <label className="form-label">Profile Image</label>
+            <label className="form-label">Profile Image URL</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ImageUpload
-                initialImage={cvData.personalInfo?.profileImage || ''}
-                onImageChange={(imageData) => handleProfileImageChange(imageData)}
-                className="w-full max-w-[250px]" // Reduced size
-                aspectRatio="aspect-square"
-                placeholderText="Upload profile picture"
-                maxSizeMB={2}
-                maxWidth={200}
-                maxHeight={200}
-                />
+                <div className="space-y-4">
+                    <input
+                        type="url"
+                        className="input-field"
+                        value={cvData.personalInfo?.profileImage || ''}
+                        onChange={(e) => handlePersonalInfoChange('profileImage', e.target.value)}
+                        placeholder="https://example.com/your-profile-image.jpg"
+                    />
+                    {cvData.personalInfo?.profileImage && (
+                        <div className="w-full max-w-[250px]">
+                            <img 
+                                src={cvData.personalInfo.profileImage} 
+                                alt="Profile preview" 
+                                className="w-full h-auto aspect-square object-cover rounded-lg border border-gray-300"
+                            />
+                        </div>
+                    )}
+                </div>
                 <div className="flex flex-col justify-center">
                 <p className="cv-text">
                     This image will appear in the hero section of your portfolio.
                     <br /><br />
+                    • Enter a direct URL to your profile image
+                    <br />
+                    • Works best with imgur, GitHub, or direct CDN links
+                    <br />
+                    • Base64 data URLs also supported
+                    <br />
                     • Recommended: Square image, at least 300x300 pixels
                     <br />
-                    • Max file size: 2MB
-                    <br />
-                    • Supported formats: JPG, PNG, GIF
+                    • Supported formats: JPG, PNG, GIF, WebP
                 </p>
                 </div>
             </div>
-            </div>
+        </div>
         
         <div>
             <label className="form-label">Header Text</label>
@@ -638,18 +647,6 @@ const CVEditor = () => {
         </div>
     </div>
     );
-    // Add this new function to handle profile image changes
-    const handleProfileImageChange = async (imageData) => {
-    // Update the CV data state
-    setCVData(prev => ({
-        ...prev,
-        personalInfo: {
-        ...prev.personalInfo,
-        profileImage: imageData
-        }
-    }));
-    
-    };
 
   const renderSummarySection = () => (
     <div className="section-card">
