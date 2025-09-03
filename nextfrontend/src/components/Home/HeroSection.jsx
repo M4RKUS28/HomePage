@@ -137,7 +137,6 @@ const HeroSection = () => {
         >
           <img 
             src={profileImage || ProfilePicPlaceholder}
-            alt={profileName}
             className="w-36 h-36 md:w-48 md:h-48 rounded-full mx-auto mb-6 border-4 border-primary shadow-2xl object-cover" 
             onError={(e) => e.target.src = ProfilePicPlaceholder}
           />
