@@ -13,7 +13,8 @@ import {
   Users,
   Zap as SkillIcon,
   ExternalLink,
-  AlertTriangle
+  AlertTriangle,
+  MousePointerClick
 } from 'lucide-react';
 
 // Helper function to parse markdown-style lists and links
@@ -59,6 +60,7 @@ const Section = ({ title, children, icon: IconComponent }) => (
 
 const TimelineItem = ({ item, index = 0 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const ItemIcon = item.icon;
   
   // Extract details and links
@@ -77,13 +79,39 @@ const TimelineItem = ({ item, index = 0 }) => {
   return (
     <motion.div 
       layout 
-      className="timeline-item group"
-      onClick={() => setIsOpen(!isOpen)}
+      className="timeline-item group relative"
+      role="button"
+      tabIndex={0}
+      onClick={() => setIsOpen(prev => !prev)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setIsOpen(prev => !prev);
+        }
+      }}
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, amount: 0.1 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
+      <AnimatePresence>
+        {isHovered && !isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="pointer-events-none absolute top-3 right-3 flex items-center rounded-full bg-gray-900/80 px-2 py-1 text-[11px] font-medium text-gray-100 shadow-lg"
+          >
+            <MousePointerClick size={12} className="mr-1" />
+            Für Details klicken
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="timeline-dot">
         {ItemIcon && <ItemIcon size={10} className="timeline-dot-icon" />}
       </div>

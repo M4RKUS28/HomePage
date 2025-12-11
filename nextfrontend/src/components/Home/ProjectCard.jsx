@@ -81,6 +81,11 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
     setImageError(true);
   };
 
+  const trimmedName = project?.name?.trim();
+  const trimmedTitle = project?.title?.trim();
+  const primaryHeading = trimmedName || trimmedTitle || 'Untitled Project';
+  const secondaryHeading = trimmedName && trimmedTitle && trimmedName !== trimmedTitle ? trimmedTitle : null;
+
   return (
     <motion.div
       variants={cardVariants}
@@ -108,21 +113,30 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
           />
         </div>
         <div className="p-5">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className={`text-xl font-semibold leading-tight text-transparent bg-clip-text bg-gradient-to-r ${
-              theme === 'dark'
-                ? 'from-primary to-teal-400'
-                : 'from-teal-600 to-primary'
-            }`}>
-              {project.title}
-            </h3>
+          <div className="flex justify-between items-start mb-3 gap-3">
+            <div className="flex-1">
+              <h3 className={`text-xl font-semibold leading-tight text-transparent bg-clip-text bg-gradient-to-r ${
+                theme === 'dark'
+                  ? 'from-primary to-teal-400'
+                  : 'from-teal-600 to-primary'
+              }`}>
+                {primaryHeading}
+              </h3>
+              {secondaryHeading && (
+                <p className={`text-sm font-medium mt-1 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                  {secondaryHeading}
+                </p>
+              )}
+            </div>
             <StatusIndicator status={project.status} />
           </div>
-          <p className={`text-sm mb-4 min-h-[3.5rem] line-clamp-3 ${
+          <div className={`text-sm mb-4 min-h-[3.5rem] max-h-40 overflow-y-auto pr-1 whitespace-pre-line ${
             theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
           }`}>
             {project.description || "No description provided."}
-          </p>
+          </div>
         </div>
       </div>
       

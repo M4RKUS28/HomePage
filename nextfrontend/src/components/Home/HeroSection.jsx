@@ -11,10 +11,14 @@ const HeroSection = () => {
   const [loading, setLoading] = useState(true);
   const [cvData, setCvData] = useState(null);
   const [error, setError] = useState(null);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setImageLoading(true);
+      setImageFailed(false);
       try {
         // Fetch CV data
         const data = await getCVDataApi();
@@ -23,6 +27,8 @@ const HeroSection = () => {
       } catch (err) {
         console.error("Error fetching hero section data:", err);
         setError('Failed to load profile data.');
+        setImageLoading(false);
+        setImageFailed(false);
       } finally {
         setLoading(false);
       }
@@ -30,6 +36,51 @@ const HeroSection = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!cvData?.personalInfo) {
+      setImageLoading(false);
+      setImageFailed(false);
+      return;
+    }
+
+    const imageUrl = cvData.personalInfo.profileImage;
+
+    if (!imageUrl) {
+      setImageLoading(false);
+      setImageFailed(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    setImageFailed(false);
+    setImageLoading(true);
+
+    const img = new Image();
+
+    img.onload = () => {
+      if (!cancelled) {
+        setImageLoading(false);
+      }
+    };
+
+    img.onerror = () => {
+      if (!cancelled) {
+        console.warn("Failed to preload hero profile image, falling back to placeholder.");
+        setImageFailed(true);
+        setImageLoading(false);
+      }
+    };
+
+    img.src = imageUrl;
+
+    return () => {
+      cancelled = true;
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [cvData?.personalInfo?.profileImage]);
 
   const scrollToProjects = () => {
     document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
@@ -39,8 +90,11 @@ const HeroSection = () => {
     document.getElementById('cv')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // If loading, show spinner
-  if (loading) {
+  const hasProfileImage = Boolean(cvData?.personalInfo?.profileImage);
+  const shouldWaitForImage = !error && imageLoading && hasProfileImage && !imageFailed;
+
+  // Keep loading UI active until data and profile image are ready
+  if (loading || shouldWaitForImage) {
     return (
       <section className="min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center">
         <Spinner size="h-12 w-12" />
@@ -64,11 +118,21 @@ const HeroSection = () => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.8, type: "spring", stiffness: 100 }}
           >
-            <img 
-              src={ProfilePicPlaceholder} 
-              alt="Profile Placeholder"
-              className="w-36 h-36 md:w-48 md:h-48 rounded-full mx-auto mb-6 border-4 border-primary shadow-2xl object-cover" 
-            />
+            <div className="relative w-36 h-36 md:w-48 md:h-48 mx-auto mb-6">
+              {(imageLoading || !ProfilePicPlaceholder) && (
+                <div className="absolute inset-0 rounded-full bg-gray-700 animate-pulse"></div>
+              )}
+              <img 
+                src={ProfilePicPlaceholder}
+                className={`w-full h-full rounded-full border-4 border-primary shadow-2xl object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`} 
+                onLoad={() => setImageLoading(false)}
+                onError={(e) => {
+                  e.target.src = ProfilePicPlaceholder;
+                  setImageLoading(false);
+                }}
+                alt="Profile"
+              />
+            </div>
           </motion.div>
           
           {error ? (
@@ -120,6 +184,7 @@ const HeroSection = () => {
   const profileName = personalInfo?.name || 'Hello, I\'m Markus';
   const profileTitle = personalInfo?.title || 'A Creative Full Stack Developer & Tech Enthusiast';
   const profileImage = personalInfo?.profileImage;
+  const displayImage = !imageFailed && profileImage ? profileImage : ProfilePicPlaceholder;
 
   return (
     <motion.section
@@ -135,12 +200,24 @@ const HeroSection = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8, type: "spring", stiffness: 100 }}
         >
-          <img 
-            src={profileImage || ProfilePicPlaceholder}
-            className="w-36 h-36 md:w-48 md:h-48 rounded-full mx-auto mb-6 border-4 border-primary shadow-2xl object-cover" 
-            onError={(e) => e.target.src = ProfilePicPlaceholder}
-          />
-        </motion.div>        <AnimatedTextCharacter 
+          <div className="relative w-36 h-36 md:w-48 md:h-48 mx-auto mb-6">
+            {(imageLoading || !displayImage) && (
+              <div className="absolute inset-0 rounded-full bg-gray-700 animate-pulse"></div>
+            )}
+            <img 
+              src={displayImage}
+              className={`w-full h-full rounded-full border-4 border-primary shadow-2xl object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`} 
+              onLoad={() => setImageLoading(false)}
+              onError={(e) => {
+                e.target.src = ProfilePicPlaceholder;
+                setImageFailed(true);
+                setImageLoading(false);
+              }}
+              alt="Profile"
+            />
+          </div>
+        </motion.div>
+        <AnimatedTextCharacter 
           text={profileName} 
           el="h1" 
           className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent"
