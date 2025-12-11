@@ -134,9 +134,11 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
             </div>
             <StatusIndicator status={project.status} />
           </div>
-          <div className={`text-sm mb-4 min-h-[3.5rem] max-h-40 overflow-y-auto pr-1 whitespace-pre-line ${
-            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-          }`}>
+          <div
+            className={`text-sm mb-4 min-h-[3.5rem] max-h-32 overflow-y-auto pr-1 whitespace-pre-line scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}
+          >
             {project.description || "No description provided."}
           </div>
         </div>
