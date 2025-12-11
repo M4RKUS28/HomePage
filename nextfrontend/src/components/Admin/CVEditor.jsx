@@ -1,1001 +1,399 @@
-// frontend/src/components/Admin/CVEditor.jsx
-import React, { useCallback, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../hooks/useTheme';
 import Spinner from '../UI/Spinner';
-import Modal from '../UI/Modal';
-import { 
-  Plus, Edit, Trash2, Save, RefreshCw, Award, Briefcase, 
-  GraduationCap, Code, User, Link, Users, Zap, Download,
-  ArrowUp, ArrowDown
+import {
+  Save,
+  RefreshCw,
+  Award,
+  Briefcase,
+  GraduationCap,
+  Code,
+  User,
+  Link,
+  Users,
+  Zap,
+  Globe2,
 } from 'lucide-react';
 import { getCVDataApi, updateCVDataApi } from '../../api/cv';
+import CVSectionNav from './CVEditorParts/CVSectionNav';
+import PersonalInfoSection from './CVEditorParts/PersonalInfoSection';
+import SummarySection from './CVEditorParts/SummarySection';
+import ListSection from './CVEditorParts/ListSection';
+import SkillsSection from './CVEditorParts/SkillsSection';
+import RawDataSection from './CVEditorParts/RawDataSection';
+import EditItemModal from './CVEditorParts/EditItemModal';
+import ItemForms from './CVEditorParts/ItemForms';
 
-// Component for editing CV sections
+const navItems = [
+  { key: 'personalInfo', label: 'Personal', icon: User },
+  { key: 'summary', label: 'Summary', icon: User },
+  { key: 'skills', label: 'Skills', icon: Zap },
+  { key: 'experience', label: 'Experience', icon: Briefcase },
+  { key: 'education', label: 'Education', icon: GraduationCap },
+  { key: 'projectsHighlight', label: 'Projects', icon: Code },
+  { key: 'awards', label: 'Awards', icon: Award },
+  { key: 'volunteering', label: 'Volunteering', icon: Users },
+  { key: 'languages', label: 'Languages', icon: Globe2 },
+  { key: 'rawData', label: 'Raw Data', icon: Code },
+];
+
+const defaultCVData = {
+  summary: '',
+  personalInfo: {
+    name: '',
+    title: '',
+    profileImage: '',
+    headerText: '',
+    socialLinks: [],
+  },
+  experience: [],
+  education: [],
+  projectsHighlight: [],
+  awards: [],
+  skills: [],
+  volunteering: [],
+  languages: [],
+};
+
+const normalizeSection = (items, sectionKey, mapper) => {
+  const safeItems = Array.isArray(items) ? items : [];
+
+  return safeItems.map((item = {}, index) => {
+    const baseItem = {
+      id: item.id ?? `${sectionKey}-${index}-${Date.now()}`,
+      position: index,
+      ...item,
+    };
+
+    const mapped = mapper ? mapper(baseItem, index) : baseItem;
+    return { ...mapped, position: index };
+  });
+};
+
+const normalizeLinks = (links) => {
+  if (!Array.isArray(links)) return [];
+  return links.map((link = {}) => ({ text: link.text || '', url: link.url || '' }));
+};
+
+const normalizeCVData = (data) => {
+  const safeData = data || defaultCVData;
+
+  const personalInfo = {
+    name: safeData.personalInfo?.name || '',
+    title: safeData.personalInfo?.title || '',
+    profileImage: safeData.personalInfo?.profileImage || '',
+    headerText: safeData.personalInfo?.headerText || '',
+    socialLinks: Array.isArray(safeData.personalInfo?.socialLinks)
+      ? safeData.personalInfo.socialLinks.map((link = {}) => ({
+          platform: link.platform || '',
+          url: link.url || '',
+        }))
+      : [],
+  };
+
+  return {
+    summary: safeData.summary || '',
+    personalInfo,
+    experience: normalizeSection(safeData.experience, 'experience', (item) => ({
+      ...item,
+      role: item.role || '',
+      company: item.company || '',
+      period: item.period || '',
+      details: item.details || '',
+    })),
+    education: normalizeSection(safeData.education, 'education', (item) => ({
+      ...item,
+      degree: item.degree || '',
+      institution: item.institution || '',
+      period: item.period || '',
+      details: item.details || '',
+      logo: item.logo || '',
+    })),
+    projectsHighlight: normalizeSection(safeData.projectsHighlight, 'projectsHighlight', (item) => ({
+      ...item,
+      name: item.name || '',
+      period: item.period || '',
+      description: item.description || '',
+      logo: item.logo || '',
+      links: normalizeLinks(item.links),
+    })),
+    awards: normalizeSection(safeData.awards, 'awards', (item) => ({
+      ...item,
+      name: item.name || '',
+      date: item.date || '',
+      awardingBody: item.awardingBody || '',
+      details: item.details || '',
+      logo: item.logo || '',
+      links: normalizeLinks(item.links),
+    })),
+    skills: normalizeSection(safeData.skills, 'skills', (item) => ({
+      ...item,
+      name: item.name || '',
+      level: typeof item.level === 'number' ? item.level : Number(item.level) || 0,
+    })),
+    volunteering: normalizeSection(safeData.volunteering, 'volunteering', (item) => ({
+      ...item,
+      role: item.role || '',
+      organization: item.organization || '',
+      period: item.period || '',
+      details: item.details || '',
+      logo: item.logo || '',
+    })),
+    languages: normalizeSection(safeData.languages, 'languages', (item) => ({
+      ...item,
+      name: item.name || '',
+      level: item.level || 'Fluent',
+    })),
+  };
+};
+
+const buildNewItem = (sectionKey, position = 0) => {
+  switch (sectionKey) {
+    case 'experience':
+      return { id: Date.now(), position, role: '', company: '', period: '', details: '' };
+    case 'education':
+      return { id: Date.now(), position, degree: '', institution: '', period: '', details: '', logo: '' };
+    case 'projectsHighlight':
+      return { id: Date.now(), position, name: '', period: '', description: '', links: [], logo: '' };
+    case 'awards':
+      return { id: Date.now(), position, name: '', date: '', awardingBody: '', details: '', links: [], logo: '' };
+    case 'skills':
+      return { id: Date.now(), position, name: '', level: 50 };
+    case 'volunteering':
+      return { id: Date.now(), position, role: '', organization: '', period: '', details: '', logo: '' };
+    case 'languages':
+      return { id: Date.now(), position, name: '', level: 'Fluent' };
+    default:
+      return { id: Date.now(), position };
+  }
+};
+
+const reorderList = (items, fromIndex, toIndex) => {
+  const list = [...items];
+  const [moved] = list.splice(fromIndex, 1);
+  list.splice(toIndex, 0, moved);
+  return list.map((item, idx) => ({ ...item, position: idx }));
+};
+
 const CVEditor = () => {
   const { theme } = useTheme();
+  const { showToast } = useToast();
+
   const [cvData, setCVData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState('summary');
-  const [showItemModal, setShowItemModal] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
-  const [currentSectionKey, setCurrentSectionKey] = useState(null);
   const [rawDataText, setRawDataText] = useState('');
-  const { showToast } = useToast();
+  const [modalState, setModalState] = useState({ open: false, sectionKey: null });
+  const [currentItem, setCurrentItem] = useState(null);
 
-  // Initial data load
-  useEffect(() => {
-    fetchCVData();
-    }, []);
+  const setNormalizedData = (data) => {
+    const normalized = normalizeCVData(data);
+    setCVData(normalized);
+    setRawDataText(JSON.stringify(normalized, null, 2));
+  };
 
-    const fetchCVData = useCallback(async () => {
+  const fetchCVData = useCallback(async () => {
     setLoading(true);
     try {
-        const data = await getCVDataApi();
-        
-        // Initialize the CV data structure with empty arrays if they don't exist
-        const initializedData = {
-        summary: data?.summary || "",
-        experience: data?.experience || [],
-        education: data?.education || [],
-        projectsHighlight: data?.projectsHighlight || [],
-        awards: data?.awards || [],
-        skills: data?.skills || [],
-        volunteering: data?.volunteering || [],
-        languages: data?.languages || [],
-        personalInfo: data?.personalInfo || {
-            name: "",
-            title: "",
-            profileImage: "",
-            headerText: "",
-            socialLinks: []
-        }
-        };
-        
-        // Ensure personalInfo structure is complete
-        if (!initializedData.personalInfo.socialLinks) {
-        initializedData.personalInfo.socialLinks = [];
-        }
-        
-        setCVData(initializedData);
-        setError(null);
+      const data = await getCVDataApi();
+      setNormalizedData(data);
+      setError(null);
     } catch (err) {
-        console.error("Error fetching CV data:", err);
-        setError('Failed to load CV data. Please try again.');
-        
-        // Initialize with an empty structure if fetch fails
-        setCVData({
-        summary: "",
-        experience: [],
-        education: [],
-        projectsHighlight: [],
-        awards: [],
-        skills: [],
-        volunteering: [],
-        languages: [],
-        personalInfo: {
-            name: "",
-            title: "",
-            profileImage: "",
-            headerText: "",
-            socialLinks: []
-        }
-        });
+      console.error('Error fetching CV data:', err);
+      setError('Failed to load CV data. Please try again.');
+      setNormalizedData(defaultCVData);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    }, []);
+  }, []);
 
-  // Sync raw data text with cvData changes
   useEffect(() => {
-    if (cvData) {
-      setRawDataText(JSON.stringify(cvData, null, 2));
-    }
-  }, [cvData]);
+    fetchCVData();
+  }, [fetchCVData]);
 
   const saveCV = async () => {
+    if (!cvData) return;
     setSaving(true);
     try {
-      await updateCVDataApi(cvData);
-      showToast({ 
-        type: 'success', 
-        message: 'CV data saved successfully'
-      });
+      const normalized = normalizeCVData(cvData);
+      setNormalizedData(normalized);
+      await updateCVDataApi(normalized);
+      showToast({ type: 'success', message: 'CV data saved successfully' });
     } catch (err) {
-      console.error("Error saving CV data:", err);
-      showToast({ 
-        type: 'error', 
-        message: 'Failed to save CV data. Please try again.'
-      });
+      console.error('Error saving CV data:', err);
+      showToast({ type: 'error', message: 'Failed to save CV data. Please try again.' });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSummaryChange = (e) => {
-    setCVData(prev => ({
+  const updatePersonalInfo = (field, value) => {
+    setCVData((prev) => ({
       ...prev,
-      summary: e.target.value
+      personalInfo: { ...prev.personalInfo, [field]: value },
     }));
   };
 
-  const handlePersonalInfoChange = (field, value) => {
-    setCVData(prev => ({
-      ...prev,
-      personalInfo: {
-        ...prev.personalInfo,
-        [field]: value
-      }
-    }));
+  const updateSummary = (value) => {
+    setCVData((prev) => ({ ...prev, summary: value }));
   };
 
-  const handleSocialLinkChange = (index, field, value) => {
-    const updatedLinks = [...cvData.personalInfo.socialLinks];
-    updatedLinks[index] = {
-      ...updatedLinks[index],
-      [field]: value
-    };
-    
-    setCVData(prev => ({
-      ...prev,
-      personalInfo: {
-        ...prev.personalInfo,
-        socialLinks: updatedLinks
-      }
-    }));
+  const updateSocialLink = (index, field, value) => {
+    setCVData((prev) => {
+      const links = [...(prev.personalInfo.socialLinks || [])];
+      links[index] = { ...links[index], [field]: value };
+      return { ...prev, personalInfo: { ...prev.personalInfo, socialLinks: links } };
+    });
   };
 
   const addSocialLink = () => {
-    setCVData(prev => ({
+    setCVData((prev) => ({
       ...prev,
       personalInfo: {
         ...prev.personalInfo,
-        socialLinks: [
-          ...prev.personalInfo.socialLinks,
-          { platform: "", url: "" }
-        ]
-      }
+        socialLinks: [...(prev.personalInfo.socialLinks || []), { platform: '', url: '' }],
+      },
     }));
   };
 
   const removeSocialLink = (index) => {
-    const updatedLinks = [...cvData.personalInfo.socialLinks];
-    updatedLinks.splice(index, 1);
-    
-    setCVData(prev => ({
-      ...prev,
-      personalInfo: {
-        ...prev.personalInfo,
-        socialLinks: updatedLinks
-      }
-    }));
+    setCVData((prev) => {
+      const links = [...(prev.personalInfo.socialLinks || [])];
+      links.splice(index, 1);
+      return { ...prev, personalInfo: { ...prev.personalInfo, socialLinks: links } };
+    });
+  };
+
+  const openItemModal = (sectionKey, item) => {
+    setModalState({ open: true, sectionKey });
+    setCurrentItem(item);
   };
 
   const addItem = (sectionKey) => {
-    setCurrentSectionKey(sectionKey);
-    
-    // Get current items to determine next position
-    const currentItems = cvData[sectionKey] || [];
-    const nextPosition = currentItems.length;
-    
-    // Create a new blank item based on section type
-    let newItem = { id: Date.now(), position: nextPosition }; // Temporary id for frontend
-    
-    switch(sectionKey) {
-      case 'experience':
-        newItem = { ...newItem, role: "", company: "", period: "", details: "" };
-        break;
-      case 'education':
-        newItem = { ...newItem, degree: "", institution: "", period: "", details: "", logo: "" };
-        break;
-      case 'projectsHighlight':
-        newItem = { ...newItem, name: "", period: "", description: "", links: [], logo: "" };
-        break;
-      case 'awards':
-        newItem = { ...newItem, name: "", date: "", awardingBody: "", details: "", links: [], logo: "" };
-        break;
-      case 'skills':
-        newItem = { ...newItem, name: "", level: 50 };
-        break;
-      case 'volunteering':
-        newItem = { ...newItem, role: "", organization: "", period: "", details: "", logo: "" };
-        break;
-      case 'languages':
-        newItem = { ...newItem, name: "", level: "" };
-        break;
-      default:
-        break;
-    }
-    
-    setCurrentItem(newItem);
-    setShowItemModal(true);
+    const currentItems = cvData?.[sectionKey] || [];
+    const newItem = buildNewItem(sectionKey, currentItems.length);
+    openItemModal(sectionKey, newItem);
   };
 
   const editItem = (sectionKey, item) => {
-    setCurrentSectionKey(sectionKey);
-    setCurrentItem({...item}); // Clone to avoid direct mutation
-    setShowItemModal(true);
+    openItemModal(sectionKey, { ...item });
   };
 
-  const removeItem = async (sectionKey, itemId) => {
-    if (!window.confirm('Are you sure you want to remove this item?')) return;
-    
-    // Update state and get the new data
-    const updatedCVData = await new Promise((resolve) => {
-      setCVData(prev => {
-        const newData = {
-          ...prev,
-          [sectionKey]: prev[sectionKey].filter(item => item.id !== itemId)
-        };
-        resolve(newData);
-        return newData;
-      });
-    });
-    
-    // Automatically save to backend
-    try {
-      await updateCVDataApi(updatedCVData);
-      showToast({ 
-        type: 'success', 
-        message: 'Item removed and synced successfully'
-      });
-    } catch (err) {
-      console.error("Error auto-saving CV data after removal:", err);
-      showToast({ 
-        type: 'error', 
-        message: 'Item removed locally but failed to sync. Please try "Save All Changes" manually.'
-      });
-    }
+  const closeModal = () => {
+    setModalState({ open: false, sectionKey: null });
+    setCurrentItem(null);
   };
 
-  const moveItemUp = async (sectionKey, itemId) => {
-    const items = cvData[sectionKey] || [];
-    const currentIndex = items.findIndex(item => item.id === itemId);
-    
-    if (currentIndex <= 0) return; // Can't move up if it's already first
-    
-    // Update state and get the new data
-    const updatedCVData = await new Promise((resolve) => {
-      setCVData(prev => {
-        const newItems = [...prev[sectionKey]];
-        // Swap with previous item
-        [newItems[currentIndex], newItems[currentIndex - 1]] = [newItems[currentIndex - 1], newItems[currentIndex]];
-        
-        // Update position values to match array index
-        newItems.forEach((item, index) => {
-          item.position = index;
-        });
-        
-        const newData = {
-          ...prev,
-          [sectionKey]: newItems
-        };
-        resolve(newData);
-        return newData;
-      });
-    });
-    
-    // Automatically save to backend
+  const mutateAndSync = async (producer, successMessage) => {
+    const nextData = normalizeCVData(producer(cvData));
+    setNormalizedData(nextData);
     try {
-      await updateCVDataApi(updatedCVData);
-      showToast({ 
-        type: 'success', 
-        message: 'Item moved up and synced successfully'
-      });
+      await updateCVDataApi(nextData);
+      showToast({ type: 'success', message: successMessage });
     } catch (err) {
-      console.error("Error auto-saving CV data after move:", err);
-      showToast({ 
-        type: 'error', 
-        message: 'Item moved locally but failed to sync. Please try "Save All Changes" manually.'
-      });
-    }
-  };
-
-  const moveItemDown = async (sectionKey, itemId) => {
-    const items = cvData[sectionKey] || [];
-    const currentIndex = items.findIndex(item => item.id === itemId);
-    
-    if (currentIndex < 0 || currentIndex >= items.length - 1) return; // Can't move down if it's already last
-    
-    // Update state and get the new data
-    const updatedCVData = await new Promise((resolve) => {
-      setCVData(prev => {
-        const newItems = [...prev[sectionKey]];
-        // Swap with next item
-        [newItems[currentIndex], newItems[currentIndex + 1]] = [newItems[currentIndex + 1], newItems[currentIndex]];
-        
-        // Update position values to match array index
-        newItems.forEach((item, index) => {
-          item.position = index;
-        });
-        
-        const newData = {
-          ...prev,
-          [sectionKey]: newItems
-        };
-        resolve(newData);
-        return newData;
-      });
-    });
-    
-    // Automatically save to backend
-    try {
-      await updateCVDataApi(updatedCVData);
-      showToast({ 
-        type: 'success', 
-        message: 'Item moved down and synced successfully'
-      });
-    } catch (err) {
-      console.error("Error auto-saving CV data after move:", err);
-      showToast({ 
-        type: 'error', 
-        message: 'Item moved locally but failed to sync. Please try "Save All Changes" manually.'
+      console.error('Error syncing CV data:', err);
+      showToast({
+        type: 'error',
+        message: `${successMessage} locally, but sync failed. Try "Save All Changes" manually.`,
       });
     }
   };
 
   const handleItemSave = async () => {
-    if (!currentItem || !currentSectionKey) return;
-    
-    // Update existing or add new
-    const updatedCVData = await new Promise((resolve) => {
-      setCVData(prev => {
-        const existingItemIndex = prev[currentSectionKey].findIndex(item => item.id === currentItem.id);
-        
-        let newData;
-        if (existingItemIndex >= 0) {
-          // Update existing
-          const updatedItems = [...prev[currentSectionKey]];
-          updatedItems[existingItemIndex] = currentItem;
-          newData = {
-            ...prev,
-            [currentSectionKey]: updatedItems
-          };
+    if (!currentItem || !modalState.sectionKey) return;
+
+    await mutateAndSync(
+      (prev) => {
+        const list = [...(prev[modalState.sectionKey] || [])];
+        const existingIndex = list.findIndex((item) => item.id === currentItem.id);
+        if (existingIndex >= 0) {
+          list[existingIndex] = currentItem;
         } else {
-          // Add new
-          newData = {
-            ...prev,
-            [currentSectionKey]: [...prev[currentSectionKey], currentItem]
-          };
+          list.push(currentItem);
         }
-        
-        resolve(newData);
-        return newData;
-      });
-    });
-    
-    // Automatically save to backend
-    try {
-      await updateCVDataApi(updatedCVData);
-      showToast({ 
-        type: 'success', 
-        message: 'Item saved and synced successfully'
-      });
-    } catch (err) {
-      console.error("Error auto-saving CV data:", err);
-      showToast({ 
-        type: 'error', 
-        message: 'Item saved locally but failed to sync. Please try "Save All Changes" manually.'
-      });
-    }
-    
-    setShowItemModal(false);
-    setCurrentItem(null);
+        return { ...prev, [modalState.sectionKey]: list };
+      },
+      'Item saved and synced successfully'
+    );
+
+    closeModal();
+  };
+
+  const removeItem = async (sectionKey, itemId) => {
+    if (!window.confirm('Are you sure you want to remove this item?')) return;
+
+    await mutateAndSync(
+      (prev) => ({
+        ...prev,
+        [sectionKey]: (prev[sectionKey] || []).filter((item, idx) => item.id !== itemId && `${sectionKey}-${idx}` !== itemId),
+      }),
+      'Item removed and synced successfully'
+    );
+  };
+
+  const moveItem = async (sectionKey, itemId, direction) => {
+    const items = cvData?.[sectionKey] || [];
+    const currentIndex = items.findIndex((item, idx) => item.id === itemId || `${sectionKey}-${idx}` === itemId);
+    if (currentIndex < 0) return;
+
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= items.length) return;
+
+    await mutateAndSync(
+      (prev) => ({
+        ...prev,
+        [sectionKey]: reorderList(prev[sectionKey] || [], currentIndex, targetIndex),
+      }),
+      'Item reordered and synced successfully'
+    );
   };
 
   const handleItemChange = (field, value) => {
-    setCurrentItem(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setCurrentItem((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleLinkChange = (index, field, value) => {
-    if (!currentItem.links) {
-      setCurrentItem(prev => ({
-        ...prev,
-        links: [{ text: "", url: "" }]
-      }));
-      return;
-    }
-    
-    const updatedLinks = [...currentItem.links];
-    if (!updatedLinks[index]) {
-      updatedLinks[index] = { text: "", url: "" };
-    }
-    
-    updatedLinks[index] = {
-      ...updatedLinks[index],
-      [field]: value
-    };
-    
-    setCurrentItem(prev => ({
-      ...prev,
-      links: updatedLinks
-    }));
+    setCurrentItem((prev) => {
+      const links = [...(prev.links || [])];
+      links[index] = { ...links[index], [field]: value };
+      return { ...prev, links };
+    });
   };
 
   const addLink = () => {
-    setCurrentItem(prev => ({
-      ...prev,
-      links: [...(prev.links || []), { text: "", url: "" }]
-    }));
+    setCurrentItem((prev) => ({ ...prev, links: [...(prev.links || []), { text: '', url: '' }] }));
   };
 
   const removeLink = (index) => {
-    const updatedLinks = [...currentItem.links];
-    updatedLinks.splice(index, 1);
-    
-    setCurrentItem(prev => ({
-      ...prev,
-      links: updatedLinks
-    }));
-  };
-
-  // Loading state
-  if (loading) {
-    return <div className="flex justify-center py-20"><Spinner size="h-12 w-12" /></div>;
-  }
-
-  // Error state
-  if (error && !cvData) {
-    return (
-      <div className="bg-red-900/20 border border-red-500/50 text-red-300 p-4 rounded-lg text-center">
-        <p>{error}</p>
-        <button 
-          onClick={fetchCVData} 
-          className="mt-2 px-4 py-2 bg-red-500/30 hover:bg-red-500/50 rounded-md transition-colors flex items-center mx-auto"
-        >
-          <RefreshCw size={16} className="mr-2" /> Try Again
-        </button>
-      </div>
-    );
-  }
-
-  if (!cvData) return null;
-
-  const renderSectionNav = () => (
-    <div className="mb-8 flex gap-2">
-      <button 
-        onClick={() => setActiveSection('personalInfo')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'personalInfo' ? 'active' : ''}`}
-      >
-        <User size={15} className="mr-1.5" /> Personal
-      </button>
-      <button 
-        onClick={() => setActiveSection('summary')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'summary' ? 'active' : ''}`}
-      >
-        <User size={15} className="mr-1.5" /> Summary
-      </button>
-      <button 
-        onClick={() => setActiveSection('skills')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'skills' ? 'active' : ''}`}
-      >
-        <Zap size={15} className="mr-1.5" /> Skills
-      </button>
-      <button 
-        onClick={() => setActiveSection('experience')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'experience' ? 'active' : ''}`}
-      >
-        <Briefcase size={15} className="mr-1.5" /> Experience
-      </button>
-      <button 
-        onClick={() => setActiveSection('education')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'education' ? 'active' : ''}`}
-      >
-        <GraduationCap size={15} className="mr-1.5" /> Education
-      </button>
-      <button 
-        onClick={() => setActiveSection('projectsHighlight')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'projectsHighlight' ? 'active' : ''}`}
-      >
-        <Code size={15} className="mr-1.5" /> Projects
-      </button>
-      <button 
-        onClick={() => setActiveSection('awards')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'awards' ? 'active' : ''}`}
-      >
-        <Award size={15} className="mr-1.5" /> Awards
-      </button>
-      <button 
-        onClick={() => setActiveSection('volunteering')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'volunteering' ? 'active' : ''}`}
-      >
-        <Users size={15} className="mr-1.5" /> Volunteering
-      </button>
-      <button 
-        onClick={() => setActiveSection('rawData')}
-        className={`nav-button text-sm px-3 py-2.5 flex-1 ${activeSection === 'rawData' ? 'active' : ''}`}
-      >
-        <Code size={15} className="mr-1.5" /> Raw Data
-      </button>
-    </div>
-  );
-
-  
-    const renderPersonalInfoSection = () => (
-    <div className="section-card">
-        <h3 className="section-title">Personal Information</h3>
-        <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-            <label className="form-label">Name</label>
-            <input
-                type="text"
-                className="input-field"
-                value={cvData.personalInfo?.name || ''}
-                onChange={(e) => handlePersonalInfoChange('name', e.target.value)}
-            />
-            </div>
-            <div>
-            <label className="form-label">Title/Headline</label>
-            <input
-                type="text"
-                className="input-field"
-                value={cvData.personalInfo?.title || ''}
-                onChange={(e) => handlePersonalInfoChange('title', e.target.value)}
-            />
-            <p className="cv-hint-text">This appears under your name in the hero section</p>
-            </div>
-        </div>
-        
-        {/* Profile Image URL */}
-        <div>
-            <label className="form-label">Profile Image URL</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                    <input
-                        type="url"
-                        className="input-field"
-                        value={cvData.personalInfo?.profileImage || ''}
-                        onChange={(e) => handlePersonalInfoChange('profileImage', e.target.value)}
-                        placeholder="https://example.com/your-profile-image.jpg"
-                    />
-                    {cvData.personalInfo?.profileImage && (
-                        <div className="w-full max-w-[250px]">
-                            <img 
-                                src={cvData.personalInfo.profileImage} 
-                                alt="Profile preview" 
-                                className="w-full h-auto aspect-square object-cover rounded-lg border border-gray-300"
-                            />
-                        </div>
-                    )}
-                </div>
-                <div className="flex flex-col justify-center">
-                <p className="cv-text">
-                    This image will appear in the hero section of your portfolio.
-                    <br /><br />
-                    • Enter a direct URL to your profile image
-                    <br />
-                    • Works best with imgur, GitHub, or direct CDN links
-                    <br />
-                    • Base64 data URLs also supported
-                    <br />
-                    • Recommended: Square image, at least 300x300 pixels
-                    <br />
-                    • Supported formats: JPG, PNG, GIF, WebP
-                </p>
-                </div>
-            </div>
-        </div>
-        
-        <div>
-            <label className="form-label">Header Text</label>
-            <input
-            type="text"
-            className="input-field"
-            value={cvData.personalInfo?.headerText || ''}
-            onChange={(e) => handlePersonalInfoChange('headerText', e.target.value)}
-            />
-            <p className="cv-hint-text">This appears in the top-left corner of the site (currently "M4RKUS28")</p>
-        </div>
-        
-        <div>
-            <div className="flex justify-between items-center mb-2">
-            <label className="form-label mb-0">Social Links</label>
-            <button
-                type="button"
-                onClick={addSocialLink}
-                className="cv-btn-secondary"
-            >
-                <Plus size={14} className="mr-1" /> Add Link
-            </button>
-            </div>
-            
-            <div className="space-y-3">
-            {cvData.personalInfo?.socialLinks?.map((link, index) => (
-                <div key={index} className="flex space-x-2">
-                <select
-                    className="input-field w-1/3"
-                    value={link.platform || ''}
-                    onChange={(e) => handleSocialLinkChange(index, 'platform', e.target.value)}
-                >
-                    <option value="">Select Platform</option>
-                    <option value="github">GitHub</option>
-                    <option value="linkedin">LinkedIn</option>
-                    <option value="twitter">Twitter</option>
-                    <option value="email">Email</option>
-                    <option value="website">Website</option>
-                </select>
-                <input
-                    type="text"
-                    className="input-field flex-1"
-                    placeholder="URL"
-                    value={link.url || ''}
-                    onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)}
-                />
-                <button
-                    type="button"
-                    onClick={() => removeSocialLink(index)}
-                    className={`btn btn-sm ${
-                      theme === 'dark' 
-                        ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' 
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
-                    }`}
-                    title="Remove Link"
-                >
-                    <Trash2 size={14} />
-                </button>
-                </div>
-            ))}
-            </div>
-        </div>
-        </div>
-    </div>
-    );
-
-  const renderSummarySection = () => (
-    <div className="section-card">
-      <h3 className="section-title">Summary</h3>
-      <textarea
-        className="input-field w-full h-40"
-        value={cvData.summary}
-        onChange={handleSummaryChange}
-        placeholder="Write a brief professional summary..."
-      />
-    </div>
-  );
-
-  const renderListSection = (sectionKey, title, itemRenderer) => {
-    const items = cvData[sectionKey] || [];
-    
-    // Sort items by position, fallback to creation order if no position
-    const sortedItems = [...items].sort((a, b) => {
-      if (a.position !== undefined && b.position !== undefined) {
-        return a.position - b.position;
-      }
-      // Fallback to id-based sorting if no position
-      return (a.id || 0) - (b.id || 0);
+    setCurrentItem((prev) => {
+      const links = [...(prev.links || [])];
+      links.splice(index, 1);
+      return { ...prev, links };
     });
-    
-    return (
-      <div className="section-card">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="section-title mb-0">{title}</h3>
-          <button
-            type="button"
-            onClick={() => addItem(sectionKey)}
-            className="btn btn-sm btn-primary flex items-center"
-          >
-            <Plus size={14} className="mr-1" /> Add Item
-          </button>
-        </div>
-        
-        {sortedItems.length > 0 ? (
-          <div className="space-y-4">
-            {sortedItems.map((item, index) => (
-              <div key={item.id} className={`cv-item-card border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} rounded-md p-4`}>
-                {itemRenderer(item)}
-                <div className="flex justify-between items-center mt-3">
-                  <div className="flex space-x-1">
-                    <button
-                      type="button"
-                      onClick={() => moveItemUp(sectionKey, item.id)}
-                      disabled={index === 0}
-                      className={`btn btn-sm flex items-center ${
-                        index === 0 
-                          ? 'cv-btn-secondary opacity-50 cursor-not-allowed' 
-                          : 'cv-btn-secondary'
-                      }`}
-                      title="Move up"
-                    >
-                      <ArrowUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItemDown(sectionKey, item.id)}
-                      disabled={index === sortedItems.length - 1}
-                      className={`btn btn-sm flex items-center ${
-                        index === sortedItems.length - 1 
-                          ? 'cv-btn-secondary opacity-50 cursor-not-allowed' 
-                          : 'cv-btn-secondary'
-                      }`}
-                      title="Move down"
-                    >
-                      <ArrowDown size={14} />
-                    </button>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => editItem(sectionKey, item)}
-                      className={`btn btn-sm flex items-center ${
-                        theme === 'dark' 
-                          ? 'bg-blue-900/50 text-blue-300 hover:bg-blue-900/70' 
-                          : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                      }`}
-                    >
-                      <Edit size={14} className="mr-1" /> Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(sectionKey, item.id)}
-                      className={`btn btn-sm flex items-center ${
-                        theme === 'dark' 
-                          ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' 
-                          : 'bg-red-100 text-red-800 hover:bg-red-200'
-                      }`}
-                    >
-                      <Trash2 size={14} className="mr-1" /> Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="cv-empty-state">No items yet. Click "Add Item" to get started.</p>
-        )}
-      </div>
-    );
-  };
-
-  const renderExperienceItem = (item) => (
-    <>
-      <div className="flex justify-between">
-        <h4 className="cv-title">{item.role || "Untitled Role"}</h4>
-        <span className="cv-subtitle">{item.period || "No Date"}</span>
-      </div>
-      <div className="text-primary">{item.company || "Untitled Company"}</div>
-      <div className="cv-text mt-2">{item.details || "No details"}</div>
-    </>
-  );
-
-  const renderEducationItem = (item) => (
-    <>
-      <div className="flex justify-between">
-        <div className="flex items-center">
-          {item.logo && (
-            <img 
-              src={item.logo} 
-              alt={`${item.institution} logo`} 
-              className="w-8 h-8 object-contain mr-3 rounded"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          )}
-          <h4 className="cv-title">{item.degree || "Untitled Degree"}</h4>
-        </div>
-        <span className="cv-subtitle">{item.period || "No Date"}</span>
-      </div>
-      <div className="text-primary">{item.institution || "Untitled Institution"}</div>
-      {item.details && <div className="cv-text mt-2">{item.details}</div>}
-    </>
-  );
-
-  const renderProjectItem = (item) => (
-    <>
-      <div className="flex justify-between">
-        <div className="flex items-center">
-          {item.logo && (
-            <img 
-              src={item.logo} 
-              alt={`${item.name} logo`} 
-              className="w-8 h-8 object-contain mr-3 rounded"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          )}
-          <h4 className="cv-title">{item.name || "Untitled Project"}</h4>
-        </div>
-        <span className="cv-subtitle">{item.period || "No Date"}</span>
-      </div>
-      <div className="cv-text mt-2">{item.description || "No description"}</div>
-      {item.links && item.links.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {item.links.map((link, idx) => (
-            <a 
-              key={idx} 
-              href={link.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-700 text-white"
-            >
-              <Link size={12} className="mr-1" /> {link.text || "Link"}
-            </a>
-          ))}
-        </div>
-      )}
-    </>
-  );
-
-  const renderAwardItem = (item) => (
-    <>
-      <div className="flex justify-between">
-        <div className="flex items-center">
-          {item.logo && (
-            <img 
-              src={item.logo} 
-              alt={`${item.awardingBody} logo`} 
-              className="w-8 h-8 object-contain mr-3 rounded"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          )}
-          <h4 className="cv-title">{item.name || "Untitled Award"}</h4>
-        </div>
-        <span className="cv-subtitle">{item.date || "No Date"}</span>
-      </div>
-      <div className="text-primary">{item.awardingBody || "Untitled Organization"}</div>
-      {item.details && <div className="cv-text mt-2">{item.details}</div>}
-      {item.links && item.links.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {item.links.map((link, idx) => (
-            <a 
-              key={idx} 
-              href={link.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="cv-tag"
-            >
-              <Link size={12} className="mr-1" /> {link.text || "Link"}
-            </a>
-          ))}
-        </div>
-      )}
-    </>
-  );
-
-  const renderVolunteeringItem = (item) => (
-    <>
-      <div className="flex justify-between">
-        <div className="flex items-center">
-          {item.logo && (
-            <img 
-              src={item.logo} 
-              alt={`${item.organization} logo`} 
-              className="w-8 h-8 object-contain mr-3 rounded"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          )}
-          <h4 className="text-lg font-medium text-white">{item.role || "Untitled Role"}</h4>
-        </div>
-        <span className="text-sm text-gray-400">{item.period || "No Date"}</span>
-      </div>
-      <div className="text-primary">{item.organization || "Untitled Organization"}</div>
-      <div className="mt-2 text-sm text-gray-300 whitespace-pre-line">{item.details || "No details"}</div>
-    </>
-  );
-
-  const renderSkillsSection = () => (
-    <div className="section-card">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="section-title mb-0">Skills</h3>
-        <button
-          type="button"
-          onClick={() => addItem('skills')}
-          className="btn btn-sm btn-primary flex items-center"
-        >
-          <Plus size={14} className="mr-1" /> Add Skill
-        </button>
-      </div>
-      
-      {cvData.skills.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {cvData.skills.map(skill => (
-            <div key={skill.id || skill.name} className={`cv-item-card border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} rounded-md p-4`}>
-              <div className="flex justify-between items-center">
-                <span className="cv-title">{skill.name || "Untitled Skill"}</span>
-                <span className="text-primary text-sm">{skill.level}%</span>
-              </div>
-              <div className="mt-2 w-full bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-primary h-full rounded-full" 
-                  style={{ width: `${skill.level}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-end space-x-2 mt-3">
-                <button
-                  type="button"
-                  onClick={() => editItem('skills', skill)}
-                  className={`btn btn-sm flex items-center ${
-                    theme === 'dark' 
-                      ? 'bg-blue-900/50 text-blue-300 hover:bg-blue-900/70' 
-                      : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                  }`}
-                >
-                  <Edit size={14} className="mr-1" /> Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeItem('skills', skill.id)}
-                  className={`btn btn-sm flex items-center ${
-                    theme === 'dark' 
-                      ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' 
-                      : 'bg-red-100 text-red-800 hover:bg-red-200'
-                  }`}
-                >
-                  <Trash2 size={14} className="mr-1" /> Remove
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-400 text-center py-6">No skills added yet. Click "Add Skill" to get started.</p>
-      )}
-    </div>
-  );
-
-  const handleRawDataChange = (value) => {
-    setRawDataText(value);
   };
 
   const applyRawDataChanges = () => {
     try {
-      // Trim whitespace and check if empty
-      const trimmedText = rawDataText.trim();
-      if (!trimmedText) {
-        showToast({ 
-          type: 'error', 
-          message: 'JSON data cannot be empty'
-        });
+      const trimmed = rawDataText.trim();
+      if (!trimmed) {
+        showToast({ type: 'error', message: 'JSON data cannot be empty' });
         return;
       }
 
-      // Parse JSON with detailed error handling
-      const parsedData = JSON.parse(trimmedText);
-      
-      // Basic structure validation
-      if (typeof parsedData !== 'object' || parsedData === null) {
-        showToast({ 
-          type: 'error', 
-          message: 'JSON must be a valid object structure'
-        });
-        return;
-      }
-
-      setCVData(parsedData);
-      showToast({ 
-        type: 'success', 
-        message: 'Raw data applied successfully'
-      });
-    } catch (error) {
+      const parsed = JSON.parse(trimmed);
+      setNormalizedData(parsed);
+      showToast({ type: 'success', message: 'Raw data applied successfully' });
+    } catch (err) {
       let errorMessage = 'Invalid JSON format';
-      
-      // Provide more specific error messages
-      if (error.message.includes('Unexpected token')) {
-        errorMessage = `JSON Syntax Error: ${error.message}`;
-      } else if (error.message.includes('Unexpected end')) {
+      if (err.message.includes('Unexpected token')) {
+        errorMessage = `JSON Syntax Error: ${err.message}`;
+      } else if (err.message.includes('Unexpected end')) {
         errorMessage = 'JSON Error: Unexpected end of data - missing closing bracket or quote';
-      } else if (error.message.includes('position')) {
-        errorMessage = `JSON Error: ${error.message}`;
       }
-      
-      showToast({ 
-        type: 'error', 
-        message: errorMessage,
-        duration: 6000 // Longer duration for error messages
-      });
+      showToast({ type: 'error', message: errorMessage, duration: 6000 });
     }
   };
 
@@ -1010,564 +408,294 @@ const CVEditor = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
-    showToast({ 
-      type: 'success', 
-      message: 'CV data downloaded successfully'
-    });
+    showToast({ type: 'success', message: 'CV data downloaded successfully' });
   };
 
-  const renderRawDataSection = () => (
-    <div className="section-card">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="section-title mb-0">Raw CV Data</h3>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={applyRawDataChanges}
-            className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
-          >
-            <Save size={14} className="mr-1" /> Apply Changes
-          </button>
-          <button
-            type="button"
-            onClick={downloadRawData}
-            className="btn btn-sm bg-green-900/50 text-green-300 hover:bg-green-900/70 flex items-center"
-          >
-            <Download size={14} className="mr-1" /> Download JSON
-          </button>
-        </div>
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Spinner size="h-12 w-12" />
       </div>
-      
-      <div className="space-y-4">
-        <p className="text-sm text-gray-400">
-          Edit the raw JSON data directly. Be careful with the syntax - invalid JSON will be rejected.
-        </p>
-        
-        <textarea
-          className="input-field w-full min-h-[800px] font-mono text-sm resize-y"
-          value={rawDataText}
-          onChange={(e) => handleRawDataChange(e.target.value)}
-          placeholder="Loading CV data..."
-          spellCheck={false}
-          style={{ height: '800px' }}
-        />
-        
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Use Ctrl+A to select all, Ctrl+C to copy</span>
-          <span>Lines: {rawDataText.split('\n').length} | Characters: {rawDataText.length}</span>
-        </div>
+    );
+  }
+
+  if (error && !cvData) {
+    return (
+      <div className="bg-red-900/20 border border-red-500/50 text-red-300 p-4 rounded-lg text-center">
+        <p>{error}</p>
+        <button
+          onClick={fetchCVData}
+          className="mt-2 px-4 py-2 bg-red-500/30 hover:bg-red-500/50 rounded-md transition-colors flex items-center mx-auto"
+        >
+          <RefreshCw size={16} className="mr-2" /> Try Again
+        </button>
       </div>
-    </div>
+    );
+  }
+
+  if (!cvData) return null;
+
+  const renderExperienceItem = (item) => (
+    <>
+      <div className="flex justify-between">
+        <h4 className="cv-title">{item.role || 'Untitled Role'}</h4>
+        <span className="cv-subtitle">{item.period || 'No Date'}</span>
+      </div>
+      <div className="text-primary">{item.company || 'Untitled Company'}</div>
+      <div className="cv-text mt-2">{item.details || 'No details'}</div>
+    </>
+  );
+
+  const renderEducationItem = (item) => (
+    <>
+      <div className="flex justify-between">
+        <div className="flex items-center">
+          {item.logo && (
+            <img
+              src={item.logo}
+              alt={`${item.institution} logo`}
+              className="w-8 h-8 object-contain mr-3 rounded"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          <h4 className="cv-title">{item.degree || 'Untitled Degree'}</h4>
+        </div>
+        <span className="cv-subtitle">{item.period || 'No Date'}</span>
+      </div>
+      <div className="text-primary">{item.institution || 'Untitled Institution'}</div>
+      {item.details && <div className="cv-text mt-2">{item.details}</div>}
+    </>
+  );
+
+  const renderProjectItem = (item) => (
+    <>
+      <div className="flex justify-between">
+        <div className="flex items-center">
+          {item.logo && (
+            <img
+              src={item.logo}
+              alt={`${item.name} logo`}
+              className="w-8 h-8 object-contain mr-3 rounded"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          <h4 className="cv-title">{item.name || 'Untitled Project'}</h4>
+        </div>
+        <span className="cv-subtitle">{item.period || 'No Date'}</span>
+      </div>
+      <div className="cv-text mt-2">{item.description || 'No description'}</div>
+      {item.links && item.links.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {item.links.map((link, idx) => (
+            <a
+              key={idx}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-700 text-white"
+            >
+              <Link size={12} className="mr-1" /> {link.text || 'Link'}
+            </a>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  const renderAwardItem = (item) => (
+    <>
+      <div className="flex justify-between">
+        <div className="flex items-center">
+          {item.logo && (
+            <img
+              src={item.logo}
+              alt={`${item.awardingBody} logo`}
+              className="w-8 h-8 object-contain mr-3 rounded"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          <h4 className="cv-title">{item.name || 'Untitled Award'}</h4>
+        </div>
+        <span className="cv-subtitle">{item.date || 'No Date'}</span>
+      </div>
+      <div className="text-primary">{item.awardingBody || 'Untitled Organization'}</div>
+      {item.details && <div className="cv-text mt-2">{item.details}</div>}
+      {item.links && item.links.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {item.links.map((link, idx) => (
+            <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="cv-tag">
+              <Link size={12} className="mr-1" /> {link.text || 'Link'}
+            </a>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  const renderVolunteeringItem = (item) => (
+    <>
+      <div className="flex justify-between">
+        <div className="flex items-center">
+          {item.logo && (
+            <img
+              src={item.logo}
+              alt={`${item.organization} logo`}
+              className="w-8 h-8 object-contain mr-3 rounded"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          <h4 className="text-lg font-medium text-white">{item.role || 'Untitled Role'}</h4>
+        </div>
+        <span className="text-sm text-gray-400">{item.period || 'No Date'}</span>
+      </div>
+      <div className="text-primary">{item.organization || 'Untitled Organization'}</div>
+      <div className="mt-2 text-sm text-gray-300 whitespace-pre-line">{item.details || 'No details'}</div>
+    </>
+  );
+
+  const renderLanguageItem = (item) => (
+    <>
+      <div className="flex justify-between items-center">
+        <h4 className="cv-title">{item.name || 'Untitled Language'}</h4>
+        <span className="cv-subtitle">{item.level || 'No Level'}</span>
+      </div>
+    </>
   );
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'personalInfo':
-        return renderPersonalInfoSection();
+        return (
+          <PersonalInfoSection
+            personalInfo={cvData.personalInfo}
+            onChange={updatePersonalInfo}
+            onAddSocialLink={addSocialLink}
+            onSocialLinkChange={updateSocialLink}
+            onRemoveSocialLink={removeSocialLink}
+            theme={theme}
+          />
+        );
       case 'summary':
-        return renderSummarySection();
+        return <SummarySection summary={cvData.summary} onChange={updateSummary} />;
       case 'experience':
-        return renderListSection('experience', 'Experience', renderExperienceItem);
+        return (
+          <ListSection
+            sectionKey="experience"
+            title="Experience"
+            items={cvData.experience}
+            renderItem={renderExperienceItem}
+            onAdd={addItem}
+            onMoveUp={(key, id) => moveItem(key, id, 'up')}
+            onMoveDown={(key, id) => moveItem(key, id, 'down')}
+            onEdit={editItem}
+            onRemove={removeItem}
+            theme={theme}
+          />
+        );
       case 'education':
-        return renderListSection('education', 'Education', renderEducationItem);
+        return (
+          <ListSection
+            sectionKey="education"
+            title="Education"
+            items={cvData.education}
+            renderItem={renderEducationItem}
+            onAdd={addItem}
+            onMoveUp={(key, id) => moveItem(key, id, 'up')}
+            onMoveDown={(key, id) => moveItem(key, id, 'down')}
+            onEdit={editItem}
+            onRemove={removeItem}
+            theme={theme}
+          />
+        );
       case 'projectsHighlight':
-        return renderListSection('projectsHighlight', 'Projects', renderProjectItem);
+        return (
+          <ListSection
+            sectionKey="projectsHighlight"
+            title="Projects"
+            items={cvData.projectsHighlight}
+            renderItem={renderProjectItem}
+            onAdd={addItem}
+            onMoveUp={(key, id) => moveItem(key, id, 'up')}
+            onMoveDown={(key, id) => moveItem(key, id, 'down')}
+            onEdit={editItem}
+            onRemove={removeItem}
+            theme={theme}
+          />
+        );
       case 'awards':
-        return renderListSection('awards', 'Awards & Achievements', renderAwardItem);
+        return (
+          <ListSection
+            sectionKey="awards"
+            title="Awards & Achievements"
+            items={cvData.awards}
+            renderItem={renderAwardItem}
+            onAdd={addItem}
+            onMoveUp={(key, id) => moveItem(key, id, 'up')}
+            onMoveDown={(key, id) => moveItem(key, id, 'down')}
+            onEdit={editItem}
+            onRemove={removeItem}
+            theme={theme}
+          />
+        );
       case 'skills':
-        return renderSkillsSection();
+        return (
+          <SkillsSection
+            skills={cvData.skills}
+            theme={theme}
+            onAdd={() => addItem('skills')}
+            onEdit={(item) => editItem('skills', item)}
+            onRemove={(id) => removeItem('skills', id)}
+          />
+        );
       case 'volunteering':
-        return renderListSection('volunteering', 'Volunteering', renderVolunteeringItem);
+        return (
+          <ListSection
+            sectionKey="volunteering"
+            title="Volunteering"
+            items={cvData.volunteering}
+            renderItem={renderVolunteeringItem}
+            onAdd={addItem}
+            onMoveUp={(key, id) => moveItem(key, id, 'up')}
+            onMoveDown={(key, id) => moveItem(key, id, 'down')}
+            onEdit={editItem}
+            onRemove={removeItem}
+            theme={theme}
+          />
+        );
+      case 'languages':
+        return (
+          <ListSection
+            sectionKey="languages"
+            title="Languages"
+            items={cvData.languages}
+            renderItem={renderLanguageItem}
+            onAdd={addItem}
+            onMoveUp={(key, id) => moveItem(key, id, 'up')}
+            onMoveDown={(key, id) => moveItem(key, id, 'down')}
+            onEdit={editItem}
+            onRemove={removeItem}
+            theme={theme}
+          />
+        );
       case 'rawData':
-        return renderRawDataSection();
+        return (
+          <RawDataSection
+            rawDataText={rawDataText}
+            onChange={setRawDataText}
+            onApply={applyRawDataChanges}
+            onDownload={downloadRawData}
+          />
+        );
       default:
         return <p>Select a section to edit</p>;
-    }
-  };
-
-  const renderExperienceForm = () => (
-    <>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Role/Position</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.role || ''}
-            onChange={(e) => handleItemChange('role', e.target.value)}
-            placeholder="e.g. Software Engineer"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Company/Organization</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.company || ''}
-            onChange={(e) => handleItemChange('company', e.target.value)}
-            placeholder="e.g. Google"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Time Period</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.period || ''}
-            onChange={(e) => handleItemChange('period', e.target.value)}
-            placeholder="e.g. Jan 2020 - Present"
-          />
-        </div>
-        <div>
-          <label className="form-label">Details</label>
-          <textarea
-            className="input-field h-32"
-            value={currentItem.details || ''}
-            onChange={(e) => handleItemChange('details', e.target.value)}
-            placeholder="Describe your responsibilities and achievements..."
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Use markdown-style formatting: lines starting with "- " will be shown as bullet points
-          </p>
-        </div>
-
-        {/* Add this new field for logo */}
-        <div>
-          <label className="form-label">Company Logo URL (Optional)</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.logo || ''}
-            onChange={(e) => handleItemChange('logo', e.target.value)}
-            placeholder="e.g. https://example.com/company-logo.png"
-          />
-        </div>
-
-      </div>
-    </>
-  );
-
-  const renderEducationForm = () => (
-    <>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Degree/Certificate</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.degree || ''}
-            onChange={(e) => handleItemChange('degree', e.target.value)}
-            placeholder="e.g. B.Sc. Computer Science"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Institution</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.institution || ''}
-            onChange={(e) => handleItemChange('institution', e.target.value)}
-            placeholder="e.g. Stanford University"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Time Period</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.period || ''}
-            onChange={(e) => handleItemChange('period', e.target.value)}
-            placeholder="e.g. 2018 - 2022"
-          />
-        </div>
-        <div>
-          <label className="form-label">Details (Optional)</label>
-          <textarea
-            className="input-field h-24"
-            value={currentItem.details || ''}
-            onChange={(e) => handleItemChange('details', e.target.value)}
-            placeholder="Additional information about your education..."
-          />
-        </div>
-
-        {/* Add this new field for logo */}
-        <div>
-          <label className="form-label">Logo URL (Optional)</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.logo || ''}
-            onChange={(e) => handleItemChange('logo', e.target.value)}
-            placeholder="e.g. https://example.com/logo.png"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Enter a URL for the institution's logo if available
-          </p>
-        </div>
-
-      </div>
-    </>
-  );
-
-  const renderProjectForm = () => (
-    <>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Project Name</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.name || ''}
-            onChange={(e) => handleItemChange('name', e.target.value)}
-            placeholder="e.g. Portfolio Website"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Time Period</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.period || ''}
-            onChange={(e) => handleItemChange('period', e.target.value)}
-            placeholder="e.g. Mar 2023 - Present"
-          />
-        </div>
-        <div>
-          <label className="form-label">Description</label>
-          <textarea
-            className="input-field h-32"
-            value={currentItem.description || ''}
-            onChange={(e) => handleItemChange('description', e.target.value)}
-            placeholder="Describe your project..."
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Use markdown-style formatting: lines starting with "- " will be shown as bullet points
-          </p>
-        </div>
-
-        <div>
-          <label className="form-label">Project Logo/Icon URL (Optional)</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.logo || ''}
-            onChange={(e) => handleItemChange('logo', e.target.value)}
-            placeholder="e.g. https://example.com/project-icon.png"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Enter a URL for the project's logo or icon if available
-          </p>
-        </div>
-        
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="form-label mb-0">Links</label>
-            <button
-              type="button"
-              onClick={addLink}
-              className="cv-btn-secondary"
-            >
-              <Plus size={14} className="mr-1" /> Add Link
-            </button>
-          </div>
-          
-          <div className="space-y-3">
-            {currentItem.links?.map((link, index) => (
-              <div key={index} className="flex space-x-2">
-                <input
-                  type="text"
-                  className="input-field w-1/3"
-                  placeholder="Text"
-                  value={link.text || ''}
-                  onChange={(e) => handleLinkChange(index, 'text', e.target.value)}
-                />
-                <input
-                  type="text"
-                  className="input-field flex-1"
-                  placeholder="URL"
-                  value={link.url || ''}
-                  onChange={(e) => handleLinkChange(index, 'url', e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeLink(index)}
-                  className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70"
-                  title="Remove Link"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-
-  const renderAwardForm = () => (
-    <>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Award Name</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.name || ''}
-            onChange={(e) => handleItemChange('name', e.target.value)}
-            placeholder="e.g. Best Paper Award"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Awarding Organization</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.awardingBody || ''}
-            onChange={(e) => handleItemChange('awardingBody', e.target.value)}
-            placeholder="e.g. ACM SIGCHI"
-          />
-        </div>
-        <div>
-          <label className="form-label">Date</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.date || ''}
-            onChange={(e) => handleItemChange('date', e.target.value)}
-            placeholder="e.g. May 2023"
-          />
-        </div>
-        <div>
-          <label className="form-label">Details (Optional)</label>
-          <textarea
-            className="input-field h-24"
-            value={currentItem.details || ''}
-            onChange={(e) => handleItemChange('details', e.target.value)}
-            placeholder="Additional information about the award..."
-          />
-        </div>
-        
-        <div>
-          <label className="form-label">Logo URL (Optional)</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.logo || ''}
-            onChange={(e) => handleItemChange('logo', e.target.value)}
-            placeholder="e.g. https://example.com/logo.png"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Enter a URL for the awarding organization's logo if available
-          </p>
-        </div>
-        
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="form-label mb-0">Links (Optional)</label>
-            <button
-              type="button"
-              onClick={addLink}
-              className="cv-btn-secondary"
-            >
-              <Plus size={14} className="mr-1" /> Add Link
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {currentItem.links?.map((link, index) => (
-              <div key={index} className="flex space-x-2">
-                <input
-                  type="text"
-                  className="input-field w-1/3"
-                  placeholder="Text"
-                  value={link.text || ''}
-                  onChange={(e) => handleLinkChange(index, 'text', e.target.value)}
-                />
-                <input
-                  type="text"
-                  className="input-field flex-1"
-                  placeholder="URL"
-                  value={link.url || ''}
-                  onChange={(e) => handleLinkChange(index, 'url', e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeLink(index)}
-                  className="btn btn-sm bg-red-900/50 text-red-300 hover:bg-red-900/70"
-                  title="Remove Link"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-
-  const renderSkillForm = () => (
-    <>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Skill Name</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.name || ''}
-            onChange={(e) => handleItemChange('name', e.target.value)}
-            placeholder="e.g. JavaScript"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Proficiency Level (0-100%)</label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            className="w-full accent-primary"
-            value={currentItem.level || 50}
-            onChange={(e) => handleItemChange('level', parseInt(e.target.value))}
-          />
-          <div className="flex justify-between text-xs text-gray-400">
-            <span>Beginner</span>
-            <span>{currentItem.level || 50}%</span>
-            <span>Expert</span>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-
-  const renderVolunteeringForm = () => (
-    <>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Role/Position</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.role || ''}
-            onChange={(e) => handleItemChange('role', e.target.value)}
-            placeholder="e.g. Volunteer Coordinator"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Organization</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.organization || ''}
-            onChange={(e) => handleItemChange('organization', e.target.value)}
-            placeholder="e.g. Red Cross"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Time Period</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.period || ''}
-            onChange={(e) => handleItemChange('period', e.target.value)}
-            placeholder="e.g. Jun 2021 - Present"
-          />
-        </div>
-        <div>
-          <label className="form-label">Details</label>
-          <textarea
-            className="input-field h-32"
-            value={currentItem.details || ''}
-            onChange={(e) => handleItemChange('details', e.target.value)}
-            placeholder="Describe your responsibilities and achievements..."
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Use markdown-style formatting: lines starting with "- " will be shown as bullet points
-          </p>
-        </div>
-
-        {/* Add this new field for logo */}
-        <div>
-          <label className="form-label">Organization Logo URL (Optional)</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.logo || ''}
-            onChange={(e) => handleItemChange('logo', e.target.value)}
-            placeholder="e.g. https://example.com/org-logo.png"
-          />
-        </div>
-
-      </div>
-    </>
-  );
-
-  const renderLanguageForm = () => (
-    <>
-      <div className="space-y-4">
-        <div>
-          <label className="form-label">Language</label>
-          <input
-            type="text"
-            className="input-field"
-            value={currentItem.name || ''}
-            onChange={(e) => handleItemChange('name', e.target.value)}
-            placeholder="e.g. English"
-            required
-          />
-        </div>
-        <div>
-          <label className="form-label">Proficiency Level</label>
-          <select
-            className="input-field"
-            value={currentItem.level || ''}
-            onChange={(e) => handleItemChange('level', e.target.value)}
-            required
-          >
-            <option value="">Select Level</option>
-            <option value="A1">A1 (Beginner)</option>
-            <option value="A2">A2 (Elementary)</option>
-            <option value="B1">B1 (Intermediate)</option>
-            <option value="B2">B2 (Upper Intermediate)</option>
-            <option value="C1">C1 (Advanced)</option>
-            <option value="C2">C2 (Proficient)</option>
-            <option value="Native">Native</option>
-          </select>
-        </div>
-      </div>
-    </>
-  );
-
-  const renderFormForSection = () => {
-    if (!currentSectionKey || !currentItem) return null;
-    
-    switch(currentSectionKey) {
-      case 'experience':
-        return renderExperienceForm();
-      case 'education':
-        return renderEducationForm();
-      case 'projectsHighlight':
-        return renderProjectForm();
-      case 'awards':
-        return renderAwardForm();
-      case 'skills':
-        return renderSkillForm();
-      case 'volunteering':
-        return renderVolunteeringForm();
-      case 'languages':
-        return renderLanguageForm();
-      default:
-        return <p>Unknown section type</p>;
     }
   };
 
@@ -1575,43 +703,39 @@ const CVEditor = () => {
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-mode-primary">CV Editor</h2>
-        <button 
-          onClick={saveCV} 
-          className="btn btn-primary flex items-center"
-          disabled={saving}
-        >
-          {saving ? <Spinner size="h-5 w-5" /> : <><Save size={18} className="mr-2" /> Save All Changes</>}
+        <button onClick={saveCV} className="btn btn-primary flex items-center" disabled={saving}>
+          {saving ? (
+            <Spinner size="h-5 w-5" />
+          ) : (
+            <>
+              <Save size={18} className="mr-2" /> Save All Changes
+            </>
+          )}
         </button>
       </div>
 
-      {renderSectionNav()}
+      <CVSectionNav activeSection={activeSection} onChange={setActiveSection} navItems={navItems} />
       {renderActiveSection()}
 
-      {/* Edit Item Modal */}
-      {showItemModal && currentItem && (
-        <Modal 
-          title={`${currentItem.id ? 'Edit' : 'Add'} ${currentSectionKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}`}
-          onClose={() => setShowItemModal(false)}
-        >
-          {renderFormForSection()}
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={() => setShowItemModal(false)}
-              className="cv-btn-secondary"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleItemSave}
-              className="btn btn-primary flex items-center"
-            >
-              <Save size={16} className="mr-1" /> Save
-            </button>
-          </div>
-        </Modal>
-      )}
+      <EditItemModal
+        show={modalState.open && !!currentItem}
+        title={`${currentItem?.id ? 'Edit' : 'Add'} ${
+          modalState.sectionKey
+            ? modalState.sectionKey.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())
+            : ''
+        }`}
+        onClose={closeModal}
+        onSave={handleItemSave}
+      >
+        <ItemForms
+          sectionKey={modalState.sectionKey}
+          item={currentItem}
+          onChange={handleItemChange}
+          onLinkChange={handleLinkChange}
+          onAddLink={addLink}
+          onRemoveLink={removeLink}
+        />
+      </EditItemModal>
     </div>
   );
 };

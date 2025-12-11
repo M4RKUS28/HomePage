@@ -115,11 +115,13 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
         <div className="p-5">
           <div className="flex justify-between items-start mb-3 gap-3">
             <div className="flex-1">
-              <h3 className={`text-xl font-semibold leading-tight text-transparent bg-clip-text bg-gradient-to-r ${
-                theme === 'dark'
-                  ? 'from-primary to-teal-400'
-                  : 'from-teal-600 to-primary'
-              }`}>
+              <h3
+                className={`text-xl font-semibold leading-tight ${
+                  theme === 'dark'
+                    ? 'text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)]'
+                    : 'text-gray-900'
+                }`}
+              >
                 {primaryHeading}
               </h3>
               {secondaryHeading && (

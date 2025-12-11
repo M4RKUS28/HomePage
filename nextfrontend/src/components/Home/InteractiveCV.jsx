@@ -358,7 +358,9 @@ const InteractiveCV = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                   {skills
                     .sort((a, b) => (b.level || 0) - (a.level || 0))
-                    .map((skill, idx) => <SkillBar key={skill.name || idx} skill={skill} index={idx} />)}
+                    .map((skill, idx) => (
+                      <SkillBar key={`skill-${skill.id ?? idx}`} skill={skill} index={idx} />
+                    ))}
                 </div>
               </Section>
             )}

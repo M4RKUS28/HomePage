@@ -143,8 +143,16 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       )}
       
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-300">Title <span className="text-red-400">*</span></label>
-        <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} required className="input-field mt-1" />
+        <label htmlFor="title" className="block text-sm font-medium text-mode-primary">Title <span className="text-red-400">*</span></label>
+        <input
+          type="text"
+          name="title"
+          id="title"
+          value={formData.title}
+          onChange={handleChange}
+          required
+          className="input-field mt-1 text-mode-primary placeholder:text-gray-500"
+        />
       </div>
       
       <div>
