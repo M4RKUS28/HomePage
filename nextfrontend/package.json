@@ -9,22 +9,22 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.0",
-    "axios": "^1.9.0",
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "axios": "^1.13.2",
     "date-fns": "^4.1.0",
-    "framer-motion": "^12.11.3",
+    "framer-motion": "^12.26.1",
     "jwt-decode": "^4.0.0",
-    "lucide-react": "^0.510.0",
-    "uuid": "^11.1.0",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "autoprefixer": "^10.4.20"
+    "lucide-react": "^0.562.0",
+    "next": "^16.1.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tailwindcss": "^4.1.18",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "eslint": "^9",
-    "eslint-config-next": "15.5.0",
-    "@eslint/eslintrc": "^3"
+    "@eslint/eslintrc": "^3.3.3",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.1"
   }
 }
