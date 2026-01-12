@@ -34,6 +34,7 @@ app = FastAPI(title="User Management API", root_path="/api")
 origins = [
     "http://localhost:3000",
     "http://localhost:8000",
+    "https://www.m4rkus28.de",
 ]
 app.add_middleware(
     CORSMiddleware,

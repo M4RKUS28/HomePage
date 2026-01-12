@@ -3,15 +3,14 @@ import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
 import { cookies } from 'next/headers';
 import { fetchCVDataSSR } from '../lib/server-api';
+import { getApiBaseUrl } from '../lib/api-config';
 
 // Serverseitige User-Fetch-Funktion (direkter fetch statt axios)
 async function fetchCurrentUserServer(token) {
   if (!token) return null;
   try {
     const res = await fetch(
-      process.env.NODE_ENV === 'production'
-        ? 'https://www.m4rkus28.de/api/users/me'
-        : 'http://127.0.0.1:8000/api/users/me',
+      `${getApiBaseUrl()}/users/me`,
       {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',

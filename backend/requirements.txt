@@ -1,7 +1,7 @@
 fastapi
 uvicorn[standard]
 sqlalchemy
-mysql-connector-python  # Or psycopg2-binary for PostgreSQL, or remove if using SQLite
+mysql-connector-python
 pydantic[email]
 python-jose[cryptography]
 passlib[bcrypt]==1.7.4

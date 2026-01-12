@@ -14,7 +14,7 @@ WORKDIR /usr/src/app
 #    && rm -rf /var/lib/apt/lists/*
 
 # Install pipenv (if you were using it, otherwise skip)
-# RUN pip install --upgrade pip
+RUN pip install --upgrade pip
 # RUN pip install pipenv
 
 # Copy requirements.txt first to leverage Docker cache
@@ -29,6 +29,9 @@ FROM python:3.10-slim
 
 # Create a non-root user
 RUN addgroup --system app && adduser --system --group app
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
 WORKDIR /home/app/web

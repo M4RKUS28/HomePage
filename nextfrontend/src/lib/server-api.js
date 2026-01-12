@@ -1,10 +1,9 @@
 // Server-side API utilities for SSR
 import { cookies } from 'next/headers';
+import { getApiBaseUrl } from './api-config';
 
 const getBaseUrl = () => {
-  return process.env.NODE_ENV === 'production' 
-    ? 'https://www.m4rkus28.de/api' 
-    : 'http://127.0.0.1:8000/api';
+  return getApiBaseUrl();
 };
 
 export const fetchCVDataSSR = async () => {
