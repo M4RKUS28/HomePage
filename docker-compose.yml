@@ -1,9 +1,22 @@
 version: "3.8"
 
 services:
+  homepagebackend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: homepagebackend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    networks:
+      - app-network
+    restart: always
+
   nextfrontend:
     build:
-      context: .
+      context: ./nextfrontend
       dockerfile: Dockerfile
     container_name: nextfrontend
     ports:
@@ -11,10 +24,12 @@ services:
     environment:
       - NODE_ENV=production
       - PM2_INSTANCES=${PM2_INSTANCES:-2}
-      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - BACKEND_URL=http://homepagebackend:8000
       - NEXT_TELEMETRY_DISABLED=1
     volumes:
-      - ./logs:/app/logs
+      - ./nextfrontend/logs:/app/logs
+    depends_on:
+      - homepagebackend
     restart: unless-stopped
     healthcheck:
       test:

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const apiClient = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
-    ? 'https://www.m4rkus28.de/api' 
+    ? (typeof window === 'undefined' ? 'http://homepagebackend:8000/api' : 'https://www.m4rkus28.de/api')
     : 'http://127.0.0.1:8000/api',
   headers: {
     'Content-Type': 'application/json',
