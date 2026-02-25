@@ -11,3 +11,5 @@ email_validator
 python-multipart
 apscheduler
 httpx
+requests
+beautifulsoup4
