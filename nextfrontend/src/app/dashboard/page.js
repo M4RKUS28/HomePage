@@ -3,7 +3,6 @@ import React, { useContext, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { useLanguage } from '../../contexts/LanguageContext';
 import ProtectedRoute from '../../components/Auth/ProtectedRoute';
 import { createMessageApi } from '../../api/messages';
 import Link from 'next/link';
@@ -74,7 +73,7 @@ const DashCard = ({ children, className = '' }) => {
 };
 
 // ── Message form (inline, no separate component) ──────────────────────────────
-const DashMessageForm = ({ t, theme }) => {
+const DashMessageForm = ({ theme }) => {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -82,14 +81,14 @@ const DashMessageForm = ({ t, theme }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) { setError(t('dashboard', 'messageEmpty')); return; }
+    if (!content.trim()) { setError('Message cannot be empty.'); return; }
     setIsLoading(true); setError(''); setSuccess('');
     try {
       await createMessageApi(content);
-      setSuccess(t('dashboard', 'messageSent'));
+      setSuccess('Message sent successfully!');
       setContent('');
     } catch (err) {
-      setError(err.response?.data?.detail || t('dashboard', 'messageFailed'));
+      setError(err.response?.data?.detail || 'Failed to send message.');
     } finally {
       setIsLoading(false);
       setTimeout(() => { setSuccess(''); setError(''); }, 4000);
@@ -106,10 +105,10 @@ const DashMessageForm = ({ t, theme }) => {
         </div>
         <div>
           <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            {t('dashboard', 'sendMessage')}
+            Send a Message
           </h3>
           <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            {t('dashboard', 'sendMessageDesc')}
+            Got something on your mind? Drop the site owner a message.
           </p>
         </div>
       </div>
@@ -128,13 +127,13 @@ const DashMessageForm = ({ t, theme }) => {
         <div>
           <label className={`block text-sm font-medium mb-1.5 ${
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>{t('dashboard', 'yourMessage')}</label>
+          }`}>Your Message</label>
           <textarea
             rows="4"
             className="input-field w-full resize-none"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={t('dashboard', 'messagePlaceholder')}
+            placeholder="Type your message here..."
             required
           />
         </div>
@@ -144,9 +143,9 @@ const DashMessageForm = ({ t, theme }) => {
           className="btn btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {isLoading ? (
-            <><Loader2 size={18} className="animate-spin" /> {t('dashboard', 'sending')}</>
+            <><Loader2 size={18} className="animate-spin" /> Sending…</>
           ) : (
-            <><Send size={18} /> {t('dashboard', 'send')}</>
+            <><Send size={18} /> Send</>
           )}
         </button>
       </form>
@@ -158,7 +157,6 @@ const DashMessageForm = ({ t, theme }) => {
 export default function UserDashboardPage() {
   const { currentUser } = useAuth();
   const { theme } = useContext(ThemeContext);
-  const { t } = useLanguage();
 
   // Format member-since date (just use a readable string of an approximate join time)
   const joinedDate = currentUser?.created_at
@@ -189,7 +187,7 @@ export default function UserDashboardPage() {
               <div className="text-center sm:text-left">
                 <p className={`text-sm font-medium uppercase tracking-widest mb-1 ${
                   theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'
-                }`}>{t('dashboard', 'welcome')}</p>
+                }`}>Welcome back</p>
                 <h1 className={`text-3xl md:text-4xl font-extrabold ${
                   theme === 'dark' ? 'text-white' : 'text-gray-900'
                 }`}>
@@ -202,7 +200,7 @@ export default function UserDashboardPage() {
                 </h1>
                 <p className={`mt-2 text-base ${
                   theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                }`}>{t('dashboard', 'subtitle')}</p>
+                }`}>Great to see you! Here is your personal space.</p>
               </div>
             </div>
           </div>
@@ -215,20 +213,20 @@ export default function UserDashboardPage() {
           <DashCard>
             <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
               <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {t('dashboard', 'accountInfo')}
+                Account Info
               </h2>
             </div>
             <div className="px-6 py-2">
-              <InfoRow icon={User} label={t('dashboard', 'username')} value={currentUser?.username ?? '—'} theme={theme} />
-              <InfoRow icon={Mail} label={t('dashboard', 'email')} value={currentUser?.email ?? '—'} theme={theme} />
+              <InfoRow icon={User} label="Username" value={currentUser?.username ?? '—'} theme={theme} />
+              <InfoRow icon={Mail} label="Email" value={currentUser?.email ?? '—'} theme={theme} />
               <InfoRow
                 icon={Shield}
-                label={t('dashboard', 'accountType')}
-                value={currentUser?.is_admin ? t('dashboard', 'administrator') : t('dashboard', 'user')}
+                label="Account type"
+                value={currentUser?.is_admin ? 'Administrator' : 'User'}
                 theme={theme}
               />
               {joinedDate && (
-                <InfoRow icon={User} label={t('dashboard', 'memberSince')} value={joinedDate} theme={theme} />
+                <InfoRow icon={User} label="Member since" value={joinedDate} theme={theme} />
               )}
             </div>
           </DashCard>
@@ -237,7 +235,7 @@ export default function UserDashboardPage() {
           <DashCard>
             <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
               <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {t('dashboard', 'quickLinks')}
+                Quick Links
               </h2>
             </div>
             <div className="p-6 flex flex-col gap-3">
@@ -258,10 +256,10 @@ export default function UserDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
-                    {t('dashboard', 'visitPortfolio')}
+                    Visit Portfolio
                   </p>
                   <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {t('dashboard', 'visitPortfolioDesc')}
+                    Browse the projects and CV on the homepage.
                   </p>
                 </div>
                 <ExternalLink size={14} className={theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} />
@@ -271,7 +269,7 @@ export default function UserDashboardPage() {
 
           {/* Message Form – spans full width */}
           <DashCard className="md:col-span-2">
-            <DashMessageForm t={t} theme={theme} />
+            <DashMessageForm theme={theme} />
           </DashCard>
 
         </div>

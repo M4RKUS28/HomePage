@@ -12,7 +12,8 @@ export const AuthProvider = ({ children, initialUser = null }) => {
   const [loadingAuth, setLoadingAuth] = useState(!initialUser); // If we have initialUser, don't show loading
   const [authError, setAuthError] = useState(null);
 
-  const clearAuthError = () => setAuthError(null);
+  // Stable reference so useEffect([clearAuthError]) in consumers doesn't re-fire on every auth re-render
+  const clearAuthError = useCallback(() => setAuthError(null), []);
 
   const loadUserFromToken = useCallback(async () => {
     // Wenn initialUser gesetzt ist (SSR), nicht erneut laden
