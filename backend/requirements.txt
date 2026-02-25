@@ -13,3 +13,5 @@ apscheduler
 httpx
 requests
 beautifulsoup4
+minio
+alembic

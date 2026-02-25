@@ -1,0 +1,60 @@
+# Local development override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# - Mounts source code into containers (no rebuild needed on code changes)
+# - FastAPI runs with --reload (uvicorn auto-restart on file changes)
+# - Next.js runs in dev mode with Turbopack hot module replacement
+# - MySQL port 3306 is exposed to host for local DB clients (e.g. DBeaver)
+
+services:
+  mysql:
+    # Expose MySQL to the host in local dev so DB clients can connect directly
+    ports:
+      - "3306:3306"
+    healthcheck:
+      start_period: 15s
+      interval: 10s
+
+  minio:
+    # Ports are already defined in the base compose file; no overrides needed
+    healthcheck:
+      start_period: 10s
+      interval: 15s
+
+  homepagebackend:
+    # Override command: uvicorn with --reload for auto-restart on file changes
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      # Mount source code – maps ./backend/src to the /home/app/web/app path
+      # (the production Dockerfile does: COPY ./src ./app)
+      - ./backend/src:/home/app/web/app
+      - ./backend/.env:/home/app/web/.env:ro
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    # Disable the healthcheck delay for faster local startup
+    healthcheck:
+      start_period: 5s
+      interval: 10s
+
+  nextfrontend:
+    # Use the lightweight dev Dockerfile instead of the production multi-stage build
+    build:
+      context: ./nextfrontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      # Mount full source code for HMR
+      - ./nextfrontend/src:/app/src
+      - ./nextfrontend/public:/app/public
+      # Persist node_modules inside the container (avoids Windows/WSL path issues)
+      - nextfrontend_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - BACKEND_URL=http://homepagebackend:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      start_period: 15s
+      interval: 10s
+
+volumes:
+  nextfrontend_node_modules:
