@@ -73,9 +73,9 @@ const RegisterForm = () => {
       await register(username, email, password);
       showToast({ 
         type: 'success', 
-        message: 'Registration successful! You can now log in.' 
+        message: 'Account created! You are now logged in.' 
       });
-      router.push('/login');
+      router.push('/dashboard');
     } catch (err) {
       console.error("Registration failed:", err);
       

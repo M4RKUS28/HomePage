@@ -1,7 +1,7 @@
-// frontend/src/components/Home/ProjectCard.jsx (improved image handling)
+// frontend/src/components/Home/ProjectCard.jsx (improved image handling with lazy loading)
 import React, { useContext, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw, ArrowUp, ArrowDown } from 'lucide-react';
+import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw, ArrowUp, ArrowDown, ImageOff } from 'lucide-react';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
 import { ThemeContext } from '../../contexts/ThemeContext';
 
@@ -57,7 +57,7 @@ const StatusIndicator = ({ status }) => {
   );
 };
 
-const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMoveUp, onMoveDown, isFirst, isLast }) => {
+const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMoveUp, onMoveDown, isFirst, isLast, imageUrl, imageLoading }) => {
   const { theme } = useContext(ThemeContext);
   const [imageError, setImageError] = useState(false);
   
@@ -72,8 +72,12 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
     tap: { scale: 0.9 }
   };
 
+  // Use lazy-loaded imageUrl if provided; fall back to project.image for backwards compatibility
+  const resolvedImageUrl = imageUrl !== undefined ? imageUrl : project.image;
+  const isImageLoading = imageLoading !== undefined ? imageLoading : false;
+
   // Determine if we have a valid image to display
-  const hasValidImage = project.image && !imageError;
+  const hasValidImage = resolvedImageUrl && !imageError;
   
   // Handle image loading errors
   const handleImageError = () => {
@@ -97,14 +101,26 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
     >
       <div>
         <div className="relative overflow-hidden h-52">
-          <motion.img 
-            src={hasValidImage ? project.image : DefaultProjectImage} 
-            alt={project.title} 
-            className="w-full h-full object-cover" 
-            onError={handleImageError}
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.5 }}
-          />
+          {isImageLoading ? (
+            /* Skeleton loader while image is being fetched */
+            <div className={`w-full h-full flex items-center justify-center ${
+              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+            }`}>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
+              <div className="flex flex-col items-center space-y-2 opacity-40">
+                <Loader2 size={28} className="animate-spin" />
+              </div>
+            </div>
+          ) : (
+            <motion.img 
+              src={hasValidImage ? resolvedImageUrl : DefaultProjectImage} 
+              alt={project.title} 
+              className="w-full h-full object-cover" 
+              onError={handleImageError}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.5 }}
+            />
+          )}
           <motion.div 
             className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
             initial={{ opacity: 0 }}

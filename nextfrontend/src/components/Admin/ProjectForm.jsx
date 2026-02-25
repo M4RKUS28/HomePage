@@ -1,10 +1,10 @@
-// frontend/src/components/Admin/ProjectForm.jsx (enhanced image upload)
+// frontend/src/components/Admin/ProjectForm.jsx (enhanced image upload + health check URLs)
 import React, { useState, useEffect } from 'react';
 import { createProjectApi, updateProjectApi } from '../../api/projects';
 import { uploadImageApi } from '../../api/cv';
 import Spinner from '../UI/Spinner';
 import ImageUpload from '../UI/ImageUpload';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
 
 const ProjectForm = ({ project, onFormSubmit }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     link: '',
     position: '',  // Empty string means auto-assign position
   });
+  const [healthCheckUrls, setHealthCheckUrls] = useState([]); // List of extra check URLs
   const [imageData, setImageData] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,10 +28,12 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         link: project.link || '',
         position: project.position !== undefined ? project.position : '',
       });
+      setHealthCheckUrls(project.health_check_urls || []);
       // Set initial image if it exists
       setImageData(project.image || '');
     } else {
-      setFormData({ title: '', description: '', link: '', position: '' });  // Empty position for auto-assign
+      setFormData({ title: '', description: '', link: '', position: '' });
+      setHealthCheckUrls([]);
       setImageData('');
     }
     setApiError(null);
@@ -40,6 +43,12 @@ const ProjectForm = ({ project, onFormSubmit }) => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  // --- Health Check URL helpers ---
+  const addHealthCheckUrl = () => setHealthCheckUrls(prev => [...prev, '']);
+  const removeHealthCheckUrl = (idx) => setHealthCheckUrls(prev => prev.filter((_, i) => i !== idx));
+  const updateHealthCheckUrl = (idx, value) =>
+    setHealthCheckUrls(prev => prev.map((u, i) => (i === idx ? value : u)));
 
   const handleImageChange = (imageDataUrl) => {
     setImageData(imageDataUrl);
@@ -68,11 +77,15 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     try {
       // Step 1: Create or update the project basic info
       let updatedProject;
+      const submitData = {
+        ...formData,
+        health_check_urls: healthCheckUrls.filter(u => u && u.trim() !== ''),
+      };
       
       if (project && project.id) {
-        updatedProject = await updateProjectApi(project.id, formData);
+        updatedProject = await updateProjectApi(project.id, submitData);
       } else {
-        updatedProject = await createProjectApi(formData);
+        updatedProject = await createProjectApi(submitData);
       }
       
       // Step 2: If we have an image, upload it separately
@@ -158,6 +171,45 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       <div>
         <label htmlFor="link" className="block text-sm font-medium text-gray-300">Project Link (URL) <span className="text-red-400">*</span></label>
         <input type="url" name="link" id="link" value={formData.link} onChange={handleChange} required className="input-field mt-1" placeholder="https://example.com" />
+      </div>
+
+      {/* Health Check URLs */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium text-gray-300">
+            Health Check URLs
+            <span className="ml-1 text-xs text-gray-500">(optional – all must be reachable for status to be Online)</span>
+          </label>
+          <button
+            type="button"
+            onClick={addHealthCheckUrl}
+            className="flex items-center text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+          >
+            <Plus size={14} className="mr-1" /> Add URL
+          </button>
+        </div>
+        {healthCheckUrls.length === 0 && (
+          <p className="text-xs text-gray-500 italic">No extra health check URLs. Only the main project link will be checked.</p>
+        )}
+        {healthCheckUrls.map((url, idx) => (
+          <div key={idx} className="flex items-center gap-2 mt-1.5">
+            <input
+              type="url"
+              value={url}
+              onChange={e => updateHealthCheckUrl(idx, e.target.value)}
+              placeholder={`https://api.example.com/health`}
+              className="input-field flex-1"
+            />
+            <button
+              type="button"
+              onClick={() => removeHealthCheckUrl(idx)}
+              className="p-2 text-red-400 hover:text-red-300 transition-colors flex-shrink-0"
+              title="Remove URL"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
       </div>
       
       <div>

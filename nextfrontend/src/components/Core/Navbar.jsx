@@ -1,13 +1,14 @@
 'use client';
 // Client component for Navbar with SSR initial data
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
-import { LogIn, LogOut, UserPlus, LayoutDashboard, ShieldCheck, Menu, X, Home } from 'lucide-react';
+import { LogIn, LogOut, UserPlus, LayoutDashboard, ShieldCheck, Menu, X, Home, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../hooks/useTheme';
 import ThemeToggle from '../UI/ThemeToggle';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const NavLink = ({ href, children, onClick }) => {
   const { theme } = useTheme();
@@ -56,6 +57,7 @@ const MobileNavLink = ({ href, children, onClick }) => {
 const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
   const { currentUser, logout } = useAuth();
   const { theme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -64,6 +66,21 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
     router.push('/');
     setIsOpen(false);
   };
+
+  const LanguageToggle = ({ mobile }) => (
+    <button
+      onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
+      title="Toggle language"
+      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold border transition-colors ${
+        theme === 'dark'
+          ? 'border-gray-600 text-gray-300 hover:border-primary hover:text-primary'
+          : 'border-gray-300 text-gray-600 hover:border-secondary hover:text-secondary'
+      } ${mobile ? 'w-full justify-center py-2 text-sm mt-1' : ''}`}
+    >
+      <Globe size={14} />
+      {language === 'en' ? 'DE' : 'EN'}
+    </button>
+  );
 
   return (
     <nav className={`shadow-lg sticky top-0 z-50 transition-colors ${
@@ -91,12 +108,12 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
           
           <div className="hidden md:flex items-center space-x-2">
             <div className="flex items-baseline space-x-4">
-              <NavLink href="/"><Home size={18} className="inline mr-1"/> Home</NavLink>
+              <NavLink href="/"><Home size={18} className="inline mr-1"/> {t('nav', 'home')}</NavLink>
               {currentUser ? (
                 <>
-                  <NavLink href="/dashboard"><LayoutDashboard size={18} className="inline mr-1"/> Dashboard</NavLink>
+                  <NavLink href="/dashboard"><LayoutDashboard size={18} className="inline mr-1"/> {t('nav', 'dashboard')}</NavLink>
                   {currentUser.is_admin && (
-                    <NavLink href="/admin"><ShieldCheck size={18} className="inline mr-1"/> Admin</NavLink>
+                    <NavLink href="/admin"><ShieldCheck size={18} className="inline mr-1"/> {t('nav', 'admin')}</NavLink>
                   )}
                   <button
                     onClick={handleLogout}
@@ -106,22 +123,24 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
                         : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                     }`}
                   >
-                    <LogOut size={18} className="inline mr-1"/> Logout ({currentUser.username})
+                    <LogOut size={18} className="inline mr-1"/> {t('nav', 'logout')} ({currentUser.username})
                   </button>
                 </>
               ) : (
                 <>
-                  <NavLink href="/login"><LogIn size={18} className="inline mr-1"/> Login</NavLink>
-                  <NavLink href="/register"><UserPlus size={18} className="inline mr-1"/> Register</NavLink>
+                  <NavLink href="/login"><LogIn size={18} className="inline mr-1"/> {t('nav', 'login')}</NavLink>
+                  <NavLink href="/register"><UserPlus size={18} className="inline mr-1"/> {t('nav', 'register')}</NavLink>
                 </>
               )}
             </div>
-            <div className="ml-4">
+            <div className="ml-4 flex items-center gap-2">
+              <LanguageToggle />
               <ThemeToggle />
             </div>
           </div>
           
-          <div className="md:hidden flex items-center space-x-4">
+          <div className="md:hidden flex items-center space-x-2">
+            <LanguageToggle />
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -154,12 +173,12 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
             <div className={`px-2 pt-2 pb-3 space-y-1 sm:px-3 ${
               theme === 'dark' ? 'bg-gray-800' : 'bg-white'
             }`}>
-              <MobileNavLink href="/" onClick={() => setIsOpen(false)}><Home size={18} className="inline mr-1"/> Home</MobileNavLink>
+              <MobileNavLink href="/" onClick={() => setIsOpen(false)}><Home size={18} className="inline mr-1"/> {t('nav', 'home')}</MobileNavLink>
               {currentUser ? (
                 <>
-                  <MobileNavLink href="/dashboard" onClick={() => setIsOpen(false)}><LayoutDashboard size={18} className="inline mr-1"/> Dashboard</MobileNavLink>
+                  <MobileNavLink href="/dashboard" onClick={() => setIsOpen(false)}><LayoutDashboard size={18} className="inline mr-1"/> {t('nav', 'dashboard')}</MobileNavLink>
                   {currentUser.is_admin && (
-                    <MobileNavLink href="/admin" onClick={() => setIsOpen(false)}><ShieldCheck size={18} className="inline mr-1"/> Admin</MobileNavLink>
+                    <MobileNavLink href="/admin" onClick={() => setIsOpen(false)}><ShieldCheck size={18} className="inline mr-1"/> {t('nav', 'admin')}</MobileNavLink>
                   )}
                   <button
                     onClick={handleLogout}
@@ -169,15 +188,16 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
                         : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                     }`}
                   >
-                    <LogOut size={18} className="inline mr-1"/> Logout ({currentUser.username})
+                    <LogOut size={18} className="inline mr-1"/> {t('nav', 'logout')} ({currentUser.username})
                   </button>
                 </>
               ) : (
                 <>
-                  <MobileNavLink href="/login" onClick={() => setIsOpen(false)}><LogIn size={18} className="inline mr-1"/> Login</MobileNavLink>
-                  <MobileNavLink href="/register" onClick={() => setIsOpen(false)}><UserPlus size={18} className="inline mr-1"/> Register</MobileNavLink>
+                  <MobileNavLink href="/login" onClick={() => setIsOpen(false)}><LogIn size={18} className="inline mr-1"/> {t('nav', 'login')}</MobileNavLink>
+                  <MobileNavLink href="/register" onClick={() => setIsOpen(false)}><UserPlus size={18} className="inline mr-1"/> {t('nav', 'register')}</MobileNavLink>
                 </>
               )}
+              <LanguageToggle mobile />
             </div>
           </motion.div>
         )}

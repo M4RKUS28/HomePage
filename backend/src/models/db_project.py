@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum as SQLAlchemyEnum
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum as SQLAlchemyEnum, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -24,5 +24,7 @@ class Project(Base):
     last_checked = Column(DateTime(timezone=True), server_default=func.now())
     position = Column(Integer, nullable=True, default=0)  # For ordering projects
     owner_id = Column(Integer, ForeignKey("users.id"))
+    # Optional extra URLs to check for health; all must be UP for project to be UP
+    health_check_urls = Column(JSON, nullable=True, default=list)
 
     owner = relationship("User")

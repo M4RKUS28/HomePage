@@ -117,8 +117,18 @@ export const AuthProvider = ({ children, initialUser = null }) => {
     try {
       setAuthError(null);
       setLoadingAuth(true);
-      const data = await registerUserApi(username, email, password);
-      return data;
+      // Register the account
+      await registerUserApi(username, email, password);
+      // Auto-login immediately after successful registration
+      const loginData = await loginUserApi(username, password);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', loginData.access_token);
+      }
+      setCookie('accessToken', loginData.access_token, 7); // 7 days
+      // Fetch fresh user data
+      const userData = await fetchCurrentUserApi();
+      setCurrentUser(userData);
+      return userData;
     } catch (err) {
       console.error("Registration error:", err);
       

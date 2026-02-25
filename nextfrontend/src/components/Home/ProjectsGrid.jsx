@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import ProjectCard from './ProjectCard';
-import { getProjectsApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
+import { getProjectsApi, getProjectImageApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
 import { useAuth } from '../../hooks/useAuth';
 import Spinner from '../UI/Spinner';
 import ProjectForm from '../Admin/ProjectForm'; // For add/edit modal
@@ -16,21 +16,46 @@ const ProjectsGrid = () => {
   const { currentUser } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  // Map of projectId -> { loading: bool, url: string|null }
+  const [projectImages, setProjectImages] = useState({});
+  // Track which project IDs we've already fetched/attempted images for
+  const fetchedImageIds = useRef(new Set());
+
+  const fetchImageForProject = useCallback((projectId) => {
+    if (fetchedImageIds.current.has(projectId)) return;
+    fetchedImageIds.current.add(projectId);
+    setProjectImages(prev => ({ ...prev, [projectId]: { loading: true, url: null } }));
+    getProjectImageApi(projectId)
+      .then(imgData => {
+        setProjectImages(prev => ({
+          ...prev,
+          [projectId]: { loading: false, url: imgData.image || null }
+        }));
+      })
+      .catch(() => {
+        setProjectImages(prev => ({
+          ...prev,
+          [projectId]: { loading: false, url: null }
+        }));
+      });
+  }, []);
 
   const fetchProjectsData = useCallback(async () => {
-    // Don't set loading to true on interval refresh to avoid UI flicker
-    // setLoading(true); 
     try {
+      // Fetch metadata (no images) – show cards immediately
       const data = await getProjectsApi();
       setProjects(data);
       setError(null);
+
+      // Fetch images only for project IDs we haven't fetched yet
+      data.forEach(p => fetchImageForProject(p.id));
     } catch (err) {
       setError('Failed to load projects. The server might be down or an error occurred.');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchImageForProject]);
 
   useEffect(() => {
     fetchProjectsData();
@@ -155,7 +180,11 @@ const ProjectsGrid = () => {
   };
   
   const handleModalClose = (refresh = false) => { 
-    setShowModal(false); 
+    setShowModal(false);
+    if (editingProject && refresh) {
+      // Clear the cached image for the edited project so it re-fetches
+      fetchedImageIds.current.delete(editingProject.id);
+    }
     setEditingProject(null);
     if (refresh) fetchProjectsData();
   }
@@ -227,6 +256,8 @@ const ProjectsGrid = () => {
                 onMoveDown={moveProjectDown}
                 isFirst={index === 0}
                 isLast={index === sortedArray.length - 1}
+                imageUrl={projectImages[project.id]?.url ?? null}
+                imageLoading={projectImages[project.id]?.loading ?? true}
               />
             ))
           }

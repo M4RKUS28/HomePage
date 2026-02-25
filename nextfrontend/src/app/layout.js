@@ -24,6 +24,7 @@ async function fetchCurrentUserServer(token) {
 }
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { ToastProvider } from "../contexts/ToastContext";
+import { LanguageProvider } from "../contexts/LanguageContext";
 import MainLayout from "../layouts/MainLayout";
 import ToastNotification from "../components/UI/ToastNotification";
 
@@ -59,6 +60,7 @@ export default async function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
+          <LanguageProvider>
           <ToastProvider>
             <AuthProvider initialUser={initialUser}>
               <MainLayout 
@@ -71,6 +73,7 @@ export default async function RootLayout({ children }) {
               <ToastNotification />
             </AuthProvider>
           </ToastProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

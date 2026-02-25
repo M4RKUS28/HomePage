@@ -38,17 +38,34 @@ async def check_website_status(url: str) -> project_model.ProjectStatus:
 
 
 async def update_project_status_task(project_id: int, db: Session):
-    """Background task to update a single project's status."""
+    """Background task to update a single project's status.
+    Checks the main link AND all health_check_urls; project is UP only if ALL are UP.
+    """
     db_project = db.query(project_model.Project).filter(project_model.Project.id == project_id).first()
     if db_project:
         logging.info(f"Background task: Checking status for project ID {project_id} - {db_project.link}")
         db_project.status = project_model.ProjectStatus.CHECKING # Mark as checking
         db.commit()
-        
-        new_status = await check_website_status(str(db_project.link)) # Convert HttpUrl to str
-        
-        # Re-fetch to avoid race conditions if other parts of the app modify it, though less likely here
-        db.refresh(db_project) 
+
+        # Collect all URLs to check: main link + optional health_check_urls
+        urls_to_check = [str(db_project.link)]
+        extra_urls = db_project.health_check_urls or []
+        urls_to_check.extend([u for u in extra_urls if u and u.strip()])
+
+        # Check all URLs concurrently
+        statuses = await asyncio.gather(*[check_website_status(url) for url in urls_to_check])
+        logging.info(f"Background task: URL statuses for project {project_id}: {list(zip(urls_to_check, statuses))}")
+
+        # Project is UP only if ALL checked URLs are UP
+        if all(s == project_model.ProjectStatus.UP for s in statuses):
+            new_status = project_model.ProjectStatus.UP
+        elif any(s == project_model.ProjectStatus.DOWN for s in statuses):
+            new_status = project_model.ProjectStatus.DOWN
+        else:
+            new_status = project_model.ProjectStatus.UNKNOWN
+
+        # Re-fetch to avoid race conditions
+        db.refresh(db_project)
         db_project.status = new_status
         db_project.last_checked = func.now() # Use func.now() for database-side timestamp
         db.commit()
@@ -83,7 +100,8 @@ async def create_project(
         link=str(project_data.get("link")) if project_data.get("link") else None, # Convert link to str
         image=str(project_data.get("image")) if project_data.get("image") else None, # Convert image to str
         position=next_position,  # Use calculated next position
-        owner_id=current_user.id
+        owner_id=current_user.id,
+        health_check_urls=project_data.get("health_check_urls") or []
         # status will default in the model or be set by background task
     )
     
@@ -93,14 +111,23 @@ async def create_project(
     background_tasks.add_task(update_project_status_task, db_project.id, db)
     return db_project
 
-@router.get("/", response_model=List[project_schemas.Project])
+@router.get("/", response_model=List[project_schemas.ProjectList])
 async def read_projects(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
+    """Returns project list WITHOUT image data for fast initial loading."""
     projects = db.query(project_model.Project).order_by(project_model.Project.position.asc(), project_model.Project.id.asc()).offset(skip).limit(limit).all()
     return projects
+
+@router.get("/{project_id}/image", response_model=project_schemas.ProjectImage)
+async def get_project_image(project_id: int, db: Session = Depends(get_db)):
+    """Returns only the image data for a project (for lazy loading)."""
+    db_project = db.query(project_model.Project).filter(project_model.Project.id == project_id).first()
+    if db_project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    return db_project
 
 @router.get("/{project_id}", response_model=project_schemas.Project)
 async def read_project(project_id: int, db: Session = Depends(get_db)):
@@ -148,7 +175,9 @@ async def update_project(
                 link_changed = True
             setattr(db_project, key, str(value)) # Store as string
         elif key == "image":
-            setattr(db_project, key, str(value)) # Store as string
+            setattr(db_project, key, str(value) if value else None) # Store as string
+        elif key == "health_check_urls":
+            setattr(db_project, key, value if value is not None else [])
         elif value is not None: # For other fields or if value is None (to clear optional fields)
              setattr(db_project, key, value)
     

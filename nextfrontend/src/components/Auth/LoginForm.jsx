@@ -43,12 +43,17 @@ const LoginForm = () => {
     }
     
     try {
-      await login(username, password);
+      const userData = await login(username, password);
       showToast({ 
         type: 'success', 
         message: 'Login successful! Welcome back.' 
       });
-      router.push('/dashboard'); // Or wherever you want to redirect after login
+      // Admins go to /admin, regular users go to /dashboard
+      if (userData?.is_admin) {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err) {
       console.error("Login failed:", err);
       

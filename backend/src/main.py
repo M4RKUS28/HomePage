@@ -26,6 +26,22 @@ project_model.Base.metadata.create_all(bind=engine)
 message_model.Base.metadata.create_all(bind=engine)
 cv_model.Base.metadata.create_all(bind=engine)  # Create CV tables
 
+# --- Lightweight startup migration: add new columns that may not exist yet ---
+def _run_startup_migrations():
+    """Safe, idempotent column additions for existing tables (no Alembic needed)."""
+    from sqlalchemy import text, inspect
+    insp = inspect(engine)
+    existing_cols = {c["name"] for c in insp.get_columns("projects")}
+    with engine.connect() as conn:
+        if "health_check_urls" not in existing_cols:
+            try:
+                conn.execute(text("ALTER TABLE projects ADD COLUMN health_check_urls JSON NULL"))
+                conn.commit()
+                logging.info("Migration: added 'health_check_urls' column to projects table.")
+            except Exception as e:
+                logging.warning(f"Migration skipped (column may already exist): {e}")
+
+_run_startup_migrations()
 
 # Create the main app instance
 app = FastAPI(title="User Management API", root_path="/api")

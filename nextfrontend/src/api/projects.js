@@ -16,7 +16,8 @@ export const createProjectApi = async (projectData) => {
     const essentialData = {
         title: projectData.title,
         description: projectData.description,
-        link: projectData.link
+        link: projectData.link,
+        health_check_urls: projectData.health_check_urls || []
     };
     
     // Only include position if it's explicitly set (not empty)
@@ -35,7 +36,10 @@ export const updateProjectApi = async (projectId, projectData) => {
         title: projectData.title,
         description: projectData.description,
         link: projectData.link,
-        position: projectData.position
+        position: projectData.position,
+        health_check_urls: projectData.health_check_urls !== undefined
+            ? projectData.health_check_urls
+            : []
     };
     
     // Filter out any undefined values
@@ -56,4 +60,9 @@ export const deleteProjectApi = async (projectId) => {
 export const checkProjectStatusApi = async (projectId) => {
     const response = await apiClient.post(`/projects/${projectId}/check-status`);
     return response.data;
+};
+
+export const getProjectImageApi = async (projectId) => {
+    const response = await apiClient.get(`/projects/${projectId}/image`);
+    return response.data; // { id, image }
 };
