@@ -32,7 +32,7 @@ COPY ./src_neu ./app
 
 # Copy Alembic configuration
 COPY ./alembic_neu.ini ./alembic.ini
-COPY ./alembic_neu ./alembic
+COPY ./alembic_neu ./alembic_neu
 
 # Copy entrypoint
 COPY ./entrypoint_neu.sh ./entrypoint.sh

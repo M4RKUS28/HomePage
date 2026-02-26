@@ -1,4 +1,9 @@
-// frontend/src/api/users.js
+/**
+ * User API client.
+ *
+ * Avatar uploads go through the backend multipart endpoint (server-side upload
+ * to MinIO ≤ 5 MB) – no presigned URL needed for small files.
+ */
 import apiClient from './index';
 
 export const getUsersApi = async () => {
@@ -37,5 +42,8 @@ export const deleteSelfApi = async () => {
     return { success: true };
 };
 
-/** Return the URL to stream a user's avatar through the API. */
+/**
+ * Return the API-proxied avatar URL for a user.
+ * The backend will 307-redirect to a presigned MinIO URL.
+ */
 export const getAvatarUrl = (userId) => `/api/users/${userId}/avatar`;

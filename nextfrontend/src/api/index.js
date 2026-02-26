@@ -1,3 +1,11 @@
+/**
+ * Shared Axios client for all backend API calls.
+ *
+ * All requests go through Next.js rewrites:
+ *   /api/:path* → BACKEND_URL/:path*
+ *
+ * The interceptor attaches the Bearer token from cookie / localStorage.
+ */
 import axios from 'axios';
 import { getApiBaseUrl } from '../lib/api-config';
 
@@ -5,62 +13,60 @@ const apiClient = axios.create({
   baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
 });
 
-// Helper function to get token from cookies or localStorage
+// ---------------------------------------------------------------------------
+// Token helper
+// ---------------------------------------------------------------------------
+
 const getToken = () => {
-  if (typeof window !== 'undefined') {
-    // First try to get from cookies
-    const getCookie = (name) => {
-      const nameEQ = name + "=";
-      const ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-      }
-      return null;
-    };
-    
-    return getCookie('accessToken') || localStorage.getItem('accessToken');
-  }
-  return null;
+  if (typeof window === 'undefined') return null;
+
+  // Cookie first, then localStorage
+  const getCookie = (name) => {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  };
+
+  return getCookie('accessToken') || localStorage.getItem('accessToken');
 };
 
-apiClient.interceptors.request.use(config => {
-  const token = getToken();
-  console.log(`[Axios Interceptor] Request to ${config.url}. Token found: ${token ? 'YES' : 'NO'}`);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    console.log(`[Axios Interceptor] Authorization header set for ${config.url}`);
-  } else {
-    console.warn(`[Axios Interceptor] No token found in cookies or localStorage for ${config.url}`);
-  }
-  return config;
-}, error => {
-  console.error('[Axios Interceptor] Request error:', error);
-  return Promise.reject(error);
-});
+// ---------------------------------------------------------------------------
+// Request interceptor – attach Bearer token
+// ---------------------------------------------------------------------------
 
-// Optional: Add a response interceptor for global error handling or token refresh
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
+// ---------------------------------------------------------------------------
+// Response interceptor – handle 401 globally
+// ---------------------------------------------------------------------------
+
 apiClient.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response && error.response.status === 401) {
-      console.error("Unauthorized access - 401");
-      // Do NOT redirect when the 401 comes from the login endpoint itself –
-      // that just means wrong credentials and the form will display the error.
-      const isLoginRequest = error.config?.url?.includes('/token');
-      if (!isLoginRequest && typeof window !== 'undefined') {
-        // Session expired or token invalid – clean up and send to login
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      // Don't redirect if the 401 came from the login/register routes themselves
+      const url = error.config?.url || '';
+      const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/register');
+
+      if (!isAuthRoute) {
         localStorage.removeItem('accessToken');
         document.cookie = 'accessToken=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
         window.location.href = '/login';
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

@@ -4,12 +4,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        // Proxy all /api/* requests to the FastAPI backend.
+        // NextJS API routes (e.g. /api/auth/*) take precedence automatically.
         source: '/api/:path*',
-        // BACKEND_URL is set in Docker; fall back to localhost for non-Docker dev.
-        // The /:path* suffix must always be appended to forward the full path.
         destination: `${process.env.BACKEND_URL || 'http://127.0.0.1:8000'}/:path*`,
       },
-    ]
+    ];
   },
   images: {
     domains: ['127.0.0.1', 'localhost'],

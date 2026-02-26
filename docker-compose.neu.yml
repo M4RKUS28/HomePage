@@ -81,7 +81,7 @@ services:
   homepagebackend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.neu
     container_name: homepagebackend
     expose:
       - "8000"
@@ -115,6 +115,7 @@ services:
       - NODE_ENV=production
       - PM2_INSTANCES=${PM2_INSTANCES:-2}
       - BACKEND_URL=http://homepagebackend:8000
+      - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET:-change-me-in-production}
       - NEXT_TELEMETRY_DISABLED=1
     volumes:
       - ./nextfrontend/logs:/app/logs

@@ -1,36 +1,45 @@
-// Server-side API utilities for SSR
+/**
+ * Server-side API utilities for SSR.
+ *
+ * Reads the access token from cookies (httpOnly `access_token` set by
+ * NextJS API routes, or client-set `accessToken`).
+ */
 import { cookies } from 'next/headers';
-import { getApiBaseUrl } from './api-config';
 
-const getBaseUrl = () => {
-  return getApiBaseUrl();
-};
+// Server-side always talks directly to the backend container
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+
+/**
+ * Resolve the access token from SSR cookies.
+ * Prefers the httpOnly `access_token` cookie set by the NextJS auth routes.
+ */
+async function getSSRToken() {
+  const cookieStore = await cookies();
+  return (
+    cookieStore.get('access_token')?.value ||
+    cookieStore.get('accessToken')?.value ||
+    null
+  );
+}
 
 export const fetchCVDataSSR = async () => {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`${getBaseUrl()}/cv/`, {
+    const token = await getSSRToken();
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const response = await fetch(`${BACKEND_URL}/cv/`, {
       headers,
-      cache: 'no-store', // Ensure fresh data on each request
+      cache: 'no-store',
     });
-    
+
     if (!response.ok) {
       console.error('Failed to fetch CV data:', response.status);
       return null;
     }
-    
-    const data = await response.json();
-    return data;
+
+    return await response.json();
   } catch (error) {
     console.error('Error fetching CV data on server:', error);
     return null;
@@ -39,30 +48,23 @@ export const fetchCVDataSSR = async () => {
 
 export const fetchCurrentUserSSR = async () => {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    
-    if (!token) {
-      return null;
-    }
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
-    
-    const response = await fetch(`${getBaseUrl()}/users/me`, {
-      headers,
+    const token = await getSSRToken();
+    if (!token) return null;
+
+    const response = await fetch(`${BACKEND_URL}/users/me`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       cache: 'no-store',
     });
-    
+
     if (!response.ok) {
       console.error('Failed to fetch user data:', response.status);
       return null;
     }
-    
-    const userData = await response.json();
-    return userData;
+
+    return await response.json();
   } catch (error) {
     console.error('Error fetching user data on server:', error);
     return null;
