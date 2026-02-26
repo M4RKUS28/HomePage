@@ -48,12 +48,13 @@ apiClient.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
-      // Handle unauthorized errors, e.g., redirect to login
       console.error("Unauthorized access - 401");
-      if (typeof window !== 'undefined') {
-        // Clean up both storage methods
+      // Do NOT redirect when the 401 comes from the login endpoint itself –
+      // that just means wrong credentials and the form will display the error.
+      const isLoginRequest = error.config?.url?.includes('/token');
+      if (!isLoginRequest && typeof window !== 'undefined') {
+        // Session expired or token invalid – clean up and send to login
         localStorage.removeItem('accessToken');
-        // Remove cookie
         document.cookie = 'accessToken=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
         window.location.href = '/login';
       }

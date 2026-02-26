@@ -55,6 +55,11 @@ MINIO_BUCKET = os.getenv("MINIO_BUCKET", "homepage")
 MINIO_SECURE = os.getenv("MINIO_SECURE", "false").lower() == "true"
 
 
+# Initial Admin Account (created automatically on first startup)
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+
 # Email Configuration
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "false").lower() == "true"
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")

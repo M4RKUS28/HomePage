@@ -17,12 +17,61 @@ from .utils import auth
 from .db.database import engine, get_db, SessionLocal
 from .routers import users, projects, messages, cv  # Import the new cv router
 from .utils.email import notify_new_user
+from .config import settings
 
 # Schema is managed by Alembic (alembic upgrade head runs at container startup).
 # create_all() calls have been removed to avoid conflicts with migration history.
 
+
+def _ensure_admin_exists() -> None:
+    """Create the admin account from .env settings if it does not already exist."""
+    username = settings.ADMIN_USERNAME
+    email = settings.ADMIN_EMAIL
+    password = settings.ADMIN_PASSWORD
+
+    if not username or not email or not password:
+        logging.info("[startup] ADMIN_USERNAME/EMAIL/PASSWORD not set – skipping admin creation.")
+        return
+
+    db = SessionLocal()
+    try:
+        existing = (
+            db.query(user_model.User)
+            .filter(
+                (user_model.User.username == username)
+                | (user_model.User.email == email)
+            )
+            .first()
+        )
+        if existing:
+            logging.info("[startup] Admin account already exists – skipping creation.")
+            return
+
+        hashed_pw = auth.get_password_hash(password)
+        admin = user_model.User(
+            username=username,
+            email=email,
+            hashed_password=hashed_pw,
+            is_admin=True,
+            is_active=True,
+        )
+        db.add(admin)
+        db.commit()
+        logging.info(f"[startup] Admin account '{username}' created successfully.")
+    except Exception as exc:
+        db.rollback()
+        logging.error(f"[startup] Failed to create admin account: {exc}")
+    finally:
+        db.close()
+
+
 # Create the main app instance
 app = FastAPI(title="User Management API", root_path="/api")
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    _ensure_admin_exists()
 
 # CORS Configuration (remains the same)
 origins = [

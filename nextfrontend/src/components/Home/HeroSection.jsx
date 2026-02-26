@@ -1,34 +1,48 @@
-// Updated HeroSection.jsx to properly handle backend data
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import AnimatedTextCharacter from '../UI/AnimatedTextCharacter';
-import ProfilePicPlaceholder from '../../assets/placeholder-profile.jpeg';
+import ProfilePicPlaceholderImport from '../../assets/placeholder-profile.jpeg';
 import { getCVDataApi } from '../../api/cv';
 import Spinner from '../UI/Spinner';
 import { AlertTriangle } from 'lucide-react';
+
+// Next.js static imports return an object {src, width, height} – extract the plain string.
+const ProfilePicPlaceholder =
+  typeof ProfilePicPlaceholderImport === 'string'
+    ? ProfilePicPlaceholderImport
+    : ProfilePicPlaceholderImport?.src ?? '';
+
+/**
+ * Extract a usable image URL from whatever the backend returns.
+ * Pydantic v2 HttpUrl fields serialise as URL objects → String() = "[object Object]".
+ * We only accept values that are plain strings starting with http(s) or /.
+ */
+function toValidUrl(val) {
+  if (!val) return null;
+  if (typeof val !== 'string') return null;
+  if (!val.startsWith('http') && !val.startsWith('/')) return null;
+  return val;
+}
 
 const HeroSection = () => {
   const [loading, setLoading] = useState(true);
   const [cvData, setCvData] = useState(null);
   const [error, setError] = useState(null);
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      setImageLoading(true);
+      setImageLoading(false);
       setImageFailed(false);
       try {
-        // Fetch CV data
         const data = await getCVDataApi();
         setCvData(data);
         setError(null);
       } catch (err) {
         console.error("Error fetching hero section data:", err);
         setError('Failed to load profile data.');
-        setImageLoading(false);
-        setImageFailed(false);
       } finally {
         setLoading(false);
       }
@@ -37,51 +51,37 @@ const HeroSection = () => {
     fetchData();
   }, []);
 
+  // Derive a validated URL – null if missing or not a real URL string
+  const profileImageUrl = toValidUrl(cvData?.personalInfo?.profileImage);
+
   useEffect(() => {
-    if (!cvData?.personalInfo) {
-      setImageLoading(false);
-      setImageFailed(false);
-      return;
-    }
-
-    const rawImageUrl = cvData.personalInfo.profileImage;
-    const imageUrl = rawImageUrl && typeof rawImageUrl === 'string' ? rawImageUrl : (rawImageUrl ? String(rawImageUrl) : null);
-
-    if (!imageUrl) {
+    if (!profileImageUrl) {
       setImageLoading(false);
       setImageFailed(false);
       return;
     }
 
     let cancelled = false;
-
     setImageFailed(false);
     setImageLoading(true);
 
     const img = new Image();
-
-    img.onload = () => {
-      if (!cancelled) {
-        setImageLoading(false);
-      }
-    };
-
+    img.onload = () => { if (!cancelled) setImageLoading(false); };
     img.onerror = () => {
       if (!cancelled) {
-        console.warn("Failed to preload hero profile image, falling back to placeholder.");
+        console.warn("Hero profile image failed to load, using placeholder.");
         setImageFailed(true);
         setImageLoading(false);
       }
     };
-
-    img.src = imageUrl;
+    img.src = profileImageUrl;
 
     return () => {
       cancelled = true;
       img.onload = null;
       img.onerror = null;
     };
-  }, [cvData?.personalInfo?.profileImage]);
+  }, [profileImageUrl]);
 
   const scrollToProjects = () => {
     document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
@@ -91,8 +91,8 @@ const HeroSection = () => {
     document.getElementById('cv')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const hasProfileImage = Boolean(cvData?.personalInfo?.profileImage);
-  const shouldWaitForImage = !error && imageLoading && hasProfileImage && !imageFailed;
+  // Use the already-validated URL (computed above the preload effect)
+  const shouldWaitForImage = !error && imageLoading && Boolean(profileImageUrl) && !imageFailed;
 
   // Keep loading UI active until data and profile image are ready
   if (loading || shouldWaitForImage) {
@@ -125,12 +125,8 @@ const HeroSection = () => {
               )}
               <img 
                 src={ProfilePicPlaceholder}
-                className={`w-full h-full rounded-full border-4 border-primary shadow-2xl object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`} 
-                onLoad={() => setImageLoading(false)}
-                onError={(e) => {
-                  e.target.src = ProfilePicPlaceholder;
-                  setImageLoading(false);
-                }}
+                className="w-full h-full rounded-full border-4 border-primary shadow-2xl object-cover"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 alt="Profile"
               />
             </div>
@@ -184,10 +180,8 @@ const HeroSection = () => {
   const { personalInfo } = cvData;
   const profileName = personalInfo?.name || 'Hello, I\'m Markus';
   const profileTitle = personalInfo?.title || 'A Creative Full Stack Developer & Tech Enthusiast';
-  // Coerce to string – stored value might be a Pydantic URL object
-  const rawProfileImage = personalInfo?.profileImage;
-  const profileImage = rawProfileImage && typeof rawProfileImage === 'string' ? rawProfileImage : null;
-  const displayImage = !imageFailed && profileImage ? profileImage : ProfilePicPlaceholder;
+  // profileImageUrl is already validated by toValidUrl() above the preload effect
+  const displayImage = !imageFailed && profileImageUrl ? profileImageUrl : ProfilePicPlaceholder;
 
   return (
     <motion.section
@@ -212,7 +206,9 @@ const HeroSection = () => {
               className={`w-full h-full rounded-full border-4 border-primary shadow-2xl object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`} 
               onLoad={() => setImageLoading(false)}
               onError={(e) => {
-                e.target.src = ProfilePicPlaceholder;
+                // Null the handler immediately to prevent any further error loops
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = ProfilePicPlaceholder;
                 setImageFailed(true);
                 setImageLoading(false);
               }}
