@@ -1,13 +1,12 @@
-// frontend/src/components/Home/ProjectCard.jsx (improved image handling with lazy loading)
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw, ArrowUp, ArrowDown, ImageOff } from 'lucide-react';
+import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw, ArrowUp, ArrowDown } from 'lucide-react';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 
 const StatusIndicator = ({ status }) => {
   let color, bgColor, Icon, text;
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   
   const darkModeColors = {
     up: 'bg-green-500/80 border-green-400',
@@ -58,7 +57,7 @@ const StatusIndicator = ({ status }) => {
 };
 
 const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMoveUp, onMoveDown, isFirst, isLast, imageUrl, imageLoading }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const [imageError, setImageError] = useState(false);
   
   const cardVariants = {

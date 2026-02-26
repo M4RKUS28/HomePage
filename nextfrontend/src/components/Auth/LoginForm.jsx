@@ -1,24 +1,23 @@
-// frontend/src/components/Auth/LoginForm.jsx (fixed error display)
 'use client';
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import { useToast } from '../../contexts/ToastContext';
+import { parseApiError } from '../../lib/error-utils';
 import LoadingButton from '../UI/LoadingButton';
-import ErrorMessage from '../UI/ErrorMessage';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [formError, setFormError] = useState(''); // Local form error state
+  const [formError, setFormError] = useState('');
   const { login, loadingAuth, authError, clearAuthError } = useAuth();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const { showToast } = useToast();
   const router = useRouter();
 
@@ -44,46 +43,10 @@ const LoginForm = () => {
     
     try {
       const userData = await login(username, password);
-      showToast({ 
-        type: 'success', 
-        message: 'Login successful! Welcome back.' 
-      });
-      // Admins go to /admin, regular users go to /dashboard
-      if (userData?.is_admin) {
-        router.push('/admin');
-      } else {
-        router.push('/dashboard');
-      }
+      showToast({ type: 'success', message: 'Login successful! Welcome back.' });
+      router.push(userData?.is_admin ? '/admin' : '/dashboard');
     } catch (err) {
-      console.error("Login failed:", err);
-      
-      // Error handling for display in UI
-      if (err.response) {
-        if (err.response.status === 401) {
-          setFormError('Invalid username or password. Please try again.');
-        } else if (err.response.data && err.response.data.detail) {
-          // Handle server response details
-          if (typeof err.response.data.detail === 'string') {
-            setFormError(err.response.data.detail);
-          } else if (Array.isArray(err.response.data.detail)) {
-            const errorMessages = err.response.data.detail
-              .map(e => {
-                const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
-                return `${field}: ${e.msg}`;
-              })
-              .join('\n');
-            setFormError(errorMessages);
-          }
-        } else {
-          setFormError('Login failed. Please check your credentials.');
-        }
-      } else if (err.request) {
-        // The request was made but no response was received
-        setFormError('No response from server. Please check your internet connection.');
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        setFormError('An error occurred during login. Please try again.');
-      }
+      setFormError(parseApiError(err, 'Login failed. Please check your credentials.'));
     }
   };
 
@@ -123,7 +86,7 @@ const LoginForm = () => {
               : 'text-gray-900'
           }`}
         >
-          Sign in to your account 6666
+          Sign in to your account
         </motion.h2>
       </div>
       <motion.form 

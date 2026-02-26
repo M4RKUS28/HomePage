@@ -1,14 +1,15 @@
 'use client';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { loginUserApi, registerUserApi, fetchCurrentUserApi, logoutApi } from '../api/auth';
+import { parseApiError } from '../lib/error-utils';
 
 export const AuthContext = createContext(null);
 
 /**
- * Auth provider - pure session-based.
+ * Auth provider — pure session-based.
  *
  * The browser never sees a JWT.  All state comes from calling
- * /api/auth/me (which reads the encrypted iron-session cookie).
+ * /api/users/me (which reads the encrypted iron-session cookie via proxy).
  */
 export const AuthProvider = ({ children, initialUser = null }) => {
   const [currentUser, setCurrentUser] = useState(initialUser);
@@ -25,12 +26,10 @@ export const AuthProvider = ({ children, initialUser = null }) => {
       setLoadingAuth(false);
       return;
     }
-
     try {
       const userData = await fetchCurrentUserApi();
       setCurrentUser(userData);
     } catch {
-      // No session or session expired - stay logged out
       setCurrentUser(null);
     } finally {
       setLoadingAuth(false);
@@ -42,7 +41,7 @@ export const AuthProvider = ({ children, initialUser = null }) => {
   }, [loadUser]);
 
   // ------------------------------------------------------------------
-  // Login - POST /api/auth/login → iron-session cookie set by server
+  // Login
   // ------------------------------------------------------------------
   const login = async (username, password) => {
     try {
@@ -52,30 +51,8 @@ export const AuthProvider = ({ children, initialUser = null }) => {
       setCurrentUser(data.user);
       return data.user;
     } catch (err) {
-      console.error('Login error:', err);
-
-      if (err.response) {
-        if (err.response.status === 401) {
-          setAuthError('Invalid username or password. Please try again.');
-        } else if (err.response.data?.detail) {
-          const detail = err.response.data.detail;
-          if (typeof detail === 'string') {
-            setAuthError(detail);
-          } else if (Array.isArray(detail)) {
-            setAuthError(detail.map(e => {
-              const field = e.loc?.length > 1 ? e.loc[1] : '';
-              return `${field}: ${e.msg}`;
-            }).join('\n'));
-          }
-        } else {
-          setAuthError('Login failed. Please check your credentials.');
-        }
-      } else if (err.request) {
-        setAuthError('No response from server. Please check your internet connection.');
-      } else {
-        setAuthError('An error occurred during login. Please try again.');
-      }
-
+      const message = parseApiError(err, 'Login failed. Please check your credentials.');
+      setAuthError(message);
       throw err;
     } finally {
       setLoadingAuth(false);
@@ -83,7 +60,7 @@ export const AuthProvider = ({ children, initialUser = null }) => {
   };
 
   // ------------------------------------------------------------------
-  // Register - POST /api/auth/register → iron-session cookie set by server
+  // Register
   // ------------------------------------------------------------------
   const register = async (username, email, password) => {
     try {
@@ -93,30 +70,8 @@ export const AuthProvider = ({ children, initialUser = null }) => {
       setCurrentUser(data.user);
       return data.user;
     } catch (err) {
-      console.error('Registration error:', err);
-
-      if (err.response) {
-        if ((err.response.status === 400 || err.response.status === 422) && err.response.data?.detail) {
-          const detail = err.response.data.detail;
-          if (typeof detail === 'string') {
-            setAuthError(detail);
-          } else if (Array.isArray(detail)) {
-            setAuthError(detail.map(e => {
-              const field = e.loc?.length > 1 ? e.loc[1] : '';
-              return `${field ? field + ': ' : ''}${e.msg}`;
-            }).join('\n'));
-          } else {
-            setAuthError('Validation error. Please check your inputs.');
-          }
-        } else {
-          setAuthError('Registration failed. Please try again.');
-        }
-      } else if (err.request) {
-        setAuthError('No response from server. Please check your internet connection.');
-      } else {
-        setAuthError('An error occurred during registration. Please try again.');
-      }
-
+      const message = parseApiError(err, 'Registration failed. Please try again.');
+      setAuthError(message);
       throw err;
     } finally {
       setLoadingAuth(false);
@@ -124,14 +79,10 @@ export const AuthProvider = ({ children, initialUser = null }) => {
   };
 
   // ------------------------------------------------------------------
-  // Logout - destroys the iron-session server-side
+  // Logout — destroys the iron-session server-side
   // ------------------------------------------------------------------
   const logout = async () => {
-    try {
-      await logoutApi();
-    } catch {
-      // ignore - best-effort
-    }
+    try { await logoutApi(); } catch { /* best-effort */ }
     setCurrentUser(null);
   };
 
@@ -142,19 +93,19 @@ export const AuthProvider = ({ children, initialUser = null }) => {
       setCurrentUser(userData);
       return userData;
     } catch (err) {
-      console.error('refreshUser failed', err);
+      console.error('refreshUser failed:', err);
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ 
-      currentUser, 
-      loadingAuth, 
-      login, 
-      register, 
-      logout, 
-      authError, 
-      clearAuthError, 
+    <AuthContext.Provider value={{
+      currentUser,
+      loadingAuth,
+      login,
+      register,
+      logout,
+      authError,
+      clearAuthError,
       loadUser,
       refreshUser,
     }}>

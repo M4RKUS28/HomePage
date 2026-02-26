@@ -1,5 +1,5 @@
 'use client';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import ProjectsGrid from '../../components/Home/ProjectsGrid';
@@ -7,7 +7,7 @@ import MessageList from '../../components/Admin/MessageList';
 import UserManagement from '../../components/Admin/UserManagement';
 import CVEditor from '../../components/Admin/CVEditor';
 import { Briefcase, MessageCircle, UserCog, FileEdit } from 'lucide-react';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import AdminRoute from '../../components/Auth/AdminRoute';
 
 const pageVariants = {
@@ -33,7 +33,7 @@ const TabButton = ({ children, onClick, isActive }) => (
 export default function AdminDashboardPage() {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('projects');
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   
   const renderContent = () => {
     switch (activeTab) {

@@ -1,29 +1,16 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 
+/**
+ * Hook to access the auth context.
+ * Must be used within an AuthProvider.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  const [isHydrated, setIsHydrated] = useState(false);
-  
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   if (!context) {
-    // During SSR or before hydration, return a safe default
-    if (!isHydrated || typeof window === 'undefined') {
-      return {
-        currentUser: null,
-        loadingAuth: true,
-        authError: null,
-        login: async () => {},
-        register: async () => {},
-        logout: async () => {},
-        clearAuthError: () => {},
-        refreshUser: async () => {},
-      };
-    }
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 };

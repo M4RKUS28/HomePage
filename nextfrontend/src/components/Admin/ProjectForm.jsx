@@ -1,7 +1,7 @@
-// frontend/src/components/Admin/ProjectForm.jsx (enhanced image upload + health check URLs)
+// frontend/src/components/Admin/ProjectForm.jsx
 import React, { useState, useEffect } from 'react';
-import { createProjectApi, updateProjectApi } from '../../api/projects';
-import { uploadImageApi } from '../../api/cv';
+import { createProjectApi, updateProjectApi, uploadProjectImageApi } from '../../api/projects';
+import { parseApiError } from '../../lib/error-utils';
 import Spinner from '../UI/Spinner';
 import ImageUpload from '../UI/ImageUpload';
 import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
@@ -11,10 +11,11 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     title: '',
     description: '',
     link: '',
-    position: '',  // Empty string means auto-assign position
+    position: '',
   });
-  const [healthCheckUrls, setHealthCheckUrls] = useState([]); // List of extra check URLs
-  const [imageData, setImageData] = useState('');
+  const [healthCheckUrls, setHealthCheckUrls] = useState([]);
+  const [imageFile, setImageFile] = useState(null);       // File object for new upload
+  const [initialImageUrl, setInitialImageUrl] = useState(''); // presigned URL for display
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
@@ -29,12 +30,14 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         position: project.position !== undefined ? project.position : '',
       });
       setHealthCheckUrls(project.health_check_urls || []);
-      // Set initial image if it exists
-      setImageData(project.image || '');
+      // image_url is a presigned download URL resolved by backend
+      setInitialImageUrl(project.image_url || '');
+      setImageFile(null);
     } else {
       setFormData({ title: '', description: '', link: '', position: '' });
       setHealthCheckUrls([]);
-      setImageData('');
+      setInitialImageUrl('');
+      setImageFile(null);
     }
     setApiError(null);
     setImageError(null);
@@ -50,9 +53,10 @@ const ProjectForm = ({ project, onFormSubmit }) => {
   const updateHealthCheckUrl = (idx, value) =>
     setHealthCheckUrls(prev => prev.map((u, i) => (i === idx ? value : u)));
 
-  const handleImageChange = (imageDataUrl) => {
-    setImageData(imageDataUrl);
-    setImageError(null); // Clear any previous image errors
+  /** Called by ImageUpload with a File object (or null on clear). */
+  const handleImageChange = (file) => {
+    setImageFile(file);
+    setImageError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -61,49 +65,44 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     setApiError(null);
     setImageError(null);
 
-    // Frontend validation
     if (!formData.title.trim()) {
-      setApiError("Project title is required.");
+      setApiError('Project title is required.');
       setIsLoading(false);
       return;
     }
-
-    if (!formData.link || formData.link.trim() === "") {
-      setApiError("Project Link is required.");
+    if (!formData.link || formData.link.trim() === '') {
+      setApiError('Project Link is required.');
       setIsLoading(false);
       return;
     }
 
     try {
-      // Step 1: Create or update the project basic info
-      let updatedProject;
+      // Step 1: Create or update the project metadata
       const submitData = {
         ...formData,
         health_check_urls: healthCheckUrls.filter(u => u && u.trim() !== ''),
       };
-      
-      if (project && project.id) {
-        updatedProject = await updateProjectApi(project.id, submitData);
+
+      let savedProject;
+      if (project?.id) {
+        savedProject = await updateProjectApi(project.id, submitData);
       } else {
-        updatedProject = await createProjectApi(submitData);
+        savedProject = await createProjectApi(submitData);
       }
-      
-      // Step 2: If we have an image, upload it separately
-      if (imageData && (imageData !== project?.image || !project)) {
+
+      // Step 2: Upload image if a new file was selected
+      if (imageFile) {
         try {
           setUploadingImage(true);
-          await uploadImageApi(
-            imageData,
-            'project',
-            updatedProject.id
-          );
+          const { object_name } = await uploadProjectImageApi(savedProject.id, imageFile);
+
+          // Step 3: Persist the object_name reference on the project
+          await updateProjectApi(savedProject.id, { image_object_name: object_name });
         } catch (imgError) {
-          console.error("Image upload error:", imgError);
-          setImageError("Image upload failed, but project was saved. Please try uploading the image again.");
+          console.error('Image upload error:', imgError);
+          setImageError('Image upload failed, but project was saved. Please try again.');
           setIsLoading(false);
           setUploadingImage(false);
-          
-          // Still consider form submission successful so project gets saved
           onFormSubmit(true);
           return;
         } finally {
@@ -111,30 +110,10 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         }
       }
 
-      // Success! Notify parent component
       onFormSubmit(true);
     } catch (err) {
-      console.error("ProjectForm Error:", err);
-      
-      // Handle API errors
-      if (err.response && err.response.data) {
-        if (err.response.data.detail && Array.isArray(err.response.data.detail)) {
-          // Handle FastAPI validation errors (422)
-          const messages = err.response.data.detail.map(d => {
-            const field = d.loc && d.loc.length > 1 ? d.loc[1] : 'Field';
-            return `${field.toString().replace("_", " ")}: ${d.msg}`;
-          }).join('\n');
-          setApiError(messages || "Validation Error. Please check your inputs.");
-        } else if (err.response.data.detail) {
-          // Handle other FastAPI errors with a 'detail' string
-          setApiError(err.response.data.detail);
-        } else {
-          // Generic error message
-          setApiError(err.message || 'An error occurred. Please try again.');
-        }
-      } else {
-        setApiError(err.message || 'A network error occurred. Please try again.');
-      }
+      console.error('ProjectForm Error:', err);
+      setApiError(parseApiError(err, 'An error occurred. Please try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -231,7 +210,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       
       {/* Image Upload Component */}
       <ImageUpload
-        initialImage={project?.image || imageData}
+        initialImage={initialImageUrl}
         onImageChange={handleImageChange}
         label="Project Image"
         aspectRatio="aspect-video"

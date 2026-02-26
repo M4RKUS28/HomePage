@@ -1,16 +1,15 @@
-// frontend/src/components/Auth/RegisterForm.jsx (fixed error display)
 'use client';
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { UserPlus, Eye, EyeOff, Check, X, AlertCircle } from 'lucide-react';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import { useToast } from '../../contexts/ToastContext';
+import { parseApiError } from '../../lib/error-utils';
 import LoadingButton from '../UI/LoadingButton';
-import ErrorMessage from '../UI/ErrorMessage';
 
 const RegisterForm = () => {
   const [username, setUsername] = useState('');
@@ -21,7 +20,7 @@ const RegisterForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formError, setFormError] = useState('');
   const { register, loadingAuth, authError, clearAuthError } = useAuth();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const { showToast } = useToast();
   const router = useRouter();
 
@@ -71,42 +70,10 @@ const RegisterForm = () => {
 
     try {
       await register(username, email, password);
-      showToast({ 
-        type: 'success', 
-        message: 'Account created! You are now logged in.' 
-      });
+      showToast({ type: 'success', message: 'Account created! You are now logged in.' });
       router.push('/dashboard');
     } catch (err) {
-      console.error("Registration failed:", err);
-      
-      // Error handling for display in UI
-      if (err.response) {
-        if (err.response.status === 400) {
-          // Common 400 errors are duplicate username/email
-          setFormError(err.response.data.detail || "Username or email already exists.");
-        } else if (err.response.data && err.response.data.detail) {
-          // Handle server response details
-          if (typeof err.response.data.detail === 'string') {
-            setFormError(err.response.data.detail);
-          } else if (Array.isArray(err.response.data.detail)) {
-            const errorMessages = err.response.data.detail
-              .map(e => {
-                const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
-                return `${field ? field + ': ' : ''}${e.msg}`;
-              })
-              .join('\n');
-            setFormError(errorMessages);
-          }
-        } else {
-          setFormError('Registration failed. Please try again.');
-        }
-      } else if (err.request) {
-        // The request was made but no response was received
-        setFormError('No response from server. Please check your internet connection.');
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        setFormError('An error occurred during registration. Please try again.');
-      }
+      setFormError(parseApiError(err, 'Registration failed. Please try again.'));
     }
   };
 

@@ -1,120 +1,87 @@
 // frontend/src/components/UI/ImageUpload.jsx
 import React, { useState, useRef } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { X, Image as ImageIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTheme } from '../../hooks/useTheme';
 
-const ImageUpload = ({ 
-  initialImage, 
-  onImageChange, 
-  className = '', 
+/**
+ * Reusable image upload component with drag-and-drop + preview.
+ *
+ * `onImageChange(file | null)` — called with the browser File object
+ * when a new image is selected, or `null` when the image is cleared.
+ * `initialImage` — URL string used only for the initial preview
+ * (e.g. a presigned download URL for an existing image).
+ */
+const ImageUpload = ({
+  initialImage,
+  onImageChange,
+  className = '',
   aspectRatio = 'aspect-square',
   label = 'Upload Image',
   placeholderText = 'Click or drag an image here',
-  maxSizeMB = 5
+  maxSizeMB = 5,
 }) => {
+  const { theme } = useTheme();
   const [previewUrl, setPreviewUrl] = useState(initialImage || '');
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
-  
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0] || e.dataTransfer?.files?.[0];
     if (!file) return;
-    
-    // Validate file type
+
     if (!file.type.startsWith('image/')) {
-        setError('Please select an image file (JPG, PNG, GIF, etc.)');
-        return;
+      setError('Please select an image file (JPG, PNG, GIF, etc.)');
+      return;
     }
-    
-    // Validate file size
+
     if (file.size > maxSizeMB * 1024 * 1024) {
-        setError(`Image must be smaller than ${maxSizeMB}MB`);
-        return;
+      setError(`Image must be smaller than ${maxSizeMB}MB`);
+      return;
     }
-    
-    // Reset error
+
     setError('');
-    
-    // Create base64 representation directly
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const base64Data = event.target.result;
-        setPreviewUrl(base64Data);
-        // Pass the full base64 string to parent component
-        onImageChange(base64Data);
-    };
-    reader.readAsDataURL(file);
-    };
-    
-  const resizeImage = (img, fileType, maxWidth, maxHeight) => {
-    const canvas = document.createElement('canvas');
-    let width = img.width;
-    let height = img.height;
-    
-    // Calculate new dimensions
-    if (width > height) {
-      if (width > maxWidth) {
-        height = Math.round(height * maxWidth / width);
-        width = maxWidth;
-      }
-    } else {
-      if (height > maxHeight) {
-        width = Math.round(width * maxHeight / height);
-        height = maxHeight;
-      }
-    }
-    
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, width, height);
-    
-    // Get resized data URL
-    const resizedImageDataUrl = canvas.toDataURL(fileType);
-    onImageChange(resizedImageDataUrl);
+
+    // Generate a local preview URL for display
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+
+    // Pass the File object to the parent
+    onImageChange(file);
   };
-  
+
   const clearImage = () => {
+    // Revoke any blob URL we created
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl('');
-    onImageChange('');
+    onImageChange(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
-  
-  // Handle drag events
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-  
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-  
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleImageChange(e);
-  };
+
+  // Drag events
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); handleImageChange(e); };
+
+  const labelColor = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
 
   return (
     <div className={className}>
-      <label className="block text-sm font-medium text-gray-300 mb-2">{label}</label>
-      
+      <label className={`block text-sm font-medium ${labelColor} mb-2`}>{label}</label>
+
       {previewUrl ? (
         <div className="relative">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className={`relative ${aspectRatio} rounded-md overflow-hidden`}
           >
-            <img 
-              src={previewUrl} 
-              alt="Preview" 
-              className="w-full h-full object-cover" 
-            />
+            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
             <button
               type="button"
               onClick={clearImage}
@@ -133,23 +100,17 @@ const ImageUpload = ({
           onClick={() => fileInputRef.current?.click()}
           className={`
             ${aspectRatio}
-            cursor-pointer
-            border-2 border-dashed rounded-md
-            flex flex-col items-center justify-center p-4
-            transition-colors
+            cursor-pointer border-2 border-dashed rounded-md
+            flex flex-col items-center justify-center p-4 transition-colors
             ${isDragging ? 'border-primary bg-primary/10' : 'border-gray-600 hover:border-primary'}
           `}
         >
           <ImageIcon size={48} className="text-gray-500 mb-3" />
-          <p className="text-sm text-gray-400 text-center">
-            {placeholderText}
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            Max size: {maxSizeMB}MB
-          </p>
+          <p className="text-sm text-gray-400 text-center">{placeholderText}</p>
+          <p className="text-xs text-gray-500 mt-2">Max size: {maxSizeMB}MB</p>
         </div>
       )}
-      
+
       <input
         ref={fileInputRef}
         type="file"
@@ -157,10 +118,8 @@ const ImageUpload = ({
         onChange={handleImageChange}
         className="hidden"
       />
-      
-      {error && (
-        <p className="mt-2 text-sm text-red-500">{error}</p>
-      )}
+
+      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
     </div>
   );
 };

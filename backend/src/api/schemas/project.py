@@ -27,6 +27,7 @@ class ProjectUpdate(BaseModel):
     position: Optional[int] = None
     status: Optional[ProjectStatus] = None
     health_check_urls: Optional[List[str]] = None
+    image_object_name: Optional[str] = Field(default=None, max_length=512)
 
 
 # ---------------------------------------------------------------------------

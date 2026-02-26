@@ -89,7 +89,7 @@ const Footer = ({
           </div>
         </div>
         
-        <div className="mt-8 pt-4 text-center text-sm border-t border-gray-700">
+        <div className={`mt-8 pt-4 text-center text-sm border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
           <p>
             © {currentYear} {ownerName}. All rights reserved.
           </p>

@@ -1,106 +1,90 @@
 /**
  * Project API client.
  *
- * Image uploads now use presigned MinIO URLs:
- *  1. POST /storage/upload-url → get presigned PUT URL + object_name
- *  2. PUT to presigned URL directly (browser → MinIO)
- *  3. Attach object_name to project via update
+ * Image uploads use presigned MinIO URLs via the storage module.
  */
-import apiClient from './index';
+import apiClient from './client';
+import { uploadFileViaPresigned, getPresignedDownloadUrl } from './storage';
+
+// ---------------------------------------------------------------------------
+// CRUD
+// ---------------------------------------------------------------------------
 
 export const getProjectsApi = async () => {
-    const response = await apiClient.get('/projects/');
-    return response.data;
+  const { data } = await apiClient.get('/projects/');
+  return data;
 };
 
 export const getProjectApi = async (projectId) => {
-    const response = await apiClient.get(`/projects/${projectId}`);
-    return response.data;
+  const { data } = await apiClient.get(`/projects/${projectId}`);
+  return data;
 };
 
 export const createProjectApi = async (projectData) => {
-    const essentialData = {
-        title: projectData.title,
-        description: projectData.description,
-        link: projectData.link,
-        health_check_urls: projectData.health_check_urls || [],
-    };
+  const payload = {
+    title: projectData.title,
+    description: projectData.description,
+    link: projectData.link,
+    health_check_urls: projectData.health_check_urls || [],
+  };
 
-    if (projectData.position !== '' && projectData.position !== undefined && projectData.position !== null) {
-        essentialData.position = parseInt(projectData.position);
-    }
+  if (projectData.position != null && projectData.position !== '') {
+    payload.position = parseInt(projectData.position, 10);
+  }
 
-    const response = await apiClient.post('/projects/', essentialData);
-    return response.data;
+  const { data } = await apiClient.post('/projects/', payload);
+  return data;
 };
 
 export const updateProjectApi = async (projectId, projectData) => {
-    const essentialData = {
-        title: projectData.title,
-        description: projectData.description,
-        link: projectData.link,
-        position: projectData.position,
-        health_check_urls: projectData.health_check_urls !== undefined
-            ? projectData.health_check_urls
-            : [],
-    };
+  const payload = {
+    title: projectData.title,
+    description: projectData.description,
+    link: projectData.link,
+    position: projectData.position,
+    health_check_urls: projectData.health_check_urls ?? [],
+  };
 
-    Object.keys(essentialData).forEach(key =>
-        essentialData[key] === undefined && delete essentialData[key]
-    );
+  // Remove undefined values
+  Object.keys(payload).forEach((key) => {
+    if (payload[key] === undefined) delete payload[key];
+  });
 
-    const response = await apiClient.put(`/projects/${projectId}`, essentialData);
-    return response.data;
+  const { data } = await apiClient.put(`/projects/${projectId}`, payload);
+  return data;
 };
 
 export const deleteProjectApi = async (projectId) => {
-    await apiClient.delete(`/projects/${projectId}`);
-    return { success: true, projectId };
+  await apiClient.delete(`/projects/${projectId}`);
+  return { success: true, projectId };
 };
 
 export const checkProjectStatusApi = async (projectId) => {
-    const response = await apiClient.post(`/projects/${projectId}/check-status`);
-    return response.data;
+  const { data } = await apiClient.post(`/projects/${projectId}/check-status`);
+  return data;
 };
 
 // ---------------------------------------------------------------------------
-// Presigned image upload (replaces old base64 upload)
+// Image handling (presigned URLs)
 // ---------------------------------------------------------------------------
 
 /**
  * Upload a project cover image via presigned URL.
  *
- * @param {number} projectId - existing project ID
- * @param {File}   file      - browser File object
- * @returns {{ object_name: string }} - the MinIO object key stored in DB
+ * @param {number} projectId - Existing project ID
+ * @param {File}   file      - Browser File object
+ * @returns {Promise<{ object_name: string }>}
  */
-/**
- * Get presigned download URL for a project's cover image.
- * @param {string} objectName - the MinIO object_name stored in the project
- * @returns {string} presigned URL
- */
-export const getProjectImageApi = async (objectName) => {
-    const { data } = await apiClient.get(`/storage/download-url`, {
-        params: { object_name: objectName },
-    });
-    return data.download_url;
+export const uploadProjectImageApi = async (projectId, file) => {
+  return uploadFileViaPresigned(file, 'projects', projectId);
 };
 
-export const uploadProjectImageApi = async (projectId, file) => {
-    // Step 1: Request a presigned PUT URL
-    const { data: presigned } = await apiClient.post('/storage/upload-url', {
-        filename: file.name,
-        content_type: file.type,
-        category: 'projects',
-        resource_id: projectId,
-    });
-
-    // Step 2: PUT the file directly to MinIO
-    await fetch(presigned.upload_url, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type || 'application/octet-stream' },
-        body: file,
-    });
-
-    return { object_name: presigned.object_name };
+/**
+ * Get a presigned download URL for an object stored in MinIO.
+ *
+ * @param {string} objectName - MinIO object key (e.g. "projects/1/cover.png")
+ * @returns {Promise<string>} Presigned download URL
+ */
+export const getProjectImageUrl = async (objectName) => {
+  return getPresignedDownloadUrl(objectName);
 };

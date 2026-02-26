@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import ProjectCard from './ProjectCard';
-import { getProjectsApi, getProjectImageApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
+import { getProjectsApi, getProjectApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
 import { useAuth } from '../../hooks/useAuth';
 import Spinner from '../UI/Spinner';
-import ProjectForm from '../Admin/ProjectForm'; // For add/edit modal
-import Modal from '../UI/Modal'; // Generic Modal
-import { PlusCircle, ArrowUp, ArrowDown } from 'lucide-react';
+import ProjectForm from '../Admin/ProjectForm';
+import Modal from '../UI/Modal';
+import { PlusCircle } from 'lucide-react';
 
 
 const ProjectsGrid = () => {
@@ -16,39 +16,37 @@ const ProjectsGrid = () => {
   const { currentUser } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
-  // Map of projectId -> { loading: bool, url: string|null }
   const [projectImages, setProjectImages] = useState({});
-  // Track which project IDs we've already fetched/attempted images for
   const fetchedImageIds = useRef(new Set());
 
-  const fetchImageForProject = useCallback((projectId) => {
+  /**
+   * Fetch the full project detail (GET /projects/{id}) which includes
+   * `image_url` — a presigned download URL already resolved by the
+   * backend.  The list endpoint intentionally omits images for speed.
+   */
+  const fetchImageForProject = useCallback(async (project) => {
+    const projectId = project.id;
     if (fetchedImageIds.current.has(projectId)) return;
     fetchedImageIds.current.add(projectId);
+
     setProjectImages(prev => ({ ...prev, [projectId]: { loading: true, url: null } }));
-    getProjectImageApi(projectId)
-      .then(imgData => {
-        setProjectImages(prev => ({
-          ...prev,
-          [projectId]: { loading: false, url: imgData.image || null }
-        }));
-      })
-      .catch(() => {
-        setProjectImages(prev => ({
-          ...prev,
-          [projectId]: { loading: false, url: null }
-        }));
-      });
+    try {
+      const detail = await getProjectApi(projectId);
+      setProjectImages(prev => ({
+        ...prev,
+        [projectId]: { loading: false, url: detail.image_url || null },
+      }));
+    } catch {
+      setProjectImages(prev => ({ ...prev, [projectId]: { loading: false, url: null } }));
+    }
   }, []);
 
   const fetchProjectsData = useCallback(async () => {
     try {
-      // Fetch metadata (no images) - show cards immediately
       const data = await getProjectsApi();
       setProjects(data);
       setError(null);
-
-      // Fetch images only for project IDs we haven't fetched yet
-      data.forEach(p => fetchImageForProject(p.id));
+      data.forEach(p => fetchImageForProject(p));
     } catch (err) {
       setError('Failed to load projects. The server might be down or an error occurred.');
       console.error(err);
@@ -92,7 +90,17 @@ const ProjectsGrid = () => {
     }
   };
 
-  const handleEdit = (project) => { setEditingProject(project); setShowModal(true); }
+  const handleEdit = async (project) => {
+    try {
+      // Fetch full detail (includes image_url) for the edit form
+      const detail = await getProjectApi(project.id);
+      setEditingProject(detail);
+    } catch {
+      // Fall back to list data if detail fetch fails
+      setEditingProject(project);
+    }
+    setShowModal(true);
+  }
   const handleAdd = () => { setEditingProject(null); setShowModal(true); }
   
   const moveProjectUp = async (projectId) => {

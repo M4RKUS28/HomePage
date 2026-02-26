@@ -1,31 +1,30 @@
 /**
- * Auth API - calls NextJS API routes which manage the iron-session.
+ * Auth API — calls NextJS API routes which manage the iron-session.
  *
  * Login / register create an encrypted session cookie server-side.
- * The browser NEVER sees a JWT - only the opaque hp_session cookie.
+ * The browser NEVER sees a JWT — only the opaque hp_session cookie.
  */
-import axios from 'axios';
-import apiClient from './index';
+import apiClient from './client';
 
-// Direct axios instance for auth routes (they live at /api/auth/*)
-const authClient = axios.create({ baseURL: '', withCredentials: true });
-
+/** POST /api/auth/login → iron-session cookie set by server */
 export const loginUserApi = async (username, password) => {
-    const response = await authClient.post('/api/auth/login', { username, password });
-    return response.data; // { user }
+  const { data } = await apiClient.post('/auth/login', { username, password });
+  return data; // { user }
 };
 
+/** POST /api/auth/register → iron-session cookie set by server */
 export const registerUserApi = async (username, email, password) => {
-    const response = await authClient.post('/api/auth/register', { username, email, password });
-    return response.data; // { user }
+  const { data } = await apiClient.post('/auth/register', { username, email, password });
+  return data; // { user }
 };
 
+/** GET /api/users/me → current user from session (proxied through catch-all) */
 export const fetchCurrentUserApi = async () => {
-    // Goes through the catch-all proxy → FastAPI /users/me
-    const response = await apiClient.get('/users/me');
-    return response.data;
+  const { data } = await apiClient.get('/users/me');
+  return data;
 };
 
+/** POST /api/auth/logout → destroys iron-session */
 export const logoutApi = async () => {
-    await authClient.post('/api/auth/logout');
+  await apiClient.post('/auth/logout');
 };

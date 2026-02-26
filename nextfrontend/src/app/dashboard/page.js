@@ -1,8 +1,8 @@
 'use client';
-import React, { useContext, useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 import ProtectedRoute from '../../components/Auth/ProtectedRoute';
 import { createMessageApi } from '../../api/messages';
 import { updateUserApi, uploadAvatarApi, deleteSelfApi, getAvatarUrl } from '../../api/users';
@@ -31,7 +31,7 @@ const expandVariants = {
 
 // ── Section card wrapper ──────────────────────────────────────────────────────
 const DashCard = ({ children, className = '' }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   return (
     <motion.div
       variants={itemVariants}
@@ -662,7 +662,7 @@ const DashMessageForm = ({ theme }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function UserDashboardPage() {
   const { currentUser, refreshUser, logout } = useAuth();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const router = useRouter();
 
   const joinedDate = currentUser?.created_at

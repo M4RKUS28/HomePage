@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { AlertTriangle, Home } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme';
 
 const pageVariants = {
     initial: { opacity: 0, scale: 0.8 },
@@ -12,6 +13,7 @@ const pageVariants = {
 const pageTransition = { type: "spring", stiffness: 200, damping: 20, duration: 0.5 };
 
 export default function NotFound() {
+  const { theme } = useTheme();
   return (
     <motion.div
         initial="initial"
@@ -22,9 +24,9 @@ export default function NotFound() {
         className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center px-4 py-12"
     >
       <AlertTriangle className="w-24 h-24 text-yellow-400 mb-8 animate-bounce" />
-      <h1 className="text-6xl font-extrabold text-white mb-4">404</h1>
-      <h2 className="text-3xl font-semibold text-gray-300 mb-6">Oops! Page Not Found.</h2>
-      <p className="text-lg text-gray-400 mb-8 max-w-md">
+      <h1 className={`text-6xl font-extrabold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>404</h1>
+      <h2 className={`text-3xl font-semibold mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Oops! Page Not Found.</h2>
+      <p className={`text-lg mb-8 max-w-md ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
         The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
       </p>
       <Link
