@@ -33,9 +33,11 @@ const Footer = ({
   // Create social link components
   const socialLinkComponents = socialLinks.map((link, index) => {
     const Icon = getIconForPlatform(link.platform);
+    // Coerce url to string – Pydantic v2 HttpUrl objects serialize as non-primitives
+    const href = link.url ? String(link.url) : '#';
     return {
       icon: Icon,
-      href: link.url,
+      href,
       label: link.platform
     };
   });

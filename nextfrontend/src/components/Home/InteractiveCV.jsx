@@ -117,7 +117,7 @@ const TimelineItem = ({ item, index = 0 }) => {
       </div>
       
       <div className="flex items-center">
-        {item.logo && (
+        {item.logo && typeof item.logo === 'string' && (
           <img 
             src={item.logo} 
             className="w-6 h-6 mr-2 object-contain" 

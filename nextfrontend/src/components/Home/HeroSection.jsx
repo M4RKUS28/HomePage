@@ -183,7 +183,9 @@ const HeroSection = () => {
   const { personalInfo } = cvData;
   const profileName = personalInfo?.name || 'Hello, I\'m Markus';
   const profileTitle = personalInfo?.title || 'A Creative Full Stack Developer & Tech Enthusiast';
-  const profileImage = personalInfo?.profileImage;
+  // Coerce to string – stored value might be a Pydantic URL object
+  const rawProfileImage = personalInfo?.profileImage;
+  const profileImage = rawProfileImage && typeof rawProfileImage === 'string' ? rawProfileImage : null;
   const displayImage = !imageFailed && profileImage ? profileImage : ProfilePicPlaceholder;
 
   return (

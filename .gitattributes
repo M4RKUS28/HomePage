@@ -1,0 +1,5 @@
+# Always use LF for shell scripts so they work inside Linux containers
+*.sh text eol=lf
+
+# Default: let Git handle line endings normally for everything else
+* text=auto

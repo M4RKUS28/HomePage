@@ -41,8 +41,15 @@ COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
-# Copy project
+# Copy application source
 COPY ./src ./app
+
+# Copy Alembic configuration and migration scripts
+COPY ./alembic.ini ./alembic.ini
+COPY ./alembic ./alembic
+
+# Copy the smart startup entrypoint
+COPY ./entrypoint.sh ./entrypoint.sh
 
 # If you have a .env file you want to include in the image (NOT RECOMMENDED for secrets)
 # COPY ./.env ./.env
@@ -50,15 +57,16 @@ COPY ./src ./app
 # Chown the directory to the app user
 RUN chown -R app:app /home/app/web
 
+# Make entrypoint executable
+RUN chmod +x /home/app/web/entrypoint.sh
+
 # Switch to the non-root user
 USER app
 
 # Expose port (ensure this matches the port Uvicorn runs on in run.py or directly)
 EXPOSE 8000
 
-# Command to run the application
-# The run.py script handles Uvicorn with reload, which is fine for development.
-# For production, you might run uvicorn directly with more workers.
-# CMD ["python", "run_dev.py"]
-# Alternatively, for production with multiple workers:
+# entrypoint.sh handles Alembic migration detection/stamping/upgrading,
+# then exec's the CMD below.
+ENTRYPOINT ["/home/app/web/entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

@@ -18,7 +18,13 @@
     /* Secondary colors */
     --color-secondary: 37 99 235; /* blue-600 */
     --color-secondary-dark: 29 78 216; /* blue-700 */
-    --color-secondary-light: 59.animate-pulse-fast {
+    --color-secondary-light: 59 130 246; /* blue-500 */
+
+    /* Accent colors placeholder - defined below */
+  }
+}
+
+.animate-pulse-fast {
   animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -307,8 +313,10 @@
   .light .modal-label {
     color: rgb(55, 65, 81); /* gray-700 */
   }
-}0 246; /* blue-500 */
-    
+}
+
+@layer base {
+  :root {
     /* Accent colors */
     --color-accent: 219 39 119; /* pink-600 */
     --color-accent-dark: 190 24 93; /* pink-700 */

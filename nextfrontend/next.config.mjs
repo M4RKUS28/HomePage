@@ -5,7 +5,9 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: process.env.BACKEND_URL || 'http://127.0.0.1:8000/:path*', // Proxy to Backend
+        // BACKEND_URL is set in Docker; fall back to localhost for non-Docker dev.
+        // The /:path* suffix must always be appended to forward the full path.
+        destination: `${process.env.BACKEND_URL || 'http://127.0.0.1:8000'}/:path*`,
       },
     ]
   },

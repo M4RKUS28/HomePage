@@ -22,13 +22,18 @@ services:
       interval: 15s
 
   homepagebackend:
-    # Override command: uvicorn with --reload for auto-restart on file changes
+    # entrypoint.sh handles migration detection; CMD becomes the uvicorn dev server
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       # Mount source code – maps ./backend/src to the /home/app/web/app path
       # (the production Dockerfile does: COPY ./src ./app)
       - ./backend/src:/home/app/web/app
       - ./backend/.env:/home/app/web/.env:ro
+      # Mount alembic so new migration files generated inside the container
+      # are immediately available on the host (and vice versa)
+      - ./backend/alembic:/home/app/web/alembic
+      - ./backend/alembic.ini:/home/app/web/alembic.ini:ro
+      - ./backend/entrypoint.sh:/home/app/web/entrypoint.sh:ro
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
@@ -36,6 +41,10 @@ services:
     healthcheck:
       start_period: 5s
       interval: 10s
+
+  nginx:
+    volumes:
+      - ./nginx/nginx.local.conf:/etc/nginx/nginx.conf:ro
 
   nextfrontend:
     # Use the lightweight dev Dockerfile instead of the production multi-stage build
