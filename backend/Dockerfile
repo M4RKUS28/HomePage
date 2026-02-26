@@ -28,7 +28,7 @@ COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
 # Copy application source (src → app inside the container)
-COPY ./src ./app
+COPY ./src ./src
 
 # Copy Alembic configuration
 COPY ./alembic.ini ./alembic.ini
@@ -44,4 +44,4 @@ USER app
 EXPOSE 8000
 
 ENTRYPOINT ["/home/app/web/entrypoint.sh"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

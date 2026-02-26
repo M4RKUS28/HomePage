@@ -1,107 +1,153 @@
+# =============================================================================
+# docker-compose.yml  –  LOCAL DEVELOPMENT
+#
+# Usage:
+#   docker compose up --build
+#
+# Features:
+#   - Builds images locally (no DockerHub pull)
+#   - Source code mounted for hot-reload (no image rebuild on code changes)
+#   - Backend: uvicorn --reload
+#   - Frontend: Next.js dev mode (Turbopack)
+#   - PostgreSQL port exposed to host for DB clients (DBeaver, psql, etc.)
+#   - MinIO console on :9001
+# =============================================================================
+
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
-    # No ports exposed externally - only reachable within the Docker network
-    expose:
-      - "3306"
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432" # exposed to host for local DB clients
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-homepage}
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
-    restart: always
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 6
-      start_period: 30s
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    expose:
+      - "6379"
+    command: >
+      redis-server
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   minio:
     image: minio/minio:latest
     container_name: minio
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000" # S3-compatible API
+      - "9000:9000" # S3 API
       - "9001:9001" # Web console
     networks:
       - app-network
-    restart: always
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
       retries: 3
-      start_period: 20s
+      start_period: 10s
 
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: nginx
-    ports:
-      - "8457:80"
-    networks:
-      - app-network
-    depends_on:
-      homepagebackend:
-        condition: service_healthy
-      nextfrontend:
-        condition: service_started
-    restart: always
+  # ── Application ─────────────────────────────────────────────────────────────
 
   homepagebackend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: homepagebackend
-    # ports exposed only to internal network
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /home/app/web/src
     expose:
       - "8000"
     env_file:
       - ./backend/.env
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount source so --reload picks up changes without rebuild
+      - ./backend/src:/home/app/web/src
+      - ./backend/requirements.txt:/home/app/web/requirements.txt:ro
+      - ./backend/.env:/home/app/web/.env:ro
+      - ./backend/alembic:/home/app/web/alembic
+      - ./backend/alembic.ini:/home/app/web/alembic.ini:ro
+      - ./backend/entrypoint.sh:/home/app/web/entrypoint.sh:ro
     depends_on:
-      mysql:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/docs"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
       retries: 5
-      start_period: 20s
+      start_period: 10s
     networks:
       - app-network
-    restart: always
+    restart: unless-stopped
 
   nextfrontend:
     build:
       context: ./nextfrontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: nextfrontend
-    # ports exposed only to internal network
     expose:
       - "3000"
     environment:
-      - NODE_ENV=production
-      - PM2_INSTANCES=${PM2_INSTANCES:-2}
+      - NODE_ENV=development
       - BACKEND_URL=http://homepagebackend:8000
+      - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET:-change-me-in-production}
+      - SESSION_SECRET=${SESSION_SECRET:-iron-session-secret-at-least-32-chars-change-me}
       - NEXT_TELEMETRY_DISABLED=1
+      # Polling required on Windows/WSL (inotify doesn't cross volume boundary)
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     volumes:
-      - ./nextfrontend/logs:/app/logs
+      - ./nextfrontend/src:/app/src
+      - ./nextfrontend/public:/app/public
+      - ./nextfrontend/next.config.mjs:/app/next.config.mjs:ro
+      - ./nextfrontend/postcss.config.mjs:/app/postcss.config.mjs:ro
+      - ./nextfrontend/jsconfig.json:/app/jsconfig.json:ro
+      - ./nextfrontend/eslint.config.mjs:/app/eslint.config.mjs:ro
+      - ./nextfrontend/package.json:/app/package.json:ro
+      # Persist node_modules in named volume (avoids Windows/WSL path issues)
+      - nextfrontend_node_modules:/app/node_modules
     depends_on:
       homepagebackend:
         condition: service_healthy
-    restart: unless-stopped
     healthcheck:
       test:
         [
@@ -112,18 +158,39 @@ services:
           "--spider",
           "http://localhost:3000",
         ]
-      interval: 30s
+      interval: 15s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 20s
     networks:
       - app-network
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "8457:80"
+    volumes:
+      # Relaxed local config (no strict rate-limits)
+      - ./nginx/nginx.local.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      homepagebackend:
+        condition: service_healthy
+      nextfrontend:
+        condition: service_started
+    networks:
+      - app-network
+    restart: unless-stopped
 
 networks:
   app-network:
     driver: bridge
 
 volumes:
-  logs:
-  mysql_data:
+  postgres_data:
+  redis_data:
   minio_data:
+  nextfrontend_node_modules:
