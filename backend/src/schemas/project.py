@@ -28,7 +28,7 @@ class ProjectUpdate(ProjectBase):
 
 
 class Project(ProjectBase):
-    """Full project response – includes image."""
+    """Full project response - includes image."""
     id: int
     owner_id: int
     status: ProjectStatus
@@ -40,7 +40,7 @@ class Project(ProjectBase):
 
 
 class ProjectList(BaseModel):
-    """Project metadata without image – for fast list endpoint."""
+    """Project metadata without image - for fast list endpoint."""
     id: int
     title: str
     description: Optional[str] = None
@@ -56,7 +56,7 @@ class ProjectList(BaseModel):
 
 
 class ProjectImage(BaseModel):
-    """Only the image data – for lazy loading."""
+    """Only the image data - for lazy loading."""
     id: int
     image: Optional[str] = None
 

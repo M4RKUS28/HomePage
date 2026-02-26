@@ -3,7 +3,7 @@ Application settings powered by pydantic-settings.
 
 * Reads from environment variables / .env file automatically.
 * Grouped into logical sections via nested models.
-* Singleton via @lru_cache – import ``get_settings()`` everywhere.
+* Singleton via @lru_cache - import ``get_settings()`` everywhere.
 """
 
 from functools import lru_cache

@@ -24,7 +24,7 @@ class Project(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     link: Mapped[str] = mapped_column(String(512), nullable=False)
-    # MinIO object name (e.g. "projects/7/cover.webp") – NO base64 blobs
+    # MinIO object name (e.g. "projects/7/cover.webp") - NO base64 blobs
     image_object_name: Mapped[str | None] = mapped_column(String(512), nullable=True)
     status: Mapped[ProjectStatus] = mapped_column(
         SQLEnum(ProjectStatus, name="project_status"),

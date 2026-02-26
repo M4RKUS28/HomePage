@@ -178,7 +178,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         <div className="flex items-center justify-between mb-1">
           <label className="block text-sm font-medium text-gray-300">
             Health Check URLs
-            <span className="ml-1 text-xs text-gray-500">(optional – all must be reachable for status to be Online)</span>
+            <span className="ml-1 text-xs text-gray-500">(optional - all must be reachable for status to be Online)</span>
           </label>
           <button
             type="button"

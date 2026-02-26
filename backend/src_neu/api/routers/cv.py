@@ -15,7 +15,7 @@ router = APIRouter(prefix="/cv", tags=["cv"])
 async def read_cv(
     db: AsyncSession = Depends(get_db),
 ):
-    """Public endpoint – returns the CV data without authentication."""
+    """Public endpoint - returns the CV data without authentication."""
     return await cv_service.get_cv_data(db)
 
 

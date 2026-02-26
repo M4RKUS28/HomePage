@@ -7,7 +7,7 @@ Provides:
 * Server-side upload / delete helpers for small files (e.g. avatars < 5 MB)
 * Bucket initialisation
 
-The MinIO Python SDK is synchronous – presigned URL generation is CPU-bound
+The MinIO Python SDK is synchronous - presigned URL generation is CPU-bound
 and fast, so running it synchronously in the async context is acceptable.
 For heavy I/O (streaming large objects) use presigned URLs instead.
 """

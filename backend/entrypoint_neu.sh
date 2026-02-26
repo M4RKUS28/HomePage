@@ -1,5 +1,5 @@
 #!/bin/sh
-# entrypoint_neu.sh – Alembic migration handler for the refactored backend
+# entrypoint_neu.sh - Alembic migration handler for the refactored backend
 set -e
 
 echo "[entrypoint] Running Alembic migrations..."

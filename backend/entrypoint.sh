@@ -1,5 +1,5 @@
 #!/bin/sh
-# entrypoint.sh – smart Alembic startup handler
+# entrypoint.sh - smart Alembic startup handler
 #
 # Three possible states:
 #   1. Fresh DB (no tables)          → run "alembic upgrade head" normally
@@ -27,7 +27,7 @@ try:
         if row:
             print("tracked")   # Alembic is managing this DB with a known revision
         else:
-            # Table exists but is empty – stamp needed
+            # Table exists but is empty - stamp needed
             print("untracked")
     elif has_app_tbls:
         print("untracked")     # Tables exist but Alembic never managed them
@@ -43,18 +43,18 @@ echo "[entrypoint] DB state: $ALEMBIC_TRACKED"
 
 case "$ALEMBIC_TRACKED" in
   tracked)
-    echo "[entrypoint] alembic_version found – running upgrade head..."
+    echo "[entrypoint] alembic_version found - running upgrade head..."
     alembic upgrade head
     ;;
   untracked)
     echo "[entrypoint] Existing tables without Alembic tracking detected."
     echo "[entrypoint] Stamping current revision as head (no DDL changes)..."
     alembic stamp head
-    echo "[entrypoint] Stamp complete – running upgrade head for any pending migrations..."
+    echo "[entrypoint] Stamp complete - running upgrade head for any pending migrations..."
     alembic upgrade head
     ;;
   empty)
-    echo "[entrypoint] Fresh database – running upgrade head..."
+    echo "[entrypoint] Fresh database - running upgrade head..."
     alembic upgrade head
     ;;
   *)

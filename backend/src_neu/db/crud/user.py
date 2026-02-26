@@ -2,7 +2,7 @@
 CRUD operations for the User model.
 
 Every function takes an ``AsyncSession`` as first argument and returns
-model instances or scalars – no HTTP / FastAPI concerns here.
+model instances or scalars - no HTTP / FastAPI concerns here.
 """
 
 from typing import Optional, Sequence

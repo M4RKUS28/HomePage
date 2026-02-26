@@ -2,7 +2,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: mysql
-    # No ports exposed externally – only reachable within the Docker network
+    # No ports exposed externally - only reachable within the Docker network
     expose:
       - "3306"
     environment:

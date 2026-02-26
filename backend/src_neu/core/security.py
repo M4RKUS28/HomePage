@@ -2,7 +2,7 @@
 Internal service-token security.
 
 NextJS signs a JWT with a shared secret (HMAC-HS256).
-FastAPI validates that JWT here – no login / register endpoints needed.
+FastAPI validates that JWT here - no login / register endpoints needed.
 
 Additionally provides password hashing helpers (used for admin seeding).
 """
@@ -79,7 +79,7 @@ def create_internal_token(
     """
     Create a signed JWT (for testing / admin seeding).
 
-    In production this is done by NextJS – this helper exists for dev/test.
+    In production this is done by NextJS - this helper exists for dev/test.
     """
     from datetime import timedelta
 

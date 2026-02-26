@@ -1,9 +1,9 @@
 """
 Async database engine and session management.
 
-* ``async_engine``      – the SQLAlchemy async engine (asyncpg)
-* ``AsyncSessionLocal`` – the session factory
-* ``get_db()``          – FastAPI dependency that yields an ``AsyncSession``
+* ``async_engine``      - the SQLAlchemy async engine (asyncpg)
+* ``AsyncSessionLocal`` - the session factory
+* ``get_db()``          - FastAPI dependency that yields an ``AsyncSession``
 """
 
 from collections.abc import AsyncGenerator

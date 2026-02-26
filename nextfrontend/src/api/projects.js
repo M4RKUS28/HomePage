@@ -70,9 +70,9 @@ export const checkProjectStatusApi = async (projectId) => {
 /**
  * Upload a project cover image via presigned URL.
  *
- * @param {number} projectId – existing project ID
- * @param {File}   file      – browser File object
- * @returns {{ object_name: string }} – the MinIO object key stored in DB
+ * @param {number} projectId - existing project ID
+ * @param {File}   file      - browser File object
+ * @returns {{ object_name: string }} - the MinIO object key stored in DB
  */
 export const uploadProjectImageApi = async (projectId, file) => {
     // Step 1: Request a presigned PUT URL

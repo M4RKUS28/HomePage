@@ -1,4 +1,4 @@
-"""Initial schema – create all tables
+"""Initial schema - create all tables
 
 Revision ID: 0001
 Revises:
@@ -111,7 +111,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_projects_id"), table_name="projects")
     op.drop_table("projects")
 
-    # MySQL drops the ENUM type together with the column – no explicit drop needed.
+    # MySQL drops the ENUM type together with the column - no explicit drop needed.
 
     op.drop_index(op.f("ix_users_email"), table_name="users")
     op.drop_index(op.f("ix_users_username"), table_name="users")

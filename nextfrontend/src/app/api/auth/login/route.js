@@ -2,11 +2,13 @@
  * POST /api/auth/login
  *
  * Receives { username, password } from the browser, forwards them to the
- * FastAPI internal endpoint, and returns { access_token, token_type, user }.
+ * FastAPI internal endpoint, and creates an **encrypted iron-session**
+ * cookie.  The browser never sees a JWT.
  *
- * The access_token is also set as an httpOnly cookie for SSR requests.
+ * Returns: { user }
  */
 import { NextResponse } from 'next/server';
+import { getSession } from '../../../../lib/session';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 const INTERNAL_KEY = process.env.AUTH_INTERNAL_SHARED_SECRET || '';
@@ -23,6 +25,7 @@ export async function POST(request) {
       );
     }
 
+    // --- Call FastAPI internal login (validates credentials) ---
     const backendRes = await fetch(`${BACKEND_URL}/internal/login`, {
       method: 'POST',
       headers: {
@@ -38,22 +41,19 @@ export async function POST(request) {
       return NextResponse.json(data, { status: backendRes.status });
     }
 
-    // Build the response and set httpOnly cookie
-    const response = NextResponse.json({
-      access_token: data.access_token,
-      token_type: data.token_type,
-      user: data.user,
-    });
+    // --- Create iron-session with user data ---
+    const session = await getSession();
+    const user = data.user;
 
-    response.cookies.set('access_token', data.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24, // 24 h
-    });
+    session.userId = user.id;
+    session.username = user.username;
+    session.email = user.email;
+    session.isAdmin = user.is_admin;
+    session.isActive = user.is_active;
+    session.avatarUrl = user.profile_image_url || null;
+    await session.save();
 
-    return response;
+    return NextResponse.json({ user });
   } catch (error) {
     console.error('[/api/auth/login] Error:', error);
     return NextResponse.json(

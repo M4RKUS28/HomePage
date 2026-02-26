@@ -2,8 +2,8 @@
 Redis connection pool (via ``redis.asyncio``).
 
 Provides:
-* ``get_redis()``  – FastAPI dependency
-* ``redis_pool``   – raw pool for direct access in services
+* ``get_redis()``  - FastAPI dependency
+* ``redis_pool``   - raw pool for direct access in services
 """
 
 from collections.abc import AsyncGenerator
@@ -46,7 +46,7 @@ async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:
         async def cached(r: aioredis.Redis = Depends(get_redis)):
             await r.get("key")
     """
-    assert redis_pool is not None, "Redis pool not initialised – call init_redis_pool() first"
+    assert redis_pool is not None, "Redis pool not initialised - call init_redis_pool() first"
     client = aioredis.Redis(connection_pool=redis_pool)
     try:
         yield client

@@ -1,4 +1,4 @@
-"""Initial schema – all tables.
+"""Initial schema - all tables.
 
 Revision ID: 0001_initial
 Revises:

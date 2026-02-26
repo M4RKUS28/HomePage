@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class CVData(BaseModel):
-    """Flexible CV data structure – stored as JSON in PostgreSQL JSONB."""
+    """Flexible CV data structure - stored as JSON in PostgreSQL JSONB."""
     summary: Optional[str] = None
     experience: Optional[List[Dict[str, Any]]] = None
     education: Optional[List[Dict[str, Any]]] = None

@@ -42,7 +42,7 @@ const ProjectsGrid = () => {
 
   const fetchProjectsData = useCallback(async () => {
     try {
-      // Fetch metadata (no images) – show cards immediately
+      // Fetch metadata (no images) - show cards immediately
       const data = await getProjectsApi();
       setProjects(data);
       setError(null);

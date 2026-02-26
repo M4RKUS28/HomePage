@@ -1,5 +1,5 @@
 """
-User service – business logic for user management.
+User service - business logic for user management.
 
 Orchestrates: CRUD operations, password hashing, MinIO avatar handling.
 """

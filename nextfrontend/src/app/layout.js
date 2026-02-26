@@ -1,27 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
-import { cookies } from 'next/headers';
-import { fetchCVDataSSR } from '../lib/server-api';
-import { getApiBaseUrl } from '../lib/api-config';
-
-// Serverseitige User-Fetch-Funktion (direkter fetch statt axios)
-async function fetchCurrentUserServer(token) {
-  if (!token) return null;
-  try {
-    const res = await fetch(
-      `${getApiBaseUrl()}/users/me`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-      }
-    );
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
+import { fetchCurrentUserSSR, fetchCVDataSSR } from '../lib/server-api';
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { ToastProvider } from "../contexts/ToastContext";
 import MainLayout from "../layouts/MainLayout";
@@ -43,10 +23,8 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  // Token aus Cookie lesen (SSR)
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-  const initialUser = await fetchCurrentUserServer(token);
+  // Fetch user from iron-session → signed JWT → FastAPI (server-side)
+  const initialUser = await fetchCurrentUserSSR();
   
   // Fetch CV data for header text and footer data
   const cvData = await fetchCVDataSSR();

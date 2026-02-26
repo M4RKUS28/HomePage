@@ -2,7 +2,7 @@
  * User API client.
  *
  * Avatar uploads go through the backend multipart endpoint (server-side upload
- * to MinIO ≤ 5 MB) – no presigned URL needed for small files.
+ * to MinIO ≤ 5 MB) - no presigned URL needed for small files.
  */
 import apiClient from './index';
 

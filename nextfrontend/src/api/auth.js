@@ -1,28 +1,27 @@
 /**
- * Auth API – calls NextJS API routes (which proxy to FastAPI /internal/*).
+ * Auth API - calls NextJS API routes which manage the iron-session.
  *
- * Login / register go through NextJS server-side routes so the shared secret
- * never leaves the server.  The returned access_token is also set as an
- * httpOnly cookie by the NextJS route handler.
+ * Login / register create an encrypted session cookie server-side.
+ * The browser NEVER sees a JWT - only the opaque hp_session cookie.
  */
 import axios from 'axios';
 import apiClient from './index';
 
-// Direct axios instance for auth routes (no /api prefix rewriting needed –
-// the NextJS API routes live at /api/auth/*)
-const authClient = axios.create({ baseURL: '' });
+// Direct axios instance for auth routes (they live at /api/auth/*)
+const authClient = axios.create({ baseURL: '', withCredentials: true });
 
 export const loginUserApi = async (username, password) => {
     const response = await authClient.post('/api/auth/login', { username, password });
-    return response.data; // { access_token, token_type, user }
+    return response.data; // { user }
 };
 
 export const registerUserApi = async (username, email, password) => {
     const response = await authClient.post('/api/auth/register', { username, email, password });
-    return response.data; // { access_token, token_type, user }
+    return response.data; // { user }
 };
 
 export const fetchCurrentUserApi = async () => {
+    // Goes through the catch-all proxy → FastAPI /users/me
     const response = await apiClient.get('/users/me');
     return response.data;
 };

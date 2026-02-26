@@ -23,7 +23,7 @@ if BASE_DIR not in sys.path:
 # Import Base + all models so autogenerate detects every table
 # ---------------------------------------------------------------------------
 from app.db.base import Base  # noqa: E402
-import app.db.models  # noqa: F401  – triggers __init__ which imports all models
+import app.db.models  # noqa: F401  - triggers __init__ which imports all models
 
 # ---------------------------------------------------------------------------
 # Import settings

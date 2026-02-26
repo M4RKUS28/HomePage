@@ -41,7 +41,7 @@ async def _ensure_admin_exists() -> None:
     """Create the admin account from env settings if it does not exist."""
     cfg = settings.admin
     if not cfg.username or not cfg.email or not cfg.password:
-        logger.info("[startup] ADMIN credentials not set – skipping admin creation.")
+        logger.info("[startup] ADMIN credentials not set - skipping admin creation.")
         return
 
     async with AsyncSessionLocal() as db:

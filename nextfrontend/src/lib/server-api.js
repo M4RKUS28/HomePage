@@ -1,33 +1,36 @@
 /**
- * Server-side API utilities for SSR.
+ * Server-side API utilities for SSR (React Server Components).
  *
- * Reads the access token from cookies (httpOnly `access_token` set by
- * NextJS API routes, or client-set `accessToken`).
+ * Reads the iron-session, signs a fresh short-lived JWT, and calls
+ * FastAPI directly (server → server, no browser involved).
  */
-import { cookies } from 'next/headers';
+import { getSession } from './session';
+import { signInternalJWT } from './internal-jwt';
 
 // Server-side always talks directly to the backend container
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
 /**
- * Resolve the access token from SSR cookies.
- * Prefers the httpOnly `access_token` cookie set by the NextJS auth routes.
+ * Build Authorization header from the current iron-session.
+ * Returns null if no session exists.
  */
-async function getSSRToken() {
-  const cookieStore = await cookies();
-  return (
-    cookieStore.get('access_token')?.value ||
-    cookieStore.get('accessToken')?.value ||
-    null
-  );
+async function getSSRAuthHeaders() {
+  try {
+    const session = await getSession();
+    if (!session.userId) return null;
+    const token = signInternalJWT(session);
+    return { Authorization: `Bearer ${token}` };
+  } catch {
+    return null;
+  }
 }
 
 export const fetchCVDataSSR = async () => {
   try {
-    const token = await getSSRToken();
+    const authHeaders = await getSSRAuthHeaders();
 
     const headers = { 'Content-Type': 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
+    if (authHeaders) Object.assign(headers, authHeaders);
 
     const response = await fetch(`${BACKEND_URL}/cv/`, {
       headers,
@@ -48,13 +51,13 @@ export const fetchCVDataSSR = async () => {
 
 export const fetchCurrentUserSSR = async () => {
   try {
-    const token = await getSSRToken();
-    if (!token) return null;
+    const authHeaders = await getSSRAuthHeaders();
+    if (!authHeaders) return null;
 
     const response = await fetch(`${BACKEND_URL}/users/me`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        ...authHeaders,
       },
       cache: 'no-store',
     });

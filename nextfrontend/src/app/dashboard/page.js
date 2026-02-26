@@ -750,7 +750,7 @@ export default function UserDashboardPage() {
             </div>
           </DashCard>
 
-          {/* Message Form – spans full width */}
+          {/* Message Form - spans full width */}
           <DashCard className="md:col-span-2">
             <DashMessageForm theme={theme} />
           </DashCard>

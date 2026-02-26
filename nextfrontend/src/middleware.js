@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 
+/**
+ * Middleware - lightweight session-existence check.
+ *
+ * We only check whether the encrypted `hp_session` cookie exists.
+ * Actual validation happens in the API routes / proxy (iron-session
+ * decrypts + verifies integrity there).
+ */
 export function middleware(request) {
-  // Check both cookie names:
-  //   access_token  – httpOnly cookie set by NextJS /api/auth/* routes
-  //   accessToken   – non-httpOnly cookie set by AuthContext (client-side)
-  const token =
-    request.cookies.get('access_token')?.value ||
-    request.cookies.get('accessToken')?.value ||
-    request.headers.get('authorization')?.replace('Bearer ', '');
-
+  const hasSession = request.cookies.has('hp_session');
   const { pathname } = request.nextUrl;
 
   const protectedRoutes = ['/dashboard', '/admin'];
@@ -17,11 +17,11 @@ export function middleware(request) {
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-  if (isProtectedRoute && !token) {
+  if (isProtectedRoute && !hasSession) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (isAuthRoute && token) {
+  if (isAuthRoute && hasSession) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

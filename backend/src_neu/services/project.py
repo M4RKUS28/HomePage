@@ -1,5 +1,5 @@
 """
-Project service – business logic for project management.
+Project service - business logic for project management.
 
 Orchestrates: CRUD, health-checking, MinIO image handling.
 """

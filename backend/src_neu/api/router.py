@@ -1,5 +1,5 @@
 """
-Central API router – includes all sub-routers.
+Central API router - includes all sub-routers.
 
 Imported by ``main.py`` and mounted on the FastAPI app.
 """

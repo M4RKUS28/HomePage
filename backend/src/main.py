@@ -30,7 +30,7 @@ def _ensure_admin_exists() -> None:
     password = settings.ADMIN_PASSWORD
 
     if not username or not email or not password:
-        logging.info("[startup] ADMIN_USERNAME/EMAIL/PASSWORD not set – skipping admin creation.")
+        logging.info("[startup] ADMIN_USERNAME/EMAIL/PASSWORD not set - skipping admin creation.")
         return
 
     db = SessionLocal()
@@ -44,7 +44,7 @@ def _ensure_admin_exists() -> None:
             .first()
         )
         if existing:
-            logging.info("[startup] Admin account already exists – skipping creation.")
+            logging.info("[startup] Admin account already exists - skipping creation.")
             return
 
         hashed_pw = auth.get_password_hash(password)

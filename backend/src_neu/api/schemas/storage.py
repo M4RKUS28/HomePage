@@ -16,7 +16,7 @@ class PresignedUploadRequest(BaseModel):
 
 
 class PresignedUploadResponse(BaseModel):
-    """Returned to the client – they PUT to this URL directly."""
+    """Returned to the client - they PUT to this URL directly."""
     upload_url: str
     object_name: str  # stored as reference in the DB
     expires_in: int  # seconds

@@ -1,50 +1,60 @@
 /**
  * GET /api/auth/me
  *
- * Returns the current user by forwarding the access_token (from cookie or
- * Authorization header) to the FastAPI /users/me endpoint.
+ * Returns the current user from the iron-session.  Optionally fetches
+ * fresh data from FastAPI to keep session data in sync.
  */
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { getSession } from '../../../../lib/session';
+import { signInternalJWT } from '../../../../lib/internal-jwt';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
-export async function GET(request) {
+export async function GET() {
   try {
-    // Try cookie first, then Authorization header
-    const cookieStore = await cookies();
-    let token = cookieStore.get('access_token')?.value;
+    const session = await getSession();
 
-    if (!token) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader?.startsWith('Bearer ')) {
-        token = authHeader.slice(7);
-      }
-    }
-
-    if (!token) {
+    if (!session.userId) {
       return NextResponse.json(
         { detail: 'Not authenticated' },
         { status: 401 },
       );
     }
 
-    const backendRes = await fetch(`${BACKEND_URL}/users/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // Fetch fresh user data from the backend to keep session in sync
+    try {
+      const token = signInternalJWT(session);
+      const backendRes = await fetch(`${BACKEND_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      });
 
-    if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => ({}));
-      return NextResponse.json(
-        err,
-        { status: backendRes.status },
-      );
+      if (backendRes.ok) {
+        const user = await backendRes.json();
+
+        // Update session with fresh data
+        session.username = user.username;
+        session.email = user.email;
+        session.isAdmin = user.is_admin;
+        session.isActive = user.is_active;
+        session.avatarUrl = user.profile_image_url || null;
+        await session.save();
+
+        return NextResponse.json(user);
+      }
+    } catch {
+      // Backend unreachable - fall through to cached session data
     }
 
-    const user = await backendRes.json();
-    return NextResponse.json(user);
+    // Fallback: return user data from session
+    return NextResponse.json({
+      id: session.userId,
+      username: session.username,
+      email: session.email,
+      is_admin: session.isAdmin,
+      is_active: session.isActive,
+      profile_image_url: session.avatarUrl || null,
+    });
   } catch (error) {
     console.error('[/api/auth/me] Error:', error);
     return NextResponse.json(

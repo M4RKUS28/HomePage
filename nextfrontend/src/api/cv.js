@@ -23,9 +23,9 @@ export const updateCVDataApi = async (cvData) => {
 /**
  * Upload a CV-related image via presigned URL.
  *
- * @param {File}        file      – browser File object
- * @param {string}      filename  – desired filename (e.g. "profile.webp")
- * @param {number|null} projectId – optional project reference
+ * @param {File}        file      - browser File object
+ * @param {string}      filename  - desired filename (e.g. "profile.webp")
+ * @param {number|null} projectId - optional project reference
  * @returns {{ object_name: string }}
  */
 export const uploadCVImageApi = async (file, filename, projectId = null) => {

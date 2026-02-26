@@ -1,4 +1,4 @@
-"""CV (Curriculum Vitae) ORM model – stores structured JSON data."""
+"""CV (Curriculum Vitae) ORM model - stores structured JSON data."""
 
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import JSONB

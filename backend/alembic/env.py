@@ -9,7 +9,7 @@ from alembic import context
 # Make sure the 'app' package is importable.
 #
 # Docker runtime  : CWD = /home/app/web/, code at /home/app/web/app/
-# Local dev mount : same – docker-compose.local.yml mounts ./backend/src
+# Local dev mount : same - docker-compose.local.yml mounts ./backend/src
 #                   to /home/app/web/app inside the container.
 #
 # Run alembic commands from INSIDE the container:
@@ -49,7 +49,7 @@ target_metadata = Base.metadata
 
 
 # ---------------------------------------------------------------------------
-# Run migrations offline (no live DB connection – generates SQL script only)
+# Run migrations offline (no live DB connection - generates SQL script only)
 # ---------------------------------------------------------------------------
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")

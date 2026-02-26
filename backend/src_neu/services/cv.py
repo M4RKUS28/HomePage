@@ -1,5 +1,5 @@
 """
-CV service – business logic for curriculum vitae management.
+CV service - business logic for curriculum vitae management.
 """
 
 import logging
@@ -39,7 +39,7 @@ async def init_default_cv(db: AsyncSession, owner_id: int) -> None:
         return
 
     default_data = {
-        "summary": "summary",
+        "summary": "",
         "experience": [],
         "education": [],
         "projectsHighlight": [],

@@ -1,5 +1,5 @@
 """
-Message service – business logic for message management.
+Message service - business logic for message management.
 """
 
 import logging

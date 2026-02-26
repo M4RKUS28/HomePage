@@ -1,72 +1,54 @@
 'use client';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { loginUserApi, registerUserApi, fetchCurrentUserApi, logoutApi } from '../api/auth';
-import { jwtDecode } from 'jwt-decode';
-import { setCookie, getCookie, removeCookie } from '../lib/cookies';
 
 export const AuthContext = createContext(null);
 
+/**
+ * Auth provider - pure session-based.
+ *
+ * The browser never sees a JWT.  All state comes from calling
+ * /api/auth/me (which reads the encrypted iron-session cookie).
+ */
 export const AuthProvider = ({ children, initialUser = null }) => {
-  // Ermöglicht Initialisierung mit SSR-User
   const [currentUser, setCurrentUser] = useState(initialUser);
   const [loadingAuth, setLoadingAuth] = useState(!initialUser);
   const [authError, setAuthError] = useState(null);
 
   const clearAuthError = useCallback(() => setAuthError(null), []);
 
-  const loadUserFromToken = useCallback(async () => {
-    // Wenn initialUser gesetzt ist (SSR), nicht erneut laden
+  // ------------------------------------------------------------------
+  // Load user from session on mount (skip if SSR already provided one)
+  // ------------------------------------------------------------------
+  const loadUser = useCallback(async () => {
     if (currentUser) {
       setLoadingAuth(false);
       return;
     }
-    
-    // Try cookies first, then localStorage
-    let token = getCookie('accessToken') || (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null);
-    
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        if (decodedToken.exp * 1000 < Date.now()) {
-          // Token expired – clean up
-          removeCookie('accessToken');
-          if (typeof window !== 'undefined') localStorage.removeItem('accessToken');
-          setCurrentUser(null);
-          setLoadingAuth(false);
-          return;
-        }
-        const userData = await fetchCurrentUserApi();
-        setCurrentUser(userData);
-      } catch (err) {
-        console.error('Failed to load user from token', err);
-        removeCookie('accessToken');
-        if (typeof window !== 'undefined') localStorage.removeItem('accessToken');
-        setCurrentUser(null);
-      }
+
+    try {
+      const userData = await fetchCurrentUserApi();
+      setCurrentUser(userData);
+    } catch {
+      // No session or session expired - stay logged out
+      setCurrentUser(null);
+    } finally {
+      setLoadingAuth(false);
     }
-    setLoadingAuth(false);
   }, [currentUser]);
 
   useEffect(() => {
-    loadUserFromToken();
-  }, [loadUserFromToken]);
+    loadUser();
+  }, [loadUser]);
 
-  // -----------------------------------------------------------------------
-  // Login – /api/auth/login returns { access_token, token_type, user }
-  // -----------------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // Login - POST /api/auth/login → iron-session cookie set by server
+  // ------------------------------------------------------------------
   const login = async (username, password) => {
     try {
       setAuthError(null);
       setLoadingAuth(true);
       const data = await loginUserApi(username, password);
-
-      // Store token (non-httpOnly cookie + localStorage for client-side access)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', data.access_token);
-      }
-      setCookie('accessToken', data.access_token, 7);
-
-      // User data is already included in the response – no extra fetch needed
       setCurrentUser(data.user);
       return data.user;
     } catch (err) {
@@ -100,22 +82,14 @@ export const AuthProvider = ({ children, initialUser = null }) => {
     }
   };
 
-  // -----------------------------------------------------------------------
-  // Register – /api/auth/register returns { access_token, token_type, user }
-  // -----------------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // Register - POST /api/auth/register → iron-session cookie set by server
+  // ------------------------------------------------------------------
   const register = async (username, email, password) => {
     try {
       setAuthError(null);
       setLoadingAuth(true);
-
-      // Single call – server creates user AND returns token + user data
       const data = await registerUserApi(username, email, password);
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', data.access_token);
-      }
-      setCookie('accessToken', data.access_token, 7);
-
       setCurrentUser(data.user);
       return data.user;
     } catch (err) {
@@ -149,21 +123,19 @@ export const AuthProvider = ({ children, initialUser = null }) => {
     }
   };
 
-  // -----------------------------------------------------------------------
-  // Logout – clears httpOnly cookie via server route + client storage
-  // -----------------------------------------------------------------------
+  // ------------------------------------------------------------------
+  // Logout - destroys the iron-session server-side
+  // ------------------------------------------------------------------
   const logout = async () => {
     try {
-      await logoutApi(); // clears httpOnly cookie server-side
+      await logoutApi();
     } catch {
-      // ignore – best-effort
+      // ignore - best-effort
     }
-    removeCookie('accessToken');
-    if (typeof window !== 'undefined') localStorage.removeItem('accessToken');
     setCurrentUser(null);
   };
 
-  /** Re-fetch the current user from the API and update state (call after profile edits). */
+  /** Re-fetch the current user from the API and update state. */
   const refreshUser = useCallback(async () => {
     try {
       const userData = await fetchCurrentUserApi();
@@ -183,7 +155,7 @@ export const AuthProvider = ({ children, initialUser = null }) => {
       logout, 
       authError, 
       clearAuthError, 
-      loadUserFromToken,
+      loadUser,
       refreshUser,
     }}>
       {children}

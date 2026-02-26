@@ -6,7 +6,7 @@ import { getCVDataApi } from '../../api/cv';
 import Spinner from '../UI/Spinner';
 import { AlertTriangle } from 'lucide-react';
 
-// Next.js static imports return an object {src, width, height} – extract the plain string.
+// Next.js static imports return an object {src, width, height} - extract the plain string.
 const ProfilePicPlaceholder =
   typeof ProfilePicPlaceholderImport === 'string'
     ? ProfilePicPlaceholderImport
@@ -51,7 +51,7 @@ const HeroSection = () => {
     fetchData();
   }, []);
 
-  // Derive a validated URL – null if missing or not a real URL string
+  // Derive a validated URL - null if missing or not a real URL string
   const profileImageUrl = toValidUrl(cvData?.personalInfo?.profileImage);
 
   useEffect(() => {
