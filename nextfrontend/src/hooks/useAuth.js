@@ -19,7 +19,8 @@ export const useAuth = () => {
         login: async () => {},
         register: async () => {},
         logout: async () => {},
-        clearAuthError: () => {}
+        clearAuthError: () => {},
+        refreshUser: async () => {},
       };
     }
     throw new Error('useAuth must be used within an AuthProvider');

@@ -43,6 +43,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
+    profile_image_url: Optional[str] = None
     password: Optional[str] = Field(
         default=None, # Password is optional on update
         description="New password (if changing) must meet complexity requirements."
@@ -78,6 +79,7 @@ class UserUpdate(BaseModel):
 class User(UserBase): # Your existing User schema for responses
     id: int
     is_active: bool
+    profile_image_url: Optional[str] = None
     is_admin: bool
 
     class Config:

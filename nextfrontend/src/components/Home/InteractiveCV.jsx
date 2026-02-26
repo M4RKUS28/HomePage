@@ -156,8 +156,8 @@ const TimelineItem = ({ item, index = 0 }) => {
               <div className="mt-2 flex flex-wrap gap-2">
                 {links.map((link, idx) => (
                   <a 
-                    key={`link-${link.url || idx}-${link.text || idx}`}
-                    href={link.url}
+                    key={`link-${idx}`}
+                    href={link.url ? String(link.url) : '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-700 hover:bg-primary text-white transition-colors duration-200"

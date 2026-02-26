@@ -6,9 +6,9 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copy all config files (next.config.mjs, postcss.config.mjs, jsconfig.json, etc.)
-# src/ and public/ will be overridden by volume mounts at runtime
-COPY . .
+# Copy only the static config files needed at build time.
+# src/, public/, and all config files are mounted via volumes at runtime.
+#COPY next.config.mjs postcss.config.mjs jsconfig.json eslint.config.mjs ecosystem.config.js ./
 
 EXPOSE 3000
 

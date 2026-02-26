@@ -73,7 +73,8 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
   };
 
   // Use lazy-loaded imageUrl if provided; fall back to project.image for backwards compatibility
-  const resolvedImageUrl = imageUrl !== undefined ? imageUrl : project.image;
+  const rawImageUrl = imageUrl !== undefined ? imageUrl : project.image;
+  const resolvedImageUrl = typeof rawImageUrl === 'string' ? rawImageUrl : null;
   const isImageLoading = imageLoading !== undefined ? imageLoading : false;
 
   // Determine if we have a valid image to display
@@ -163,7 +164,7 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
       <div className={`p-5 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex justify-between items-center">
           <motion.a
-            href={project.link}
+            href={project.link ? String(project.link) : '#'}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-secondary btn-sm text-sm !py-1.5 !px-3 inline-flex items-center"

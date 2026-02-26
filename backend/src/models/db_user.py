@@ -13,6 +13,7 @@ class User(Base):
     hashed_password = Column(String(100), nullable=False)
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False) # Added for admin role
+    profile_image_url = Column(String(255), nullable=True)  # MinIO object name
 
     projects = relationship("Project", back_populates="owner")
     sent_messages = relationship("Message", back_populates="sender")

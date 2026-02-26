@@ -44,7 +44,8 @@ const HeroSection = () => {
       return;
     }
 
-    const imageUrl = cvData.personalInfo.profileImage;
+    const rawImageUrl = cvData.personalInfo.profileImage;
+    const imageUrl = rawImageUrl && typeof rawImageUrl === 'string' ? rawImageUrl : (rawImageUrl ? String(rawImageUrl) : null);
 
     if (!imageUrl) {
       setImageLoading(false);

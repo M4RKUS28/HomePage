@@ -175,6 +175,17 @@ export const AuthProvider = ({ children, initialUser = null }) => {
     setCurrentUser(null);
   };
 
+  /** Re-fetch the current user from the API and update state (call after profile edits). */
+  const refreshUser = useCallback(async () => {
+    try {
+      const userData = await fetchCurrentUserApi();
+      setCurrentUser(userData);
+      return userData;
+    } catch (err) {
+      console.error('refreshUser failed', err);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider value={{ 
       currentUser, 
@@ -184,7 +195,8 @@ export const AuthProvider = ({ children, initialUser = null }) => {
       logout, 
       authError, 
       clearAuthError, 
-      loadUserFromToken 
+      loadUserFromToken,
+      refreshUser,
     }}>
       {children}
     </AuthContext.Provider>

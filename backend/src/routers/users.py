@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List
 
 from ..schemas import user as user_schemas # For Pydantic models
 from ..models import db_user as user_model   # For SQLAlchemy model
 from ..utils import auth
+from ..utils.minio_client import upload_avatar, get_avatar_stream, delete_avatar
 from ..db.database import get_db
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5 MB
 
 router = APIRouter(
     prefix="/users",
@@ -83,6 +88,9 @@ async def update_user(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
         db_user.email = update_data["email"]
 
+    if "profile_image_url" in update_data:
+        db_user.profile_image_url = update_data["profile_image_url"]
+
     if "password" in update_data and update_data["password"]:
         db_user.hashed_password = auth.get_password_hash(update_data["password"])
 
@@ -127,3 +135,74 @@ async def delete_user(
     db.delete(db_user)
     db.commit()
     return db_user
+
+
+# ── Self-service endpoints ────────────────────────────────────────────────────
+
+@router.delete("/me/account", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_own_account(
+    db: Session = Depends(get_db),
+    current_user: user_model.User = Depends(auth.get_current_active_user),
+):
+    """
+    Allow a regular user to permanently delete their own account.
+    Admins cannot use this endpoint to prevent accidental self-removal.
+    """
+    if current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admins cannot delete their own account via this endpoint. Use the admin panel.",
+        )
+    # Clean up avatar from MinIO if it exists
+    if current_user.profile_image_url:
+        delete_avatar(current_user.profile_image_url)
+
+    db.delete(current_user)
+    db.commit()
+
+
+@router.post("/me/avatar", response_model=user_schemas.User)
+async def upload_my_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: user_model.User = Depends(auth.get_current_active_user),
+):
+    """Upload or replace the current user's profile picture."""
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type '{file.content_type}'. Allowed: jpeg, png, webp, gif.",
+        )
+    file_data = await file.read()
+    if len(file_data) > MAX_AVATAR_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File too large. Maximum size is 5 MB.",
+        )
+    # Delete old avatar if present
+    if current_user.profile_image_url:
+        delete_avatar(current_user.profile_image_url)
+
+    object_name = upload_avatar(file_data, current_user.id, file.content_type)
+    current_user.profile_image_url = object_name
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.get("/{user_id}/avatar")
+async def get_user_avatar(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    """Stream a user's profile picture directly from MinIO."""
+    db_user = db.query(user_model.User).filter(user_model.User.id == user_id).first()
+    if db_user is None or not db_user.profile_image_url:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Avatar not found")
+
+    ext = db_user.profile_image_url.rsplit(".", 1)[-1]
+    media_type_map = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp", "gif": "image/gif"}
+    media_type = media_type_map.get(ext, "application/octet-stream")
+
+    response = get_avatar_stream(db_user.profile_image_url)
+    return StreamingResponse(response, media_type=media_type)

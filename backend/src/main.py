@@ -185,16 +185,16 @@ async def init_cv_data():
             
             # Default CV data - minimal version
             default_cv_data = {
-                "summary": "As a business informatics student, I combine a strong academic foundation with a passion for connecting business and technology.",
+                "summary": "summary",
                 "experience": [],
                 "education": [],
                 "projectsHighlight": [],
                 "skills": [],
                 "personalInfo": {
                     "name": "[Your Name]",
-                    "title": "A Creative Full Stack Developer & Tech Enthusiast",
-                    "profileImage": "",
-                    "headerText": "M4RKUS28",
+                    "title": "title",
+                    "profileImage": "profileImage",
+                    "headerText": "headerText",
                     "socialLinks": [
                         {"platform": "github", "url": "https://github.com/[Your Name]"},
                         {"platform": "email", "url": "mailto:[Your Name]@[Your Domain].de"}
