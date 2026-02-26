@@ -29,16 +29,17 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       const url = error.config?.url || '';
-      const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/register');
+      // Silent auth-check endpoints – never redirect, caller handles 401
+      const isSilentCheck = url.includes('/users/me') || url.includes('/auth/me');
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
+      const isAuthPage = ['/login', '/register'].includes(window.location.pathname);
 
-      if (!isAuthRoute) {
+      if (!isSilentCheck && !isAuthEndpoint && !isAuthPage) {
         window.location.href = '/login';
       }
     }
     return Promise.reject(error);
   },
 );
-
-export default apiClient;
 
 export default apiClient;

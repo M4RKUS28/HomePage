@@ -20,14 +20,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # ------------------------------------------------------------------
-    # ENUM types
+    # ENUM types  (DO block → safe to re-run)
     # ------------------------------------------------------------------
-    project_status = postgresql.ENUM(
-        "up", "down", "unknown", "checking",
-        name="project_status",
-        create_type=False,
-    )
-    project_status.create(op.get_bind(), checkfirst=True)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE project_status AS ENUM ('up', 'down', 'unknown', 'checking');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """)
 
     # ------------------------------------------------------------------
     # users
@@ -58,7 +58,7 @@ def upgrade() -> None:
         sa.Column("image_object_name", sa.String(512), nullable=True),
         sa.Column(
             "status",
-            sa.Enum("up", "down", "unknown", "checking", name="project_status", create_type=False),
+            postgresql.ENUM("up", "down", "unknown", "checking", name="project_status", create_type=False),
             nullable=False,
             server_default="unknown",
         ),

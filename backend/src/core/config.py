@@ -45,7 +45,7 @@ class DatabaseSettings(BaseSettings):
     def sync_url(self) -> str:
         """Needed by Alembic (which uses sync connections)."""
         return (
-            f"postgresql+psycopg://{self.user}:{self.password}"
+            f"postgresql+psycopg2://{self.user}:{self.password}"
             f"@{self.host}:{self.port}/{self.name}"
         )
 

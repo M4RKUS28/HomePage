@@ -68,14 +68,27 @@ async function proxyRequest(request, { params }) {
       headers,
     };
 
-    // Forward body for non-GET/HEAD requests
+    // Buffer body for non-GET/HEAD requests.
+    // We must buffer (not stream) so we can re-send on 3xx redirects.
     if (!['GET', 'HEAD'].includes(request.method)) {
-      fetchOpts.body = request.body;
-      fetchOpts.duplex = 'half'; // required for streaming body in Node 18+
+      fetchOpts.body = await request.arrayBuffer();
     }
 
-    // --- Forward to backend ---
-    const backendRes = await fetch(backendUrl, fetchOpts);
+    // --- Forward to backend (intercept redirects so we can re-send body) ---
+    let backendRes = await fetch(backendUrl, { ...fetchOpts, redirect: 'manual' });
+
+    // FastAPI uses redirect_slashes=True → trailing-slash 307/308 redirects.
+    // Follow one level manually so non-GET methods work correctly.
+    if (backendRes.status >= 300 && backendRes.status < 400) {
+      const location = backendRes.headers.get('location');
+      if (location) {
+        // Location may be relative (e.g. "/cv/") – resolve against backend base
+        const redirectUrl = location.startsWith('http')
+          ? location
+          : `${BACKEND_URL}${location}`;
+        backendRes = await fetch(redirectUrl, fetchOpts);
+      }
+    }
 
     // --- Stream response back ---
     const responseHeaders = new Headers();

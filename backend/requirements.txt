@@ -5,7 +5,7 @@ uvicorn[standard]>=0.30
 # ── Database (PostgreSQL + async) ──
 sqlalchemy[asyncio]>=2.0
 asyncpg                    # async PostgreSQL driver
-psycopg[binary]>=3.1       # sync driver (used by Alembic)
+psycopg2-binary            # sync driver (used by Alembic, self-contained binary)
 alembic>=1.13
 
 # ── Redis ──

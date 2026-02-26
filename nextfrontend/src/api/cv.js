@@ -28,6 +28,10 @@ export const updateCVDataApi = async (cvData) => {
  * @param {number|null} projectId - optional project reference
  * @returns {{ object_name: string }}
  */
+/** Alias kept for backwards-compatibility with older components. */
+export const uploadImageApi = async (file, filename, projectId = null) =>
+    uploadCVImageApi(file, filename, projectId);
+
 export const uploadCVImageApi = async (file, filename, projectId = null) => {
     // Step 1: Get presigned PUT URL
     const payload = {

@@ -74,6 +74,18 @@ export const checkProjectStatusApi = async (projectId) => {
  * @param {File}   file      - browser File object
  * @returns {{ object_name: string }} - the MinIO object key stored in DB
  */
+/**
+ * Get presigned download URL for a project's cover image.
+ * @param {string} objectName - the MinIO object_name stored in the project
+ * @returns {string} presigned URL
+ */
+export const getProjectImageApi = async (objectName) => {
+    const { data } = await apiClient.get(`/storage/download-url`, {
+        params: { object_name: objectName },
+    });
+    return data.download_url;
+};
+
 export const uploadProjectImageApi = async (projectId, file) => {
     // Step 1: Request a presigned PUT URL
     const { data: presigned } = await apiClient.post('/storage/upload-url', {
