@@ -67,6 +67,11 @@ services:
     environment:
       - NODE_ENV=development
       - BACKEND_URL=http://homepagebackend:8000
+      # Polling is required on Windows/WSL because inotify events don't
+      # cross the host→container volume boundary, so webpack never sees
+      # file changes without it.
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     healthcheck:
       start_period: 15s
       interval: 10s
