@@ -52,7 +52,6 @@ backend/
 │   └── versions/               # Migrations-Dateien
 ├── alembic.ini
 ├── create_admin.py             # CLI-Skript: Admin-User manuell erstellen
-├── bmw_job_notifier.py         # Job-Benachrichtigungs-Script
 ├── .env                        # Lokale Umgebungsvariablen (nicht committen!)
 ├── .env.example                # Vorlage
 ├── requirements.txt
@@ -130,28 +129,12 @@ python create_admin.py --username admin --email admin@example.com --password sic
 
 ---
 
-## Lokale Entwicklung
-
-```bash
-# Abhängigkeiten installieren
-pip install -r requirements.txt
-
-# Dev-Server starten (mit Auto-Reload)
-uvicorn src.main:app --reload --port 8000
-```
-
-API-Dokumentation: [http://localhost:8000/api/docs](http://localhost:8000/api/docs)
-
----
-
 ## Docker
 
 ```bash
 # Mit docker-compose.yml starten (alle Services)
 docker compose up --build
 
-# Nur den Backend-Container neu bauen
-docker compose up --build homepagebackend
 ```
 
 ### Dockerfile (Multi-stage)
