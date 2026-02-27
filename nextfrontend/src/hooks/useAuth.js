@@ -68,6 +68,7 @@ export const useAuth = () => {
         is_admin: sess.user.isAdmin,
         is_active: sess.user.isActive,
         profile_image_url: sess.user.avatarUrl,
+        language: sess.user.language,
       };
     } catch (err) {
       if (!authError) {
@@ -81,12 +82,12 @@ export const useAuth = () => {
   // ---------------------------------------------------------------------------
   // Register — custom route + NextAuth signIn
   // ---------------------------------------------------------------------------
-  const register = async (username, email, password) => {
+  const register = async (username, email, password, language) => {
     try {
       setAuthError(null);
 
       // 1. Create the account via our custom register endpoint
-      await apiClient.post('/auth/register', { username, email, password });
+      await apiClient.post('/auth/register', { username, email, password, language });
 
       // 2. Immediately sign in so a session is created
       await signIn('credentials', {

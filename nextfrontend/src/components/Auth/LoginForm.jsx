@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '../../i18n/navigation';
 import { motion } from 'framer-motion';
 import { LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useToast } from '../../contexts/ToastContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useTranslations } from 'next-intl';
 import { parseApiError } from '../../lib/error-utils';
 import LoadingButton from '../UI/LoadingButton';
 
@@ -19,6 +21,8 @@ const LoginForm = () => {
   const { login, loadingAuth, authError, clearAuthError } = useAuth();
   const { theme } = useTheme();
   const { showToast } = useToast();
+  const { changeLocale } = useLanguage();
+  const t = useTranslations();
   const router = useRouter();
 
   useEffect(() => {
@@ -32,21 +36,25 @@ const LoginForm = () => {
     
     // Simple client-side validation
     if (!username.trim()) {
-      setFormError('Username is required');
+      setFormError(t('auth.errors.usernameRequired'));
       return;
     }
     
     if (!password) {
-      setFormError('Password is required');
+      setFormError(t('auth.errors.loginFailed'));
       return;
     }
     
     try {
       const userData = await login(username, password);
-      showToast({ type: 'success', message: 'Login successful! Welcome back.' });
+      // Switch to user's preferred language if available
+      if (userData?.language) {
+        changeLocale(userData.language);
+      }
+      showToast({ type: 'success', message: t('auth.login.submit') });
       router.push(userData?.is_admin ? '/admin' : '/dashboard');
     } catch (err) {
-      setFormError(parseApiError(err, 'Login failed. Please check your credentials.'));
+      setFormError(parseApiError(err, t('auth.errors.loginFailed')));
     }
   };
 
@@ -86,7 +94,7 @@ const LoginForm = () => {
               : 'text-gray-900'
           }`}
         >
-          Sign in to your account
+          {t('auth.login.title')}
         </motion.h2>
       </div>
       <motion.form 
@@ -107,7 +115,7 @@ const LoginForm = () => {
                 setFormError('');
               }} 
               className="flex-shrink-0 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
-              aria-label="Dismiss error"
+              aria-label={t('common.close')}
             >
               <EyeOff size={16} />
             </button>
@@ -117,7 +125,7 @@ const LoginForm = () => {
         <div>
           <label htmlFor="username" className={`block text-sm font-medium ${
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>Username</label>
+          }`}>{t('auth.login.username')}</label>
           <input
             id="username"
             name="username"
@@ -132,7 +140,7 @@ const LoginForm = () => {
         <div>
           <label htmlFor="password-login" className={`block text-sm font-medium ${
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>Password</label>
+          }`}>{t('auth.login.password')}</label>
           <div className="relative mt-1">
             <input
               id="password-login"
@@ -161,22 +169,22 @@ const LoginForm = () => {
             type="submit"
             className="w-full btn-primary"
             isLoading={loadingAuth}
-            loadingText="Signing in..."
+            loadingText={t('auth.login.signingIn')}
           >
-            <LogIn size={18} className="mr-2" /> Sign in
+            <LogIn size={18} className="mr-2" /> {t('auth.login.submit')}
           </LoadingButton>
         </div>
       </motion.form>
       <p className={`mt-6 text-center text-sm ${
         theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
       }`}>
-        Not a member?{' '}
+        {t('auth.login.noAccount')}{' '}
         <Link href="/register" className={`font-medium ${
           theme === 'dark' 
             ? 'text-primary hover:text-emerald-400' 
             : 'text-secondary hover:text-blue-700'
         } transition-colors`}>
-          Create an account
+          {t('auth.login.registerLink')}
         </Link>
       </p>
       
@@ -187,8 +195,7 @@ const LoginForm = () => {
         <div className="flex items-start">
           <AlertCircle size={16} className="text-primary mt-0.5 mr-2 flex-shrink-0" />
           <p>
-            Creating an account allows you to send me direct messages for collaborations, 
-            project inquiries, or just to connect!
+            {t('registerCallout.description')}
           </p>
         </div>
       </div>

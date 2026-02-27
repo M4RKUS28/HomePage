@@ -27,6 +27,7 @@ def _project_to_read(project) -> dict:
         "status": project.status,
         "last_checked": project.last_checked,
         "position": project.position,
+        "language": project.language,
         "owner_id": project.owner_id,
         "health_check_urls": project.health_check_urls or [],
     }
@@ -40,10 +41,11 @@ def _project_to_read(project) -> dict:
 async def list_projects(
     skip: int = 0,
     limit: int = 100,
+    language: str = "en",
     db: AsyncSession = Depends(get_db),
 ):
     """List projects (without image) for fast loading."""
-    projects = await project_service.list_projects(db, skip=skip, limit=limit)
+    projects = await project_service.list_projects(db, skip=skip, limit=limit, language=language)
     return projects
 
 

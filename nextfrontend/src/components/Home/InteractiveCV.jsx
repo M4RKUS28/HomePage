@@ -1,6 +1,7 @@
 // Updated InteractiveCV.jsx to fetch data from backend
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { useTheme } from '../../hooks/useTheme';
 import Spinner from '../UI/Spinner';
 import { getCVDataApi } from '../../api/cv';
@@ -240,6 +241,7 @@ const AwardItem = ({ award, index = 0 }) => {
 
 const InteractiveCV = () => {
   const { theme } = useTheme();
+  const t = useTranslations('cv');
   const [cvData, setCvData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -266,6 +268,7 @@ const InteractiveCV = () => {
     return (
       <section id="cv" className="py-16 md:py-24 flex justify-center items-center">
         <Spinner size="h-12 w-12" />
+        <span className="ml-3 text-mode-secondary">{t('loading')}</span>
       </section>
     );
   }
@@ -345,16 +348,16 @@ const InteractiveCV = () => {
           transition={{ duration: 0.5 }}
           className="text-4xl md:text-5xl font-bold text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-accent via-pink-500 to-rose-500"
         >
-          My Journey & Expertise
+          {t('title')}
         </motion.h2>
         
         <div className="max-w-3xl mx-auto">
-            <Section title="Summary" icon={Users}>
-              <p className="text-mode-secondary leading-relaxed text-md">{cvData.summary || "No summary provided."}</p>
+            <Section title={t('summary')} icon={Users}>
+              <p className="text-mode-secondary leading-relaxed text-md">{cvData.summary || t('noData')}</p>
             </Section>
 
             {skills.length > 0 && (
-              <Section title="Core Skills" icon={Code}>
+              <Section title={t('skills')} icon={Code}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                   {skills
                     .sort((a, b) => (b.level || 0) - (a.level || 0))
@@ -366,7 +369,7 @@ const InteractiveCV = () => {
             )}
 
             {experience.length > 0 && (
-              <Section title="Professional Experience" icon={Briefcase}>
+              <Section title={t('experience')} icon={Briefcase}>
                 <div className="space-y-5">
                   {experience.map((exp, idx) => <TimelineItem key={`exp-${exp.id || idx}-${exp.title || exp.company || idx}`} item={exp} index={idx} />)}
                 </div>
@@ -374,7 +377,7 @@ const InteractiveCV = () => {
             )}
 
             {education.length > 0 && (
-              <Section title="Education" icon={GraduationCap}>
+              <Section title={t('education')} icon={GraduationCap}>
                 <div className="space-y-5">
                   {education.map((edu, idx) => <TimelineItem key={`edu-${edu.id || idx}-${edu.institution || edu.degree || idx}`} item={edu} index={idx} />)}
                 </div>
@@ -382,7 +385,7 @@ const InteractiveCV = () => {
             )}
 
             {projects.length > 0 && (
-              <Section title="Projects" icon={Code}>
+              <Section title={t('projects')} icon={Code}>
                 <div className="space-y-5">
                   {projects.map((proj, idx) => (
                     <ProjectItem key={`proj-${proj.id || idx}-${proj.name || proj.title || idx}`} project={proj} index={idx} />
@@ -392,7 +395,7 @@ const InteractiveCV = () => {
             )}
 
             {awards.length > 0 && (
-              <Section title="Awards" icon={Award}>
+              <Section title={t('awards')} icon={Award}>
                 <div className="space-y-5">
                   {awards.map((award, idx) => (
                     <AwardItem key={`award-${award.id || idx}-${award.title || idx}`} award={award} index={idx} />
@@ -402,7 +405,7 @@ const InteractiveCV = () => {
             )}
 
             {volunteering.length > 0 && (
-              <Section title="Volunteering" icon={Users}>
+              <Section title={t('volunteering')} icon={Users}>
                 <div className="space-y-5">
                   {volunteering.map((vol, idx) => <TimelineItem key={`vol-${vol.id || idx}-${vol.title || idx}`} item={vol} index={idx} />)}
                 </div>
@@ -410,7 +413,7 @@ const InteractiveCV = () => {
             )}
 
             {languages.length > 0 && (
-              <Section title="Languages" icon={Users}>
+              <Section title={t('languages')} icon={Users}>
                 <div className="grid grid-cols-2 gap-4">
                   {languages.map((lang, idx) => (
                     <div key={`lang-${lang.name || idx}-${lang.level || idx}`} className="language-item" style={{ margin: "12px 0 0 0" }}>

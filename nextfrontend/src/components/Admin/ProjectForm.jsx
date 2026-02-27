@@ -1,5 +1,6 @@
 // frontend/src/components/Admin/ProjectForm.jsx
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { createProjectApi, updateProjectApi, uploadProjectImageApi } from '../../api/projects';
 import { parseApiError } from '../../lib/error-utils';
 import Spinner from '../UI/Spinner';
@@ -7,6 +8,7 @@ import ImageUpload from '../UI/ImageUpload';
 import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
 
 const ProjectForm = ({ project, onFormSubmit }) => {
+  const t = useTranslations('admin.projects');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -135,7 +137,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       )}
       
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-mode-primary">Title <span className="text-red-400">*</span></label>
+        <label htmlFor="title" className="block text-sm font-medium text-mode-primary">{t('form.title')} <span className="text-red-400">*</span></label>
         <input
           type="text"
           name="title"
@@ -219,7 +221,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       />
       
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description</label>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-300">{t('form.description')}</label>
         <textarea 
           name="description" 
           id="description" 
@@ -239,7 +241,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
               {uploadingImage ? 'Uploading Image...' : 'Saving Project...'}
             </span>
           ) : (
-            project ? 'Update Project' : 'Create Project'
+            project ? t('form.update') : t('form.create')
           )}
         </button>
       </div>

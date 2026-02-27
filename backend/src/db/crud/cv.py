@@ -14,9 +14,9 @@ from ..models.cv import CV
 # Read
 # ---------------------------------------------------------------------------
 
-async def get_cv(db: AsyncSession) -> Optional[CV]:
-    """Get the single CV record (the app has one CV)."""
-    result = await db.execute(select(CV).limit(1))
+async def get_cv(db: AsyncSession, *, language: str = "en") -> Optional[CV]:
+    """Get the CV record for a given language (defaults to English)."""
+    result = await db.execute(select(CV).where(CV.language == language).limit(1))
     return result.scalar_one_or_none()
 
 
@@ -29,9 +29,10 @@ async def upsert_cv(
     *,
     data: dict,
     owner_id: int,
+    language: str = "en",
 ) -> CV:
-    """Create or update the CV record."""
-    existing = await get_cv(db)
+    """Create or update the CV record for a given language."""
+    existing = await get_cv(db, language=language)
     if existing:
         existing.data = data
         existing.owner_id = owner_id
@@ -39,7 +40,7 @@ async def upsert_cv(
         await db.refresh(existing)
         return existing
 
-    cv = CV(data=data, owner_id=owner_id)
+    cv = CV(data=data, owner_id=owner_id, language=language)
     db.add(cv)
     await db.commit()
     await db.refresh(cv)

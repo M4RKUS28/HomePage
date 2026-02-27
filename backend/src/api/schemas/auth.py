@@ -24,6 +24,7 @@ class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=2, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=3)
+    language: str = Field(default="en", max_length=10)
 
 
 # ---------------------------------------------------------------------------

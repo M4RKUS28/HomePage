@@ -72,6 +72,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             isActive: user.is_active,
             avatarUrl: user.profile_image_url || null,
             createdAt: user.created_at || null,
+            language: user.language || 'en',
           };
         } catch (err) {
           console.error('[auth/authorize] Backend call failed:', err);
@@ -99,6 +100,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.isActive = user.isActive ?? true;
         token.avatarUrl = user.avatarUrl ?? null;
         token.createdAt = user.createdAt ?? null;
+        token.language = user.language ?? 'en';
       }
 
       // Client-triggered update (useSession().update(data))
@@ -109,6 +111,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (session.isActive !== undefined) token.isActive = session.isActive;
         if (session.avatarUrl !== undefined) token.avatarUrl = session.avatarUrl;
         if (session.createdAt !== undefined) token.createdAt = session.createdAt;
+        if (session.language !== undefined) token.language = session.language;
         if (session.id !== undefined) token.userId = session.id;
       }
 
@@ -129,6 +132,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.isActive = token.isActive;
         session.user.avatarUrl = token.avatarUrl;
         session.user.createdAt = token.createdAt;
+        session.user.language = token.language;
       }
       return session;
     },

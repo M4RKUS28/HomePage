@@ -15,6 +15,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    language: Mapped[str] = mapped_column(String(10), default="en", server_default="en")
     # MinIO object name (e.g. "avatars/42.webp"), NOT a base64 blob
     avatar_object_name: Mapped[str | None] = mapped_column(String(512), nullable=True)
 

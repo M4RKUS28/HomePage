@@ -1,6 +1,6 @@
 """CV (Curriculum Vitae) ORM model - stores structured JSON data."""
 
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -11,6 +11,7 @@ class CV(Base):
     __tablename__ = "cv_data"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    language: Mapped[str] = mapped_column(String(10), default="en", server_default="en")
     # Flexible JSON blob storing the full CV structure
     data: Mapped[dict] = mapped_column(JSONB, nullable=False)
     owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))

@@ -4,13 +4,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../hooks/useTheme';
-import Link from 'next/link';
+import { Link } from '../../i18n/navigation';
 import { UserPlus, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslations } from 'next-intl';
 
 const RegisterCallout = () => {
   const { theme } = useTheme();
   const { currentUser } = useAuth();
+  const t = useTranslations('registerCallout');
   
   // Don't show this component if user is already logged in
   if (currentUser) return null;
@@ -44,7 +46,7 @@ const RegisterCallout = () => {
             theme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}
         >
-          Have a Question or Project Idea?
+          {t('title')}
         </motion.h3>
         
         <motion.p 
@@ -56,8 +58,7 @@ const RegisterCallout = () => {
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
           }`}
         >
-          Create an account to send me direct messages about collaborations, questions about my projects, 
-          or anything else you'd like to discuss. I'm always open to new opportunities and connections!
+          {t('description')}
         </motion.p>
         
         <motion.div
@@ -72,7 +73,7 @@ const RegisterCallout = () => {
             className="btn btn-primary text-lg px-6 py-3 flex items-center justify-center"
           >
             <UserPlus size={20} className="mr-2" />
-            Create an Account
+            {t('createAccount')}
           </Link>
           <Link 
             href="/login" 
@@ -83,7 +84,7 @@ const RegisterCallout = () => {
             }`}
           >
             <MessageSquare size={20} className="mr-2" />
-            Sign In to Message
+            {t('signIn')}
           </Link>
         </motion.div>
       </div>

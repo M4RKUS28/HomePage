@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import ProjectCard from './ProjectCard';
 import { getProjectsApi, getProjectApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
 import { useAuth } from '../../hooks/useAuth';
@@ -10,6 +11,7 @@ import { PlusCircle } from 'lucide-react';
 
 
 const ProjectsGrid = () => {
+  const t = useTranslations('projects');
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -219,13 +221,13 @@ const ProjectsGrid = () => {
           transition={{ duration: 0.5 }}
           className="text-4xl md:text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
         >
-          My Creations and Projects
+          {t('title')}
         </motion.h2>
         
         {currentUser?.is_admin && (
           <div className="text-center mb-10">
             <button onClick={handleAdd} className="btn btn-primary inline-flex items-center">
-              <PlusCircle size={20} className="mr-2"/> Add New Project
+              <PlusCircle size={20} className="mr-2"/> {t('addProject')}
             </button>
           </div>
         )}
@@ -234,7 +236,7 @@ const ProjectsGrid = () => {
 
         {projects.length === 0 && !loading && !error && (
           <p className="text-center text-gray-400 text-xl py-10">
-            No projects to display yet. {currentUser?.is_admin ? "Click 'Add New Project' to get started!" : "Check back soon!"}
+            {t('noProjects')}
           </p>
         )}
 
@@ -272,7 +274,7 @@ const ProjectsGrid = () => {
         </motion.div>
       </div>
       {showModal && (
-        <Modal title={editingProject ? "Edit Project" : "Add New Project"} onClose={() => handleModalClose(false)}>
+        <Modal title={editingProject ? t('editProject') : t('addProject')} onClose={() => handleModalClose(false)}>
           <ProjectForm project={editingProject} onFormSubmit={() => handleModalClose(true)} />
         </Modal>
       )}

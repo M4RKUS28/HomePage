@@ -1,14 +1,15 @@
 'use client';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../../hooks/useAuth';
-import ProjectsGrid from '../../components/Home/ProjectsGrid';
-import MessageList from '../../components/Admin/MessageList';
-import UserManagement from '../../components/Admin/UserManagement';
-import CVEditor from '../../components/Admin/CVEditor';
+import { useAuth } from '../../../hooks/useAuth';
+import ProjectsGrid from '../../../components/Home/ProjectsGrid';
+import MessageList from '../../../components/Admin/MessageList';
+import UserManagement from '../../../components/Admin/UserManagement';
+import CVEditor from '../../../components/Admin/CVEditor';
 import { Briefcase, MessageCircle, UserCog, FileEdit } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme';
-import AdminRoute from '../../components/Auth/AdminRoute';
+import { useTheme } from '../../../hooks/useTheme';
+import AdminRoute from '../../../components/Auth/AdminRoute';
+import { useTranslations } from 'next-intl';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -34,6 +35,7 @@ export default function AdminDashboardPage() {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('projects');
   const { theme } = useTheme();
+  const t = useTranslations('admin');
   
   const renderContent = () => {
     switch (activeTab) {
@@ -68,21 +70,21 @@ export default function AdminDashboardPage() {
                 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}
               `}
             >Admin Dashboard</h1>
-          <p className="text-lg text-gray-400 mt-2">Manage your site, {currentUser?.username}.</p>
+          <p className="text-lg text-gray-400 mt-2">{t('subtitle', { name: currentUser?.username })}</p>
         </div>
 
         <div className="mb-8 flex flex-wrap justify-center gap-2 p-2 bg-gray-800/50 rounded-lg max-w-2xl mx-auto">
           <TabButton onClick={() => setActiveTab('projects')} isActive={activeTab === 'projects'}>
-            <Briefcase size={16} className="inline mr-1.5" /> Projects
+            <Briefcase size={16} className="inline mr-1.5" /> {t('tabs.projects')}
           </TabButton>
           <TabButton onClick={() => setActiveTab('messages')} isActive={activeTab === 'messages'}>
-            <MessageCircle size={16} className="inline mr-1.5" /> Messages
+            <MessageCircle size={16} className="inline mr-1.5" /> {t('tabs.messages')}
           </TabButton>
           <TabButton onClick={() => setActiveTab('users')} isActive={activeTab === 'users'}>
-            <UserCog size={16} className="inline mr-1.5" /> Users
+            <UserCog size={16} className="inline mr-1.5" /> {t('tabs.users')}
           </TabButton>
           <TabButton onClick={() => setActiveTab('cv')} isActive={activeTab === 'cv'}>
-            <FileEdit size={16} className="inline mr-1.5" /> CV & Profile
+            <FileEdit size={16} className="inline mr-1.5" /> {t('tabs.cv')}
           </TabButton>
         </div>
 

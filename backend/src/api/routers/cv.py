@@ -13,10 +13,11 @@ router = APIRouter(prefix="/cv", tags=["cv"])
 
 @router.get("/", response_model=CVData)
 async def read_cv(
+    language: str = "en",
     db: AsyncSession = Depends(get_db),
 ):
     """Public endpoint - returns the CV data without authentication."""
-    return await cv_service.get_cv_data(db)
+    return await cv_service.get_cv_data(db, language=language)
 
 
 @router.put("/", response_model=CVData)

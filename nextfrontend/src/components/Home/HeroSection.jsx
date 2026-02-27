@@ -5,6 +5,7 @@ import ProfilePicPlaceholderImport from '../../assets/placeholder-profile.jpeg';
 import { getCVDataApi } from '../../api/cv';
 import Spinner from '../UI/Spinner';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // Next.js static imports return an object {src, width, height} - extract the plain string.
 const ProfilePicPlaceholder =
@@ -30,6 +31,7 @@ const HeroSection = () => {
   const [error, setError] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const t = useTranslations('hero');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,7 +44,7 @@ const HeroSection = () => {
         setError(null);
       } catch (err) {
         console.error("Error fetching hero section data:", err);
-        setError('Failed to load profile data.');
+        setError(t('errorLoadProfile'));
       } finally {
         setLoading(false);
       }
@@ -99,7 +101,7 @@ const HeroSection = () => {
     return (
       <section className="min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center">
         <Spinner size="h-12 w-12" />
-        <p className="mt-4 text-gray-400">Loading profile data...</p>
+        <p className="mt-4 text-gray-400">{t('loadingProfile')}</p>
       </section>
     );
   }
@@ -136,20 +138,20 @@ const HeroSection = () => {
             <div className="mb-8 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
               <div className="flex justify-center items-center mb-2">
                 <AlertTriangle size={24} className="text-red-400 mr-2" />
-                <h3 className="text-xl font-semibold text-red-400">Error Loading Profile</h3>
+                <h3 className="text-xl font-semibold text-red-400">{t('errorTitle')}</h3>
               </div>
               <p className="text-red-300">{error}</p>
             </div>
           ) : (
             <>
               <AnimatedTextCharacter 
-                text="Welcome to My Portfolio" 
+                text={t('welcomeFallback')} 
                 el="h1" 
                 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent"
                 stagger={0.05}
               />
               <AnimatedTextCharacter 
-                text="Complete your profile in the admin dashboard" 
+                text={t('completeFallback')} 
                 el="p" 
                 className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8"
                 stagger={0.02}
@@ -165,10 +167,10 @@ const HeroSection = () => {
             className="space-y-4 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center"
           >
             <button onClick={scrollToProjects} className="btn btn-primary text-lg px-8 py-3">
-              View My Work
+              {t('scrollToProjects')}
             </button>
             <button onClick={scrollToCV} className="btn btn-outline text-lg px-8 py-3 border-secondary text-secondary hover:bg-secondary hover:text-white">
-              My Journey
+              {t('scrollToCV')}
             </button>
           </motion.div>
         </div>
@@ -237,10 +239,10 @@ const HeroSection = () => {
           className="space-y-4 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center"
         >
           <button onClick={scrollToProjects} className="btn btn-primary text-lg px-8 py-3">
-            View My Work
+            {t('scrollToProjects')}
           </button>
           <button onClick={scrollToCV} className="btn btn-outline text-lg px-8 py-3 border-secondary text-secondary hover:bg-secondary hover:text-white">
-            My Journey
+            {t('scrollToCV')}
           </button>
         </motion.div>
       </div>

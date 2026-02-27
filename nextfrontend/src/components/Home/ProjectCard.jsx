@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw, ArrowUp, ArrowDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
 import { useTheme } from '../../hooks/useTheme';
 
 const StatusIndicator = ({ status }) => {
   let color, bgColor, Icon, text;
   const { theme } = useTheme();
+  const t = useTranslations('projects');
   
   const darkModeColors = {
     up: 'bg-green-500/80 border-green-400',
@@ -27,25 +29,25 @@ const StatusIndicator = ({ status }) => {
       color = theme === 'dark' ? darkModeColors.up : lightModeColors.up;
       bgColor = 'from-green-600 to-emerald-500';
       Icon = Zap;
-      text = 'Online';
+      text = t('status.up');
       break;
     case 'down':
       color = theme === 'dark' ? darkModeColors.down : lightModeColors.down;
       bgColor = 'from-red-600 to-rose-500';
       Icon = AlertTriangle;
-      text = 'Offline';
+      text = t('status.down');
       break;
     case 'checking':
       color = theme === 'dark' ? darkModeColors.checking : lightModeColors.checking;
       bgColor = 'from-yellow-500 to-amber-400';
       Icon = () => <Loader2 size={14} className="animate-spin" />;
-      text = 'Checking';
+      text = t('status.checking');
       break;
     default:
       color = theme === 'dark' ? darkModeColors.unknown : lightModeColors.unknown;
       bgColor = 'from-gray-500 to-slate-400';
       Icon = CheckCircle;
-      text = 'Unknown';
+      text = t('status.unknown');
   }
   
   return (
@@ -58,6 +60,7 @@ const StatusIndicator = ({ status }) => {
 
 const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMoveUp, onMoveDown, isFirst, isLast, imageUrl, imageLoading }) => {
   const { theme } = useTheme();
+  const t = useTranslations('projects');
   const [imageError, setImageError] = useState(false);
   
   const cardVariants = {
@@ -172,13 +175,13 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
             whileHover="hover"
             whileTap="tap"
           >
-            Visit Site <ExternalLink size={14} className="ml-1.5" />
+            {t('visitProject')} <ExternalLink size={14} className="ml-1.5" />
           </motion.a>
           {isAdmin && (
             <div className="flex space-x-2">
               <motion.button 
                 onClick={() => onMoveUp(project.id)} 
-                title="Move Up" 
+                title={t('moveUp')} 
                 disabled={isFirst}
                 className={`p-1.5 transition-colors ${
                   isFirst 
@@ -196,7 +199,7 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
               </motion.button>
               <motion.button 
                 onClick={() => onMoveDown(project.id)} 
-                title="Move Down" 
+                title={t('moveDown')} 
                 disabled={isLast}
                 className={`p-1.5 transition-colors ${
                   isLast 
@@ -214,7 +217,7 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
               </motion.button>
               <motion.button 
                 onClick={() => onCheckStatus(project.id)} 
-                title="Re-check Status" 
+                title={t('checkStatus')} 
                 className={`p-1.5 transition-colors ${
                   theme === 'dark' 
                     ? 'text-blue-400 hover:text-blue-300' 
@@ -229,7 +232,7 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
               </motion.button>
               <motion.button 
                 onClick={() => onEdit(project)} 
-                title="Edit Project" 
+                title={t('editProject')} 
                 className={`p-1.5 transition-colors ${
                   theme === 'dark' 
                     ? 'text-yellow-400 hover:text-yellow-300' 
@@ -244,7 +247,7 @@ const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMove
               </motion.button>
               <motion.button 
                 onClick={() => onDelete(project.id)} 
-                title="Delete Project" 
+                title={t('deleteProject')} 
                 className={`p-1.5 transition-colors ${
                   theme === 'dark' 
                     ? 'text-red-500 hover:text-red-400' 

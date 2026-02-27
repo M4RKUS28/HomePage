@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../hooks/useTheme';
 import Spinner from '../UI/Spinner';
@@ -177,6 +178,7 @@ const reorderList = (items, fromIndex, toIndex) => {
 };
 
 const CVEditor = () => {
+  const t = useTranslations('admin.cv');
   const { theme } = useTheme();
   const { showToast } = useToast();
 
@@ -203,7 +205,7 @@ const CVEditor = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching CV data:', err);
-      setError('Failed to load CV data. Please try again.');
+      setError(t('loadFailed'));
       setNormalizedData(defaultCVData);
     } finally {
       setLoading(false);
@@ -221,10 +223,10 @@ const CVEditor = () => {
       const normalized = normalizeCVData(cvData);
       setNormalizedData(normalized);
       await updateCVDataApi(normalized);
-      showToast({ type: 'success', message: 'CV data saved successfully' });
+      showToast({ type: 'success', message: t('saveSuccess') });
     } catch (err) {
       console.error('Error saving CV data:', err);
-      showToast({ type: 'error', message: 'Failed to save CV data. Please try again.' });
+      showToast({ type: 'error', message: t('saveFailed') });
     } finally {
       setSaving(false);
     }
@@ -714,13 +716,13 @@ const CVEditor = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-mode-primary">CV Editor</h2>
+        <h2 className="text-2xl font-semibold text-mode-primary">{t('title')}</h2>
         <button onClick={saveCV} className="btn btn-primary flex items-center" disabled={saving}>
           {saving ? (
             <Spinner size="h-5 w-5" />
           ) : (
             <>
-              <Save size={18} className="mr-2" /> Save All Changes
+              <Save size={18} className="mr-2" /> {t('save')}
             </>
           )}
         </button>

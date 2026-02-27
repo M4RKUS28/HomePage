@@ -16,6 +16,7 @@ class UserRead(BaseModel):
     email: EmailStr
     is_active: bool
     is_admin: bool
+    language: str = "en"
     avatar_url: Optional[str] = None  # presigned download URL (resolved in service layer)
 
     model_config = {"from_attributes": True}
@@ -45,3 +46,4 @@ class UserUpdate(BaseModel):
     password: Optional[str] = Field(default=None, min_length=3)
     is_active: Optional[bool] = None
     is_admin: Optional[bool] = None
+    language: Optional[str] = Field(default=None, max_length=10)

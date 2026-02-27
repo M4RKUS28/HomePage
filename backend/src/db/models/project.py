@@ -33,6 +33,7 @@ class Project(Base):
     last_checked: Mapped[str | None] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=True
     )
+    language: Mapped[str] = mapped_column(String(10), default="en", server_default="en")
     position: Mapped[int] = mapped_column(Integer, default=0)
     owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     # Optional URLs for health checking (all must be UP for project to be UP)

@@ -13,9 +13,9 @@ from ..db.crud import cv as cv_crud
 logger = logging.getLogger(__name__)
 
 
-async def get_cv_data(db: AsyncSession) -> CVData:
+async def get_cv_data(db: AsyncSession, *, language: str = "en") -> CVData:
     """Return current CV data (public endpoint, no auth required)."""
-    cv = await cv_crud.get_cv(db)
+    cv = await cv_crud.get_cv(db, language=language)
     if cv is None:
         return CVData()  # empty defaults
     return CVData.model_validate(cv.data)
@@ -26,9 +26,10 @@ async def update_cv_data(
     *,
     data: CVData,
     owner_id: int,
+    language: str = "en",
 ) -> CVData:
-    """Create or update the CV record."""
-    cv = await cv_crud.upsert_cv(db, data=data.model_dump(), owner_id=owner_id)
+    """Create or update the CV record for a given language."""
+    cv = await cv_crud.upsert_cv(db, data=data.model_dump(), owner_id=owner_id, language=language)
     return CVData.model_validate(cv.data)
 
 

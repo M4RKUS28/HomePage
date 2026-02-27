@@ -15,7 +15,7 @@ const INTERNAL_KEY = process.env.AUTH_INTERNAL_SHARED_SECRET || '';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { username, email, password } = body;
+    const { username, email, password, language } = body;
 
     if (!username || !email || !password) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function POST(request) {
         'Content-Type': 'application/json',
         'X-Internal-Key': INTERNAL_KEY,
       },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, email, password, language: language || 'en' }),
     });
 
     const data = await backendRes.json();

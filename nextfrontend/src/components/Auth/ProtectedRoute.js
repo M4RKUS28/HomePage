@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '../../i18n/navigation';
 import { useEffect } from 'react';
 import Spinner from '../UI/Spinner';
 

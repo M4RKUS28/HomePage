@@ -10,13 +10,16 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { ToastProvider } from '../contexts/ToastContext';
+import { LanguageProvider } from '../contexts/LanguageContext';
 
 export default function Providers({ children }) {
   return (
     <SessionProvider>
       <ThemeProvider>
         <ToastProvider>
-          {children}
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
         </ToastProvider>
       </ThemeProvider>
     </SessionProvider>

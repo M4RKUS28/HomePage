@@ -17,6 +17,7 @@ class ProjectCreate(BaseModel):
     description: Optional[str] = None
     link: HttpUrl
     position: Optional[int] = 0
+    language: str = Field(default="en", max_length=10)
     health_check_urls: Optional[List[str]] = []
 
 
@@ -26,6 +27,7 @@ class ProjectUpdate(BaseModel):
     link: Optional[HttpUrl] = None
     position: Optional[int] = None
     status: Optional[ProjectStatus] = None
+    language: Optional[str] = Field(default=None, max_length=10)
     health_check_urls: Optional[List[str]] = None
     image_object_name: Optional[str] = Field(default=None, max_length=512)
 
@@ -44,6 +46,7 @@ class ProjectRead(BaseModel):
     status: ProjectStatus
     last_checked: Optional[datetime] = None
     position: int = 0
+    language: str = "en"
     owner_id: int
     health_check_urls: Optional[List[str]] = []
 
@@ -59,6 +62,7 @@ class ProjectListItem(BaseModel):
     status: ProjectStatus
     last_checked: Optional[datetime] = None
     position: int = 0
+    language: str = "en"
     owner_id: int
     health_check_urls: Optional[List[str]] = []
 

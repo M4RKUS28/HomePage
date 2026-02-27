@@ -1,15 +1,16 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import HeroSection from '../components/Home/HeroSection';
-import ProjectsGrid from '../components/Home/ProjectsGrid';
-import InteractiveCV from '../components/Home/InteractiveCV';
-import RegisterCallout from '../components/Home/RegisterCallout';
+import HeroSection from '../../components/Home/HeroSection';
+import ProjectsGrid from '../../components/Home/ProjectsGrid';
+import InteractiveCV from '../../components/Home/InteractiveCV';
+import RegisterCallout from '../../components/Home/RegisterCallout';
 import { MessageSquareText } from 'lucide-react';
-import Link from 'next/link';
-import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../hooks/useTheme';
-import BackgroundParticles from '../components/UI/BackgroundParticles';
+import { Link } from '../../i18n/navigation';
+import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
+import { useTranslations } from 'next-intl';
+import BackgroundParticles from '../../components/UI/BackgroundParticles';
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -21,6 +22,7 @@ const pageTransition = { type: "tween", ease: "anticipate", duration: 0.5 };
 export default function HomePage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
+  const t = useTranslations();
   const [mounted, setMounted] = useState(false);
   
   // Prevent hydration mismatch
@@ -56,10 +58,10 @@ export default function HomePage() {
               >
                 <MessageSquareText className="w-16 h-16 mx-auto mb-6 text-primary" />
                 <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-                  Let&apos;s Connect
+                  {t('connect.title')}
                 </h2>
                 <p className="text-lg mb-8 text-gray-600 dark:text-gray-300">
-                  Have a project in mind? Want to collaborate? I&apos;d love to hear from you.
+                  {t('connect.description')}
                 </p>
                 
                 <div className="space-y-4">
@@ -68,10 +70,10 @@ export default function HomePage() {
                     <div className="space-y-4">
                       <div className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium transition-colors mr-4 opacity-50">
                         <MessageSquareText className="w-5 h-5" />
-                        <span>Loading...</span>
+                        <span>{t('connect.loading')}</span>
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Loading authentication state...
+                        {t('common.loadingAuth')}
                       </p>
                     </div>
                   ) : currentUser ? (
@@ -80,7 +82,7 @@ export default function HomePage() {
                       className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                     >
                       <MessageSquareText className="w-5 h-5" />
-                      Go to Dashboard
+                      {t('connect.goToDashboard')}
                     </Link>
                   ) : (
                     <div className="space-y-4">
@@ -89,10 +91,10 @@ export default function HomePage() {
                         className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium transition-colors mr-4"
                       >
                         <MessageSquareText className="w-5 h-5" />
-                        Send Message
+                        {t('connect.sendMessage')}
                       </Link>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Register for a personalized experience and direct messaging
+                        {t('connect.registerHint')}
                       </p>
                     </div>
                   )}

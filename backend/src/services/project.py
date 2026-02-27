@@ -84,8 +84,9 @@ async def list_projects(
     *,
     skip: int = 0,
     limit: int = 100,
+    language: str = "en",
 ) -> Sequence[Project]:
-    return await project_crud.get_projects(db, skip=skip, limit=limit)
+    return await project_crud.get_projects(db, skip=skip, limit=limit, language=language)
 
 
 async def get_project(db: AsyncSession, project_id: int) -> Project:
@@ -108,6 +109,7 @@ async def create_project(
         link=str(data.link),
         position=position,
         owner_id=owner_id,
+        language=data.language,
         health_check_urls=data.health_check_urls or [],
     )
     # Fire-and-forget health check (handled in router via BackgroundTasks)

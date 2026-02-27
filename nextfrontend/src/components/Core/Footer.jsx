@@ -3,7 +3,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../hooks/useTheme';
-import { Github, Linkedin, Mail, Globe, Twitter } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useTranslations } from 'next-intl';
+import { Github, Linkedin, Mail, Globe, Twitter, Languages } from 'lucide-react';
+
+const LOCALE_LABELS = {
+  en: 'English',
+  de: 'Deutsch',
+};
 
 const Footer = ({ 
   headerText = "Portfolio", 
@@ -11,6 +19,9 @@ const Footer = ({
   ownerName = "Portfolio" 
 }) => {
   const { theme } = useTheme();
+  const { currentUser } = useAuth();
+  const { locale, locales, changeLocale, isPending } = useLanguage();
+  const t = useTranslations('footer');
   const currentYear = new Date().getFullYear();
   
   // Map platform names to Lucide icons
@@ -42,6 +53,10 @@ const Footer = ({
     };
   });
 
+  const handleLocaleChange = (newLocale) => {
+    changeLocale(newLocale, { userId: currentUser?.id });
+  };
+
   return (
     <footer className={`py-8 border-t transition-colors ${
       theme === 'dark' 
@@ -60,7 +75,7 @@ const Footer = ({
             </motion.div>
           </div>
           
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-4">
             {socialLinkComponents.length > 0 ? (
               socialLinkComponents.map((social, index) => {
                 const Icon = social.icon;
@@ -84,15 +99,45 @@ const Footer = ({
                 );
               })
             ) : (
-              <span className="text-sm opacity-70">No social links found</span>
+              <span className="text-sm opacity-70">{t('noSocialLinks')}</span>
             )}
           </div>
         </div>
         
-        <div className={`mt-8 pt-4 text-center text-sm border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-          <p>
-            © {currentYear} {ownerName}. All rights reserved.
-          </p>
+        {/* Language selector + copyright */}
+        <div className={`mt-8 pt-4 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            {/* Language selector */}
+            <div className="flex items-center gap-2">
+              <Languages size={16} className="opacity-70" />
+              <span className="text-sm opacity-70">{t('language')}:</span>
+              <div className="flex gap-1">
+                {locales.map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => handleLocaleChange(loc)}
+                    disabled={isPending}
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                      locale === loc
+                        ? theme === 'dark'
+                          ? 'bg-primary text-white font-semibold'
+                          : 'bg-primary text-white font-semibold'
+                        : theme === 'dark'
+                          ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                    } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
+                  >
+                    {LOCALE_LABELS[loc] || loc.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Copyright */}
+            <p className="text-sm text-center">
+              © {currentYear} {ownerName}. {t('allRightsReserved')}
+            </p>
+          </div>
         </div>
       </div>
     </footer>

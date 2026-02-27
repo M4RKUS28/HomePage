@@ -1,12 +1,13 @@
 'use client';
 // Client component for Navbar with SSR initial data
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { LogIn, LogOut, UserPlus, LayoutDashboard, ShieldCheck, Menu, X, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../hooks/useTheme';
+import { useTranslations } from 'next-intl';
+import { Link } from '../../i18n/navigation';
 import ThemeToggle from '../UI/ThemeToggle';
 
 const NavLink = ({ href, children, onClick }) => {
@@ -56,6 +57,7 @@ const MobileNavLink = ({ href, children, onClick }) => {
 const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
   const { currentUser, logout } = useAuth();
   const { theme } = useTheme();
+  const t = useTranslations('nav');
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -91,12 +93,12 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
           
           <div className="hidden md:flex items-center space-x-2">
             <div className="flex items-baseline space-x-4">
-              <NavLink href="/"><Home size={18} className="inline mr-1"/> Home</NavLink>
+              <NavLink href="/"><Home size={18} className="inline mr-1"/> {t('home')}</NavLink>
               {currentUser ? (
                 <>
-                  <NavLink href="/dashboard"><LayoutDashboard size={18} className="inline mr-1"/> Dashboard</NavLink>
+                  <NavLink href="/dashboard"><LayoutDashboard size={18} className="inline mr-1"/> {t('dashboard')}</NavLink>
                   {currentUser.is_admin && (
-                    <NavLink href="/admin"><ShieldCheck size={18} className="inline mr-1"/> Admin</NavLink>
+                    <NavLink href="/admin"><ShieldCheck size={18} className="inline mr-1"/> {t('admin')}</NavLink>
                   )}
                   <button
                     onClick={handleLogout}
@@ -106,13 +108,13 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
                         : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                     }`}
                   >
-                    <LogOut size={18} className="inline mr-1"/> Logout ({currentUser.username})
+                    <LogOut size={18} className="inline mr-1"/> {t('logout')} ({currentUser.username})
                   </button>
                 </>
               ) : (
                 <>
-                  <NavLink href="/login"><LogIn size={18} className="inline mr-1"/> Login</NavLink>
-                  <NavLink href="/register"><UserPlus size={18} className="inline mr-1"/> Register</NavLink>
+                  <NavLink href="/login"><LogIn size={18} className="inline mr-1"/> {t('login')}</NavLink>
+                  <NavLink href="/register"><UserPlus size={18} className="inline mr-1"/> {t('register')}</NavLink>
                 </>
               )}
             </div>
@@ -134,7 +136,7 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
               aria-controls="mobile-menu"
               aria-expanded="false"
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">{t('openMenu')}</span>
               {!isOpen ? <Menu className="block h-6 w-6" /> : <X className="block h-6 w-6" />}
             </button>
           </div>
@@ -154,12 +156,12 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
             <div className={`px-2 pt-2 pb-3 space-y-1 sm:px-3 ${
               theme === 'dark' ? 'bg-gray-800' : 'bg-white'
             }`}>
-              <MobileNavLink href="/" onClick={() => setIsOpen(false)}><Home size={18} className="inline mr-1"/> Home</MobileNavLink>
+              <MobileNavLink href="/" onClick={() => setIsOpen(false)}><Home size={18} className="inline mr-1"/> {t('home')}</MobileNavLink>
               {currentUser ? (
                 <>
-                  <MobileNavLink href="/dashboard" onClick={() => setIsOpen(false)}><LayoutDashboard size={18} className="inline mr-1"/> Dashboard</MobileNavLink>
+                  <MobileNavLink href="/dashboard" onClick={() => setIsOpen(false)}><LayoutDashboard size={18} className="inline mr-1"/> {t('dashboard')}</MobileNavLink>
                   {currentUser.is_admin && (
-                    <MobileNavLink href="/admin" onClick={() => setIsOpen(false)}><ShieldCheck size={18} className="inline mr-1"/> Admin</MobileNavLink>
+                    <MobileNavLink href="/admin" onClick={() => setIsOpen(false)}><ShieldCheck size={18} className="inline mr-1"/> {t('admin')}</MobileNavLink>
                   )}
                   <button
                     onClick={handleLogout}
@@ -169,13 +171,13 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
                         : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                     }`}
                   >
-                    <LogOut size={18} className="inline mr-1"/> Logout ({currentUser.username})
+                    <LogOut size={18} className="inline mr-1"/> {t('logout')} ({currentUser.username})
                   </button>
                 </>
               ) : (
                 <>
-                  <MobileNavLink href="/login" onClick={() => setIsOpen(false)}><LogIn size={18} className="inline mr-1"/> Login</MobileNavLink>
-                  <MobileNavLink href="/register" onClick={() => setIsOpen(false)}><UserPlus size={18} className="inline mr-1"/> Register</MobileNavLink>
+                  <MobileNavLink href="/login" onClick={() => setIsOpen(false)}><LogIn size={18} className="inline mr-1"/> {t('login')}</MobileNavLink>
+                  <MobileNavLink href="/register" onClick={() => setIsOpen(false)}><UserPlus size={18} className="inline mr-1"/> {t('register')}</MobileNavLink>
                 </>
               )}
             </div>

@@ -69,6 +69,7 @@ def _build_user_read(user) -> UserRead:
         email=user.email,
         is_active=user.is_active,
         is_admin=user.is_admin,
+        language=user.language,
         avatar_url=avatar_url,
     )
 
@@ -139,6 +140,7 @@ async def internal_register(
         username=body.username,
         email=body.email,
         hashed_password=hashed,
+        language=body.language,
     )
 
     logger.info("Internal register succeeded for user '%s' (id=%d)", user.username, user.id)

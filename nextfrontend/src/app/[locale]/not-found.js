@@ -1,9 +1,10 @@
 'use client';
 import React from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import { Link } from '../../i18n/navigation';
 import { AlertTriangle, Home } from 'lucide-react';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../../hooks/useTheme';
+import { useTranslations } from 'next-intl';
 
 const pageVariants = {
     initial: { opacity: 0, scale: 0.8 },
@@ -14,6 +15,7 @@ const pageTransition = { type: "spring", stiffness: 200, damping: 20, duration: 
 
 export default function NotFound() {
   const { theme } = useTheme();
+  const t = useTranslations('notFound');
   return (
     <motion.div
         initial="initial"
@@ -25,16 +27,16 @@ export default function NotFound() {
     >
       <AlertTriangle className="w-24 h-24 text-yellow-400 mb-8 animate-bounce" />
       <h1 className={`text-6xl font-extrabold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>404</h1>
-      <h2 className={`text-3xl font-semibold mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Oops! Page Not Found.</h2>
+      <h2 className={`text-3xl font-semibold mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{t('title')}</h2>
       <p className={`text-lg mb-8 max-w-md ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-        The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+        {t('description')}
       </p>
       <Link
         href="/"
         className="btn btn-primary inline-flex items-center text-lg px-8 py-3"
       >
         <Home size={20} className="mr-2" />
-        Go to Homepage
+        {t('backHome')}
       </Link>
     </motion.div>
   );

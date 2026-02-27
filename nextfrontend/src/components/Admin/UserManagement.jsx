@@ -1,5 +1,6 @@
 // frontend/src/components/Admin/UserManagement.jsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../hooks/useTheme';
@@ -12,6 +13,7 @@ import { getUsersApi, updateUserApi, deleteUserApi } from '../../api/users';
 import { useAuth } from '../../hooks/useAuth';
 
 const UserManagement = () => {
+  const t = useTranslations('admin.users');
   const { theme } = useTheme();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +116,7 @@ const UserManagement = () => {
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to delete this user? This action cannot be undone.`)) {
+    if (!window.confirm(t('confirmDelete'))) {
       return;
     }
 
@@ -197,7 +199,7 @@ const UserManagement = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-mode-primary">User Management</h2>
+        <h2 className="text-2xl font-semibold text-mode-primary">{t('title')}</h2>
         <button 
           onClick={fetchUsers} 
           className="btn btn-sm btn-secondary flex items-center"
@@ -214,19 +216,19 @@ const UserManagement = () => {
             <thead className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
               <tr>
                 <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                  Username
+                  {t('username')}
                 </th>
                 <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                  Email
+                  {t('email')}
                 </th>
                 <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                   Status
                 </th>
                 <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                  Role
+                  {t('role')}
                 </th>
                 <th scope="col" className={`px-6 py-3 text-right text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                  Actions
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
@@ -263,16 +265,16 @@ const UserManagement = () => {
                             ? 'bg-red-900/30 text-red-400'
                             : 'bg-red-200 text-red-800'
                       }`}>
-                        {user.is_active ? 'Active' : 'Inactive'}
+                        {user.is_active ? t('active') : t('inactive')}
                       </span>
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                       {user.is_admin ? (
                         <span className="text-yellow-500 flex items-center">
-                          <Shield size={16} className="mr-1" /> Admin
+                          <Shield size={16} className="mr-1" /> {t('admin')}
                         </span>
                       ) : (
-                        <span>User</span>
+                        <span>{t('user')}</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -360,7 +362,7 @@ const UserManagement = () => {
             )}
             <div>
               <label htmlFor="new-password" className="modal-label">
-                New Password
+                {t('newPassword')}
               </label>
               <input
                 id="new-password"
@@ -391,14 +393,14 @@ const UserManagement = () => {
                 onClick={() => setShowPasswordModal(false)}
                 className="cv-btn-secondary"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 type="submit"
                 className="btn btn-primary"
                 disabled={actionLoading}
               >
-                {actionLoading ? <Spinner size="h-5 w-5" /> : 'Update Password'}
+                {actionLoading ? <Spinner size="h-5 w-5" /> : t('resetPassword')}
               </button>
             </div>
           </form>

@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { createMessageApi } from '../../api/messages';
 import Spinner from '../UI/Spinner';
 import { Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const MessageForm = ({ onMessageSent }) => {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const t = useTranslations('dashboard');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) {
-      setError("Message cannot be empty.");
+      setError(t('messageEmpty'));
       return;
     }
     setIsLoading(true);
@@ -20,11 +22,11 @@ const MessageForm = ({ onMessageSent }) => {
     setSuccess('');
     try {
       await createMessageApi(content);
-      setSuccess('Message sent successfully!');
+      setSuccess(t('messageSuccess'));
       setContent('');
       if (onMessageSent) onMessageSent(); // Optional callback
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to send message.');
+      setError(err.response?.data?.detail || t('messageFailed'));
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -38,13 +40,13 @@ const MessageForm = ({ onMessageSent }) => {
 
   return (
     <div className="p-6 bg-card shadow-xl rounded-lg max-w-lg mx-auto">
-      <h3 className="text-2xl font-semibold text-mode-primary mb-6 text-center">Send me a Message</h3>
+      <h3 className="text-2xl font-semibold text-mode-primary mb-6 text-center">{t('sendMessage')}</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <p className="text-sm text-red-400 dark:bg-red-900/30 light:bg-red-100 p-2 rounded text-center">{error}</p>}
         {success && <p className="text-sm text-green-400 dark:bg-green-900/30 light:bg-green-100 p-2 rounded text-center">{success}</p>}
         <div>
           <label htmlFor="messageContent" className="block text-sm font-medium text-mode-secondary mb-1">
-            Your Message
+            {t('messageLabel')}
           </label>
           <textarea
             id="messageContent"
@@ -53,7 +55,7 @@ const MessageForm = ({ onMessageSent }) => {
             className="input-field w-full"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Type your message here..."
+            placeholder={t('messagePlaceholder')}
             required
           />
         </div>
@@ -63,7 +65,7 @@ const MessageForm = ({ onMessageSent }) => {
             className="w-full btn btn-primary flex justify-center items-center"
             disabled={isLoading}
           >
-            {isLoading ? <Spinner size="h-5 w-5" color="text-white" /> : <><Send size={18} className="mr-2" /> Send Message</>}
+            {isLoading ? <Spinner size="h-5 w-5" color="text-white" /> : <><Send size={18} className="mr-2" /> {t('messageSend')}</>}
           </button>
         </div>
       </form>

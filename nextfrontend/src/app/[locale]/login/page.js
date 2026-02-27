@@ -1,9 +1,9 @@
 'use client';
 import React from 'react';
-import RegisterForm from '../../components/Auth/RegisterForm';
+import LoginForm from '../../../components/Auth/LoginForm';
 import { motion } from 'framer-motion';
 
-export default function RegisterPage() {
+export default function LoginPage() {
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -12,7 +12,7 @@ export default function RegisterPage() {
       transition={{ duration: 0.3 }}
       className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] py-12"
     >
-      <RegisterForm />
+      <LoginForm />
     </motion.div>
   );
 }

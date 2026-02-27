@@ -59,6 +59,7 @@ async def create_user(
     hashed_password: str,
     is_admin: bool = False,
     is_active: bool = True,
+    language: str = "en",
 ) -> User:
     user = User(
         username=username,
@@ -66,6 +67,7 @@ async def create_user(
         hashed_password=hashed_password,
         is_admin=is_admin,
         is_active=is_active,
+        language=language,
     )
     db.add(user)
     await db.commit()

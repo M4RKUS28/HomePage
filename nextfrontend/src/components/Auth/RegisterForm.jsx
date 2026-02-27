@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '../../i18n/navigation';
 import { motion } from 'framer-motion';
 import { UserPlus, Eye, EyeOff, Check, X, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useToast } from '../../contexts/ToastContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useTranslations } from 'next-intl';
 import { parseApiError } from '../../lib/error-utils';
 import LoadingButton from '../UI/LoadingButton';
 
@@ -22,6 +24,8 @@ const RegisterForm = () => {
   const { register, loadingAuth, authError, clearAuthError } = useAuth();
   const { theme } = useTheme();
   const { showToast } = useToast();
+  const { locale } = useLanguage();
+  const t = useTranslations();
   const router = useRouter();
 
   useEffect(() => {
@@ -44,36 +48,36 @@ const RegisterForm = () => {
     
     // Client-side validation
     if (!username.trim()) {
-      setFormError("Username is required.");
+      setFormError(t('auth.errors.usernameRequired'));
       return;
     }
 
     if (!email.trim()) {
-      setFormError("Email is required.");
+      setFormError(t('auth.errors.emailRequired'));
       return;
     }
 
     if (!validateEmail(email)) {
-      setFormError("Please enter a valid email address.");
+      setFormError(t('auth.errors.emailInvalid'));
       return;
     }
     
     if (password !== confirmPassword) {
-      setFormError("Passwords do not match.");
+      setFormError(t('auth.errors.passwordsNoMatch'));
       return;
     }
     
     if (password.length < 3) { // Match backend MIN_PASSWORD_LENGTH
-      setFormError("Password must be at least 3 characters long.");
+      setFormError(t('auth.errors.passwordTooShort'));
       return;
     }
 
     try {
-      await register(username, email, password);
-      showToast({ type: 'success', message: 'Account created! You are now logged in.' });
+      await register(username, email, password, locale);
+      showToast({ type: 'success', message: t('auth.register.success') });
       router.push('/dashboard');
     } catch (err) {
-      setFormError(parseApiError(err, 'Registration failed. Please try again.'));
+      setFormError(parseApiError(err, t('auth.errors.registerFailed')));
     }
   };
 
@@ -114,7 +118,7 @@ const RegisterForm = () => {
               : 'text-gray-900'
           }`}
         >
-          Create your account
+          {t('auth.register.title')}
         </motion.h2>
       </div>
       <motion.form 
@@ -135,7 +139,7 @@ const RegisterForm = () => {
                 setFormError('');
               }} 
               className="flex-shrink-0 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
-              aria-label="Dismiss error"
+              aria-label={t('common.close')}
             >
               <X size={16} />
             </button>
@@ -145,7 +149,7 @@ const RegisterForm = () => {
         <div>
           <label htmlFor="username-register" className={`block text-sm font-medium ${
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>Username</label>
+          }`}>{t('auth.register.username')}</label>
           <input
             id="username-register"
             name="username"
@@ -160,7 +164,7 @@ const RegisterForm = () => {
         <div>
           <label htmlFor="email-register" className={`block text-sm font-medium ${
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>Email address</label>
+          }`}>{t('auth.register.email')}</label>
           <input
             id="email-register"
             name="email"
@@ -175,7 +179,7 @@ const RegisterForm = () => {
         <div>
           <label htmlFor="password-register" className={`block text-sm font-medium ${
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>Password</label>
+          }`}>{t('auth.register.password')}</label>
           <div className="relative mt-1">
             <input
               id="password-register"
@@ -201,14 +205,14 @@ const RegisterForm = () => {
            <div className="mt-1.5 flex items-center">
             <div className={`flex items-center text-xs ${passwordLength ? 'text-green-500' : 'text-gray-400'}`}>
               {passwordLength ? <Check size={14} className="mr-1" /> : <X size={14} className="mr-1" />}
-              Minimum 3 characters
+              {t('auth.register.passwordMinLength')}
             </div>
           </div>
         </div>
         <div>
           <label htmlFor="confirm-password-register" className={`block text-sm font-medium ${
             theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>Confirm Password</label>
+          }`}>{t('auth.register.confirmPassword')}</label>
           <div className="relative mt-1">
             <input
               id="confirm-password-register"
@@ -234,7 +238,7 @@ const RegisterForm = () => {
             <div className="mt-1.5 flex items-center">
               <div className={`flex items-center text-xs ${passwordsMatch ? 'text-green-500' : 'text-red-500'}`}>
                 {passwordsMatch ? <Check size={14} className="mr-1" /> : <X size={14} className="mr-1" />}
-                Passwords {passwordsMatch ? 'match' : 'do not match'}
+                {passwordsMatch ? t('auth.register.passwordsMatch') : t('auth.register.passwordsNoMatch')}
               </div>
             </div>
           )}
@@ -244,9 +248,9 @@ const RegisterForm = () => {
             type="submit"
             className="w-full btn-primary"
             isLoading={loadingAuth}
-            loadingText="Creating account..."
+            loadingText={t('auth.register.creating')}
           >
-            <UserPlus size={18} className="mr-2" /> Create account
+            <UserPlus size={18} className="mr-2" /> {t('auth.register.submit')}
           </LoadingButton>
         </div>
       </motion.form>
@@ -259,7 +263,7 @@ const RegisterForm = () => {
             ? 'text-primary hover:text-emerald-400' 
             : 'text-secondary hover:text-blue-700'
         } transition-colors`}>
-          Sign in
+          {t('auth.register.loginLink')}
         </Link>
       </p>
       
@@ -270,8 +274,7 @@ const RegisterForm = () => {
         <div className="flex items-start">
           <AlertCircle size={16} className="text-primary mt-0.5 mr-2 flex-shrink-0" />
           <p>
-            Creating an account lets you send me direct messages. This is great for project 
-            inquiries, collaboration opportunities, or any questions about my work.
+            {t('registerCallout.description')}
           </p>
         </div>
       </div>

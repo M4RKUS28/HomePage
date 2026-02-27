@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { getMessagesApi, markMessageAsReadApi, deleteMessageApi } from '../../api/messages';
 import Spinner from '../UI/Spinner';
 import { Mail, MailOpen, Trash2, RefreshCw } from 'lucide-react';
@@ -7,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
+  const t = useTranslations('admin.messages');
   const [isExpanded, setIsExpanded] = useState(false);
   
   // Format the date
@@ -34,7 +36,7 @@ const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
               <Mail size={18} className="mr-2 text-primary animate-pulse-fast" />
             }
             <span className={`message-sender ${!message.is_read ? 'unread' : ''}`}>
-              From: {message.sender_username}
+              {t('from')}: {message.sender_username}
             </span>
           </div>
           <p className="message-timestamp">
@@ -44,8 +46,8 @@ const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
         <div className="flex items-center space-x-2">
           {!message.is_read && (
             <button 
-              onClick={(e) => { e.stopPropagation(); onMarkAsRead(message.id);}} 
-              title="Mark as Read"
+              onClick={(e) => { e.stopPropagation(); onMarkAsRead(message.id);}}
+              title={t('markRead')}
               className="p-1 dark:text-green-400 dark:hover:text-green-300 light:text-green-600 light:hover:text-green-500 transition-colors"
             >
               <MailOpen size={18} />
@@ -53,7 +55,7 @@ const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
           )}
           <button 
             onClick={(e) => { e.stopPropagation(); onDelete(message.id); }} 
-            title="Delete Message"
+            title={t('delete')}
             className="p-1 dark:text-red-400 dark:hover:text-red-300 light:text-red-500 light:hover:text-red-600 transition-colors"
           >
             <Trash2 size={18} />
@@ -89,6 +91,7 @@ const MessageItem = ({ message, onMarkAsRead, onDelete }) => {
 };
 
 const MessageList = () => {
+  const t = useTranslations('admin.messages');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -136,13 +139,13 @@ const MessageList = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-semibold text-mode-primary">Received Messages ({messages.filter(m => !m.is_read).length} unread)</h3>
+        <h3 className="text-xl font-semibold text-mode-primary">{t('title')} ({messages.filter(m => !m.is_read).length} unread)</h3>
         <button onClick={fetchMessages} className="btn btn-secondary btn-sm !py-1 !px-2" title="Refresh Messages">
           <RefreshCw size={16} />
         </button>
       </div>
       {messages.length === 0 ? (
-        <p className="text-mode-secondary text-center py-6">No messages yet.</p>
+        <p className="text-mode-secondary text-center py-6">{t('noMessages')}</p>
       ) : (
         <AnimatePresence mode="popLayout">
         {messages.map(message => (

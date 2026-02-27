@@ -24,9 +24,11 @@ async def get_projects(
     *,
     skip: int = 0,
     limit: int = 100,
+    language: str = "en",
 ) -> Sequence[Project]:
     result = await db.execute(
         select(Project)
+        .where(Project.language == language)
         .order_by(Project.position.asc(), Project.id.asc())
         .offset(skip)
         .limit(limit)
@@ -58,6 +60,7 @@ async def create_project(
     image_object_name: Optional[str] = None,
     position: int = 0,
     owner_id: int,
+    language: str = "en",
     health_check_urls: Optional[list] = None,
 ) -> Project:
     project = Project(
@@ -67,6 +70,7 @@ async def create_project(
         image_object_name=image_object_name,
         position=position,
         owner_id=owner_id,
+        language=language,
         health_check_urls=health_check_urls or [],
     )
     db.add(project)

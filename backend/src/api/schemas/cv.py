@@ -23,6 +23,7 @@ class CVData(BaseModel):
 class CVRead(BaseModel):
     id: int
     owner_id: int
+    language: str = "en"
     data: CVData
 
     model_config = {"from_attributes": True}

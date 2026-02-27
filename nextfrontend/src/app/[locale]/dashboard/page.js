@@ -1,13 +1,14 @@
 'use client';
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../hooks/useTheme';
-import ProtectedRoute from '../../components/Auth/ProtectedRoute';
-import { createMessageApi } from '../../api/messages';
-import { updateUserApi, uploadAvatarApi, deleteSelfApi, getAvatarUrl } from '../../api/users';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '../../../hooks/useAuth';
+import { useTheme } from '../../../hooks/useTheme';
+import ProtectedRoute from '../../../components/Auth/ProtectedRoute';
+import { createMessageApi } from '../../../api/messages';
+import { updateUserApi, uploadAvatarApi, deleteSelfApi, getAvatarUrl } from '../../../api/users';
+import { Link } from '../../../i18n/navigation';
+import { useRouter } from '../../../i18n/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Send, Home, User, Mail, Shield, MessageSquare, ExternalLink,
   Loader2, Lock, Camera, Trash2, AlertTriangle, Check, X,
@@ -68,7 +69,7 @@ const InlineFeedback = ({ error, success, theme }) => (
 );
 
 // ── Interactive Avatar (hero) ─────────────────────────────────────────────────
-const HeroAvatar = ({ currentUser, theme, onSuccess }) => {
+const HeroAvatar = ({ currentUser, theme, onSuccess, t }) => {
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -92,7 +93,7 @@ const HeroAvatar = ({ currentUser, theme, onSuccess }) => {
       setFile(null); setPreview(null);
       await onSuccess();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Upload failed.');
+      setError(err.response?.data?.detail || t('uploadFailed'));
     } finally {
       setLoading(false);
     }
@@ -149,7 +150,7 @@ const HeroAvatar = ({ currentUser, theme, onSuccess }) => {
 
       {/* Tooltip hint */}
       <p className={`text-[10px] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-        Click to change
+        {t('clickToChange')}
       </p>
 
       {/* Preview confirm row */}
@@ -165,7 +166,7 @@ const HeroAvatar = ({ currentUser, theme, onSuccess }) => {
               disabled={loading}
               className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-60 transition-colors"
             >
-              <Check size={12} /> Save
+              <Check size={12} /> {t('save')}
             </button>
             <button
               onClick={cancel}
@@ -173,7 +174,7 @@ const HeroAvatar = ({ currentUser, theme, onSuccess }) => {
                 theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
             >
-              <X size={12} /> Cancel
+              <X size={12} /> {t('cancel')}
             </button>
           </motion.div>
         )}
@@ -185,7 +186,7 @@ const HeroAvatar = ({ currentUser, theme, onSuccess }) => {
 };
 
 // ── Inline-editable username row ────────────────────────────────────────────
-const UsernameRow = ({ currentUser, theme, onSuccess }) => {
+const UsernameRow = ({ currentUser, theme, onSuccess, t }) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentUser?.username ?? '');
   const [loading, setLoading] = useState(false);
@@ -196,16 +197,16 @@ const UsernameRow = ({ currentUser, theme, onSuccess }) => {
   const save = async () => {
     const trimmed = value.trim();
     if (trimmed === currentUser?.username) { setEditing(false); return; }
-    if (!trimmed) { setError('Username cannot be empty.'); return; }
+    if (!trimmed) { setError(t('usernameEmpty')); return; }
     setLoading(true); setError(''); setSuccess('');
     try {
       await updateUserApi(currentUser.id, { username: trimmed });
-      setSuccess('Username updated!');
+      setSuccess(t('usernameUpdated'));
       setEditing(false);
       await onSuccess();
     } catch (err) {
       const d = err.response?.data?.detail;
-      setError(d || 'Update failed.');
+      setError(d || t('updateFailed'));
     } finally {
       setLoading(false);
       setTimeout(() => setSuccess(''), 3000);
@@ -226,7 +227,7 @@ const UsernameRow = ({ currentUser, theme, onSuccess }) => {
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            Username
+            {t('username')}
           </p>
           {editing ? (
             <input
@@ -257,10 +258,10 @@ const UsernameRow = ({ currentUser, theme, onSuccess }) => {
             >
               {editing ? (
                 <>
-                  <button onClick={save} title="Save" className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                  <button onClick={save} title={t('save')} className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
                     <Check size={13} />
                   </button>
-                  <button onClick={cancel} title="Cancel" className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}>
+                  <button onClick={cancel} title={t('cancel')} className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}>
                     <X size={13} />
                   </button>
                 </>
@@ -280,7 +281,7 @@ const UsernameRow = ({ currentUser, theme, onSuccess }) => {
 };
 
 // ── Inline-editable email row ─────────────────────────────────────────────────
-const EmailRow = ({ currentUser, theme, onSuccess }) => {
+const EmailRow = ({ currentUser, theme, onSuccess, t }) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentUser?.email ?? '');
   const [loading, setLoading] = useState(false);
@@ -300,11 +301,11 @@ const EmailRow = ({ currentUser, theme, onSuccess }) => {
     setLoading(true); setError(''); setSuccess('');
     try {
       await updateUserApi(currentUser.id, { email: value });
-      setSuccess('Email updated!');
+      setSuccess(t('emailUpdated'));
       setEditing(false);
       await onSuccess();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Update failed.');
+      setError(err.response?.data?.detail || t('updateFailed'));
     } finally {
       setLoading(false);
       setTimeout(() => setSuccess(''), 3000);
@@ -325,7 +326,7 @@ const EmailRow = ({ currentUser, theme, onSuccess }) => {
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            Email
+            {t('email')}
           </p>
           {editing ? (
             <input
@@ -358,16 +359,16 @@ const EmailRow = ({ currentUser, theme, onSuccess }) => {
             >
               {editing ? (
                 <>
-                  <button onClick={save} title="Save" className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                  <button onClick={save} title={t('save')} className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
                     <Check size={13} />
                   </button>
-                  <button onClick={cancel} title="Cancel" className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}>
+                  <button onClick={cancel} title={t('cancel')} className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}>
                     <X size={13} />
                   </button>
                 </>
               ) : (
                 <>
-                  <button onClick={copy} title={copied ? 'Copied!' : 'Copy email'} className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700'}`}>
+                  <button onClick={copy} title={copied ? t('copied') : t('copyEmail')} className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700'}`}>
                     {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
                   </button>
                   <button onClick={() => setEditing(true)} title="Edit email" className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700'}`}>
@@ -386,7 +387,7 @@ const EmailRow = ({ currentUser, theme, onSuccess }) => {
 };
 
 // ── Inline-editable password row ──────────────────────────────────────────────
-const PasswordRow = ({ currentUser, theme }) => {
+const PasswordRow = ({ currentUser, theme, t }) => {
   const [editing, setEditing] = useState(false);
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -398,15 +399,15 @@ const PasswordRow = ({ currentUser, theme }) => {
   const [hovered, setHovered] = useState(false);
 
   const save = async () => {
-    if (newPw !== confirmPw) { setError('Passwords do not match.'); return; }
+    if (newPw !== confirmPw) { setError(t('passwordMismatch')); return; }
     setLoading(true); setError(''); setSuccess('');
     try {
       await updateUserApi(currentUser.id, { password: newPw });
-      setSuccess('Password changed!');
+      setSuccess(t('passwordChanged'));
       setEditing(false); setNewPw(''); setConfirmPw('');
     } catch (err) {
       const d = err.response?.data?.detail;
-      setError(Array.isArray(d) ? d.map(e => e.msg).join(' ') : (d || 'Update failed.'));
+      setError(Array.isArray(d) ? d.map(e => e.msg).join(' ') : (d || t('updateFailed')));
     } finally {
       setLoading(false);
       setTimeout(() => setSuccess(''), 3000);
@@ -427,7 +428,7 @@ const PasswordRow = ({ currentUser, theme }) => {
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            Password
+            {t('password')}
           </p>
           <p className={`text-sm font-semibold tracking-widest ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>
             ••••••••
@@ -455,7 +456,7 @@ const PasswordRow = ({ currentUser, theme }) => {
                 <input
                   type={showNew ? 'text' : 'password'}
                   autoFocus
-                  placeholder="New password"
+                  placeholder={t('newPassword')}
                   value={newPw}
                   onChange={(e) => setNewPw(e.target.value)}
                   className={`flex-1 text-sm bg-transparent outline-none ${theme === 'dark' ? 'text-gray-100 placeholder-gray-500' : 'text-gray-800 placeholder-gray-400'}`}
@@ -469,7 +470,7 @@ const PasswordRow = ({ currentUser, theme }) => {
               <div className={`flex items-center gap-2 rounded-md border px-2 py-1 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
                 <input
                   type={showConfirm ? 'text' : 'password'}
-                  placeholder="Confirm password"
+                  placeholder={t('confirmPassword')}
                   value={confirmPw}
                   onChange={(e) => setConfirmPw(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
@@ -482,10 +483,10 @@ const PasswordRow = ({ currentUser, theme }) => {
               </div>
               <div className="flex gap-2">
                 <button onClick={save} disabled={!newPw || !confirmPw} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-50 transition-colors">
-                  <Check size={12} /> Save
+                  <Check size={12} /> {t('save')}
                 </button>
                 <button onClick={cancel} className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}>
-                  <X size={12} /> Cancel
+                  <X size={12} /> {t('cancel')}
                 </button>
               </div>
               <InlineFeedback error={error} success={success} theme={theme} />
@@ -499,7 +500,7 @@ const PasswordRow = ({ currentUser, theme }) => {
 };
 
 // ── Static row ────────────────────────────────────────────────────────────────
-const InfoRow = ({ icon: Icon, label, value, theme, last = false }) => (
+const InfoRow = ({ icon: Icon, label, value, theme, last = false, t }) => (
   <div className={`flex items-center gap-3 py-3 ${!last ? `border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}` : ''}`}>
     <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
       <Icon size={16} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
@@ -512,7 +513,7 @@ const InfoRow = ({ icon: Icon, label, value, theme, last = false }) => (
 );
 
 // ── Account type row (with inline delete for non-admins) ─────────────────────
-const AccountTypeRow = ({ currentUser, theme, onDelete, last = false }) => {
+const AccountTypeRow = ({ currentUser, theme, onDelete, last = false, t }) => {
   const [open, setOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -526,7 +527,7 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false }) => {
       await deleteSelfApi();
       await onDelete();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Delete failed.');
+      setError(err.response?.data?.detail || t('deleteFailed'));
       setLoading(false);
     }
   };
@@ -544,9 +545,9 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false }) => {
           <Shield size={16} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>Account type</p>
+          <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('accountType')}</p>
           <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
-            {isAdmin ? 'Administrator' : 'User'}
+            {isAdmin ? t('roleAdmin') : t('roleUser')}
           </p>
         </div>
         {!isAdmin && (
@@ -555,7 +556,7 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false }) => {
               <motion.div initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }}>
                 <button
                   onClick={toggle}
-                  title={open ? 'Close' : 'Delete account'}
+                  title={open ? t('cancel') : t('deleteAccount')}
                   className={`p-1.5 rounded-lg transition-colors ${
                     open
                       ? theme === 'dark' ? 'bg-red-900/60 text-red-300' : 'bg-red-100 text-red-600'
@@ -578,13 +579,13 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false }) => {
                 <div className={`flex gap-2 p-3 rounded-lg ${theme === 'dark' ? 'bg-red-900/20' : 'bg-red-50'}`}>
                   <AlertTriangle size={15} className={`mt-0.5 shrink-0 ${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`} />
                   <p className={`text-xs ${theme === 'dark' ? 'text-red-300' : 'text-red-700'}`}>
-                    <strong>Permanent</strong> — all your data will be deleted and this cannot be undone.
+                    <strong>{t('deleteWarningPermanent')}</strong> — {t('deleteWarningText')}
                   </p>
                 </div>
                 {error && <p className="text-xs text-red-400">{error}</p>}
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="accent-red-500 w-4 h-4" />
-                  <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>I understand this is irreversible</span>
+                  <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t('deleteConfirmLabel')}</span>
                 </label>
                 <div className="flex gap-2">
                   <button
@@ -592,7 +593,7 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false }) => {
                     disabled={!confirmed || loading}
                     className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    {loading ? <><Loader2 size={14} className="animate-spin" /> Deleting…</> : <><Trash2 size={14} /> Delete my account</>}
+                    {loading ? <><Loader2 size={14} className="animate-spin" /> {t('deleteAccountDeleting')}</> : <><Trash2 size={14} /> {t('deleteMyAccount')}</>}
                   </button>
                   <button
                     onClick={toggle}
@@ -611,7 +612,7 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false }) => {
 };
 
 // ── Message form ──────────────────────────────────────────────────────────────
-const DashMessageForm = ({ theme }) => {
+const DashMessageForm = ({ theme, t }) => {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -619,14 +620,14 @@ const DashMessageForm = ({ theme }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) { setError('Message cannot be empty.'); return; }
+    if (!content.trim()) { setError(t('messageEmpty')); return; }
     setIsLoading(true); setError(''); setSuccess('');
     try {
       await createMessageApi(content);
-      setSuccess('Message sent successfully!');
+      setSuccess(t('messageSuccess'));
       setContent('');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to send message.');
+      setError(err.response?.data?.detail || t('messageFailed'));
     } finally {
       setIsLoading(false);
       setTimeout(() => { setSuccess(''); setError(''); }, 4000);
@@ -640,19 +641,19 @@ const DashMessageForm = ({ theme }) => {
           <MessageSquare size={20} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
         </div>
         <div>
-          <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Send a Message</h3>
-          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Got something on your mind? Drop the site owner a message.</p>
+          <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('sendMessage')}</h3>
+          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t('messageSubtitle')}</p>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
         {error && <p className={`text-sm p-3 rounded-lg ${theme === 'dark' ? 'text-red-300 bg-red-900/30' : 'text-red-700 bg-red-50'}`}>{error}</p>}
         {success && <p className={`text-sm p-3 rounded-lg ${theme === 'dark' ? 'text-green-300 bg-green-900/30' : 'text-green-700 bg-green-50'}`}>{success}</p>}
         <div>
-          <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Your Message</label>
-          <textarea rows="4" className="input-field w-full resize-none" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Type your message here..." required />
+          <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{t('messageLabel')}</label>
+          <textarea rows="4" className="input-field w-full resize-none" value={content} onChange={(e) => setContent(e.target.value)} placeholder={t('messagePlaceholder')} required />
         </div>
         <button type="submit" disabled={isLoading} className="btn btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60">
-          {isLoading ? <><Loader2 size={18} className="animate-spin" /> Sending…</> : <><Send size={18} /> Send</>}
+          {isLoading ? <><Loader2 size={18} className="animate-spin" /> {t('messageSending')}</> : <><Send size={18} /> {t('messageSend')}</>}
         </button>
       </form>
     </div>
@@ -664,6 +665,7 @@ export default function UserDashboardPage() {
   const { currentUser, refreshUser, logout } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
+  const t = useTranslations('dashboard');
 
   const joinedDate = currentUser?.created_at
     ? new Date(currentUser.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
@@ -686,10 +688,10 @@ export default function UserDashboardPage() {
             <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-gradient-to-tr from-blue-500/10 to-emerald-400/10 translate-y-12 -translate-x-12 pointer-events-none" />
 
             <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <HeroAvatar currentUser={currentUser} theme={theme} onSuccess={refreshUser} />
+              <HeroAvatar currentUser={currentUser} theme={theme} onSuccess={refreshUser} t={t} />
               <div className="text-center sm:text-left">
                 <p className={`text-sm font-medium uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                  Welcome back
+                  {t('welcome')}
                 </p>
                 <h1 className={`text-3xl md:text-4xl font-extrabold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   {currentUser?.username}
@@ -700,7 +702,7 @@ export default function UserDashboardPage() {
                   )}
                 </h1>
                 <p className={`mt-2 text-base ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Great to see you! Here is your personal space.
+                  {t('personalSpace')}
                 </p>
               </div>
             </div>
@@ -713,21 +715,21 @@ export default function UserDashboardPage() {
           {/* Account Info + inline settings */}
           <DashCard>
             <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-              <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Account</h2>
+              <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('account')}</h2>
             </div>
             <div className="px-6 py-2">
-              <UsernameRow currentUser={currentUser} theme={theme} onSuccess={refreshUser} />
-              <EmailRow currentUser={currentUser} theme={theme} onSuccess={refreshUser} />
-              <PasswordRow currentUser={currentUser} theme={theme} />
-              <AccountTypeRow currentUser={currentUser} theme={theme} onDelete={handleDeleteSuccess} last={!joinedDate} />
-              {joinedDate && <InfoRow icon={User} label="Member since" value={joinedDate} theme={theme} last />}
+              <UsernameRow currentUser={currentUser} theme={theme} onSuccess={refreshUser} t={t} />
+              <EmailRow currentUser={currentUser} theme={theme} onSuccess={refreshUser} t={t} />
+              <PasswordRow currentUser={currentUser} theme={theme} t={t} />
+              <AccountTypeRow currentUser={currentUser} theme={theme} onDelete={handleDeleteSuccess} last={!joinedDate} t={t} />
+              {joinedDate && <InfoRow icon={User} label={t('memberSince')} value={joinedDate} theme={theme} last t={t} />}
             </div>
           </DashCard>
 
           {/* Quick Links */}
           <DashCard>
             <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-              <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Quick Links</h2>
+              <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('quickLinks')}</h2>
             </div>
             <div className="p-6 flex flex-col gap-3">
               <Link
@@ -742,8 +744,8 @@ export default function UserDashboardPage() {
                   <Home size={18} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
                 </div>
                 <div className="flex-1">
-                  <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Visit Portfolio</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>Browse the projects and CV on the homepage.</p>
+                  <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{t('visitPortfolio')}</p>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('visitPortfolioDesc')}</p>
                 </div>
                 <ExternalLink size={14} className={theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} />
               </Link>
@@ -752,7 +754,7 @@ export default function UserDashboardPage() {
 
           {/* Message Form - spans full width */}
           <DashCard className="md:col-span-2">
-            <DashMessageForm theme={theme} />
+            <DashMessageForm theme={theme} t={t} />
           </DashCard>
 
         </div>
