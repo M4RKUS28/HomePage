@@ -1,23 +1,21 @@
 /**
- * Catch-all API proxy - /api/[...path]
+ * Catch-all API proxy – /api/[...path]
  *
  * Every client-side API call (e.g. /api/users/me, /api/projects/) is
  * intercepted here.  Explicit routes like /api/auth/* take precedence
  * in Next.js App Router, so they are NOT affected.
  *
  * Flow:
- *   1. Read iron-session from the request cookie
- *   2. If session exists → sign a fresh 30 s JWT
- *   3. Forward the request to BACKEND_URL/<path> with the JWT
+ *   1. Read the NextAuth session (JWT strategy)
+ *   2. If session exists → sign a fresh 30 s internal JWT
+ *   3. Forward the request to BACKEND_URL/<path> with the internal JWT
  *   4. Stream the backend response back to the browser
  *
- * The browser NEVER sees the FastAPI JWT - only the opaque session cookie.
+ * The browser NEVER sees the FastAPI JWT – only the NextAuth session cookie.
  */
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { auth } from '../../../auth';
 import { signInternalJWT } from '../../../lib/internal-jwt';
-import { sessionOptions } from '../../../lib/session';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
@@ -43,15 +41,18 @@ async function proxyRequest(request, { params }) {
     const pathSegments = resolvedParams.path || [];
     const backendUrl = buildBackendUrl(pathSegments, new URL(request.url).searchParams);
 
-    // --- Session & JWT ---
-    const cookieStore = await cookies();
-    const session = await getIronSession(cookieStore, sessionOptions);
+    // --- NextAuth session → internal JWT ---
+    const session = await auth();
 
     const headers = new Headers();
 
     // Sign a fresh short-lived JWT if the user is logged in
-    if (session.userId) {
-      const token = signInternalJWT(session);
+    if (session?.user?.id) {
+      const token = signInternalJWT({
+        userId: session.user.id,
+        username: session.user.username,
+        isAdmin: session.user.isAdmin,
+      });
       headers.set('Authorization', `Bearer ${token}`);
     }
 

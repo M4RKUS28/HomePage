@@ -3,7 +3,7 @@
  *
  * All client-side requests go to /api/* which is handled by the NextJS
  * catch-all API route ([...path]/route.js).  The proxy reads the
- * encrypted iron-session cookie, signs a short-lived JWT, and forwards
+ * NextAuth session cookie, signs a short-lived internal JWT, and forwards
  * the request to FastAPI.
  *
  * No Bearer token is needed on the client side.
@@ -26,11 +26,10 @@ apiClient.interceptors.response.use(
       const url = error.config?.url || '';
 
       // Silent auth-check endpoints — never redirect, caller handles 401
-      const isSilentCheck = url.includes('/users/me') || url.includes('/auth/me');
-      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
+      const isSilentCheck = url.includes('/users/me') || url.includes('/auth/');
       const isAuthPage = ['/login', '/register'].includes(window.location.pathname);
 
-      if (!isSilentCheck && !isAuthEndpoint && !isAuthPage) {
+      if (!isSilentCheck && !isAuthPage) {
         window.location.href = '/login';
       }
     }

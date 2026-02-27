@@ -1,24 +1,28 @@
 /**
  * Server-side API utilities for SSR (React Server Components).
  *
- * Reads the iron-session, signs a fresh short-lived JWT, and calls
+ * Reads the NextAuth session, signs a fresh short-lived JWT, and calls
  * FastAPI directly (server → server, no browser involved).
  */
-import { getSession } from './session';
+import { auth } from '../auth';
 import { signInternalJWT } from './internal-jwt';
 
 // Server-side always talks directly to the backend container
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
 /**
- * Build Authorization header from the current iron-session.
+ * Build Authorization header from the current NextAuth session.
  * Returns null if no session exists.
  */
 async function getSSRAuthHeaders() {
   try {
-    const session = await getSession();
-    if (!session.userId) return null;
-    const token = signInternalJWT(session);
+    const session = await auth();
+    if (!session?.user?.id) return null;
+    const token = signInternalJWT({
+      userId: session.user.id,
+      username: session.user.username,
+      isAdmin: session.user.isAdmin,
+    });
     return { Authorization: `Bearer ${token}` };
   } catch {
     return null;

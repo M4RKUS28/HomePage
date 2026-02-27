@@ -1,14 +1,13 @@
 /**
  * POST /api/auth/register
  *
- * Receives { username, email, password } from the browser, forwards them
- * to the FastAPI internal endpoint, and creates an **encrypted iron-session**
- * cookie.  The browser never sees a JWT.
+ * Receives { username, email, password } from the browser and forwards
+ * them to the FastAPI internal endpoint.  Returns { user } on success.
  *
- * Returns: { user }
+ * Session creation is handled by NextAuth — the client calls signIn()
+ * directly after a successful registration.
  */
 import { NextResponse } from 'next/server';
-import { getSession } from '../../../../lib/session';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 const INTERNAL_KEY = process.env.AUTH_INTERNAL_SHARED_SECRET || '';
@@ -41,19 +40,7 @@ export async function POST(request) {
       return NextResponse.json(data, { status: backendRes.status });
     }
 
-    // --- Create iron-session with user data ---
-    const session = await getSession();
-    const user = data.user;
-
-    session.userId = user.id;
-    session.username = user.username;
-    session.email = user.email;
-    session.isAdmin = user.is_admin;
-    session.isActive = user.is_active;
-    session.avatarUrl = user.profile_image_url || null;
-    await session.save();
-
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: data.user });
   } catch (error) {
     console.error('[/api/auth/register] Error:', error);
     return NextResponse.json(

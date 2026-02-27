@@ -1,16 +1,165 @@
-import { useContext } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
-
 /**
- * Hook to access the auth context.
- * Must be used within an AuthProvider.
+ * Auth hook — thin wrapper around NextAuth.js v5.
+ *
+ * Provides the same API surface (`currentUser`, `login`, `register`,
+ * `logout`, `refreshUser`, `loadingAuth`, `authError`, `clearAuthError`)
+ * that consumer components expect, but delegates all heavy lifting to
+ * NextAuth's `useSession`, `signIn`, and `signOut`.
  */
+'use client';
+
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { useState, useCallback } from 'react';
+import { parseApiError } from '../lib/error-utils';
+import apiClient from '../api/client';
+
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const { data: session, status, update } = useSession();
+  const [authError, setAuthError] = useState(null);
 
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  const clearAuthError = useCallback(() => setAuthError(null), []);
 
-  return context;
+  // ---------------------------------------------------------------------------
+  // Map NextAuth session → legacy `currentUser` shape
+  // ---------------------------------------------------------------------------
+  const currentUser =
+    status === 'authenticated' && session?.user
+      ? {
+          id: session.user.id,
+          username: session.user.username,
+          email: session.user.email,
+          is_admin: session.user.isAdmin,
+          is_active: session.user.isActive,
+          profile_image_url: session.user.avatarUrl,
+          created_at: session.user.createdAt,
+        }
+      : null;
+
+  const loadingAuth = status === 'loading';
+
+  // ---------------------------------------------------------------------------
+  // Login — calls NextAuth signIn with credentials
+  // ---------------------------------------------------------------------------
+  const login = async (username, password) => {
+    try {
+      setAuthError(null);
+
+      const result = await signIn('credentials', {
+        username,
+        password,
+        redirect: false,
+      });
+
+      if (!result?.ok) {
+        const message = 'Login failed. Please check your credentials.';
+        setAuthError(message);
+        throw new Error(message);
+      }
+
+      // Fetch the freshly-created session to return user data
+      const res = await fetch('/api/auth/session');
+      const sess = await res.json();
+
+      return sess?.user
+        ? {
+            id: sess.user.id,
+            username: sess.user.username,
+            email: sess.user.email,
+            is_admin: sess.user.isAdmin,
+            is_active: sess.user.isActive,
+            profile_image_url: sess.user.avatarUrl,
+          }
+        : null;
+    } catch (err) {
+      if (!authError) {
+        const message = parseApiError(err, 'Login failed. Please check your credentials.');
+        setAuthError(message);
+      }
+      throw err;
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Register — custom route + NextAuth signIn
+  // ---------------------------------------------------------------------------
+  const register = async (username, email, password) => {
+    try {
+      setAuthError(null);
+
+      // 1. Create the account via our custom register endpoint
+      await apiClient.post('/auth/register', { username, email, password });
+
+      // 2. Immediately sign in so a session is created
+      const result = await signIn('credentials', {
+        username,
+        password,
+        redirect: false,
+      });
+
+      if (!result?.ok) {
+        throw new Error('Registration succeeded but sign-in failed.');
+      }
+
+      // 3. Fetch session to return user data
+      const res = await fetch('/api/auth/session');
+      const sess = await res.json();
+
+      return sess?.user
+        ? {
+            id: sess.user.id,
+            username: sess.user.username,
+            email: sess.user.email,
+            is_admin: sess.user.isAdmin,
+          }
+        : null;
+    } catch (err) {
+      const message = parseApiError(err, 'Registration failed. Please try again.');
+      setAuthError(message);
+      throw err;
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Logout — destroys the NextAuth session
+  // ---------------------------------------------------------------------------
+  const logout = async () => {
+    try {
+      await signOut({ redirect: false });
+    } catch {
+      /* best-effort */
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Refresh — fetches fresh user data from backend, updates session JWT
+  // ---------------------------------------------------------------------------
+  const refreshUser = useCallback(async () => {
+    try {
+      const { data: freshUser } = await apiClient.get('/users/me');
+      await update({
+        id: freshUser.id,
+        username: freshUser.username,
+        email: freshUser.email,
+        isAdmin: freshUser.is_admin,
+        isActive: freshUser.is_active,
+        avatarUrl: freshUser.profile_image_url || null,
+        createdAt: freshUser.created_at || null,
+      });
+      return freshUser;
+    } catch (err) {
+      console.error('refreshUser failed:', err);
+    }
+  }, [update]);
+
+  return {
+    currentUser,
+    loadingAuth,
+    login,
+    register,
+    logout,
+    authError,
+    clearAuthError,
+    loadUser: refreshUser,
+    refreshUser,
+  };
 };
