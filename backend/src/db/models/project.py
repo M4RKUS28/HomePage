@@ -27,7 +27,7 @@ class Project(Base):
     # MinIO object name (e.g. "projects/7/cover.webp") - NO base64 blobs
     image_object_name: Mapped[str | None] = mapped_column(String(512), nullable=True)
     status: Mapped[ProjectStatus] = mapped_column(
-        SQLEnum(ProjectStatus, name="project_status"),
+        SQLEnum(ProjectStatus, name="project_status", values_callable=lambda e: [x.value for x in e]),
         default=ProjectStatus.UNKNOWN,
     )
     last_checked: Mapped[str | None] = mapped_column(

@@ -50,26 +50,25 @@ export const useAuth = () => {
         redirect: false,
       });
 
-      if (!result?.ok) {
+      // Auth.js v5 returns the raw Response (HTTP 200 even on auth failure).
+      // We must verify a session was actually created.
+      const res = await fetch('/api/auth/session');
+      const sess = await res.json();
+
+      if (!sess?.user) {
         const message = 'Login failed. Please check your credentials.';
         setAuthError(message);
         throw new Error(message);
       }
 
-      // Fetch the freshly-created session to return user data
-      const res = await fetch('/api/auth/session');
-      const sess = await res.json();
-
-      return sess?.user
-        ? {
-            id: sess.user.id,
-            username: sess.user.username,
-            email: sess.user.email,
-            is_admin: sess.user.isAdmin,
-            is_active: sess.user.isActive,
-            profile_image_url: sess.user.avatarUrl,
-          }
-        : null;
+      return {
+        id: sess.user.id,
+        username: sess.user.username,
+        email: sess.user.email,
+        is_admin: sess.user.isAdmin,
+        is_active: sess.user.isActive,
+        profile_image_url: sess.user.avatarUrl,
+      };
     } catch (err) {
       if (!authError) {
         const message = parseApiError(err, 'Login failed. Please check your credentials.');
@@ -90,28 +89,26 @@ export const useAuth = () => {
       await apiClient.post('/auth/register', { username, email, password });
 
       // 2. Immediately sign in so a session is created
-      const result = await signIn('credentials', {
+      await signIn('credentials', {
         username,
         password,
         redirect: false,
       });
 
-      if (!result?.ok) {
-        throw new Error('Registration succeeded but sign-in failed.');
-      }
-
-      // 3. Fetch session to return user data
+      // 3. Verify session was created (Auth.js v5 returns 200 even on failure)
       const res = await fetch('/api/auth/session');
       const sess = await res.json();
 
-      return sess?.user
-        ? {
-            id: sess.user.id,
-            username: sess.user.username,
-            email: sess.user.email,
-            is_admin: sess.user.isAdmin,
-          }
-        : null;
+      if (!sess?.user) {
+        throw new Error('Registration succeeded but sign-in failed.');
+      }
+
+      return {
+        id: sess.user.id,
+        username: sess.user.username,
+        email: sess.user.email,
+        is_admin: sess.user.isAdmin,
+      };
     } catch (err) {
       const message = parseApiError(err, 'Registration failed. Please try again.');
       setAuthError(message);

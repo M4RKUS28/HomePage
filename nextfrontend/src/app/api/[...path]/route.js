@@ -25,11 +25,18 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
 /**
  * Build the backend URL from the catch-all path segments + query string.
+ *
+ * Next.js [...path] strips trailing slashes (e.g. /api/cv/ → ['cv']),
+ * but the backend has `redirect_slashes=False`, so we must preserve
+ * the original trailing slash from the request URL.
  */
-function buildBackendUrl(pathSegments, searchParams) {
+function buildBackendUrl(pathSegments, requestUrl) {
   const path = pathSegments.join('/');
-  const qs = searchParams.toString();
-  return `${BACKEND_URL}/${path}${qs ? `?${qs}` : ''}`;
+  const url = new URL(requestUrl);
+  // Preserve trailing slash: /api/cv/ → /cv/
+  const trailingSlash = url.pathname.endsWith('/') ? '/' : '';
+  const qs = url.searchParams.toString();
+  return `${BACKEND_URL}/${path}${trailingSlash}${qs ? `?${qs}` : ''}`;
 }
 
 /**
@@ -39,7 +46,7 @@ async function proxyRequest(request, { params }) {
   try {
     const resolvedParams = await params;
     const pathSegments = resolvedParams.path || [];
-    const backendUrl = buildBackendUrl(pathSegments, new URL(request.url).searchParams);
+    const backendUrl = buildBackendUrl(pathSegments, request.url);
 
     // --- NextAuth session → internal JWT ---
     const session = await auth();

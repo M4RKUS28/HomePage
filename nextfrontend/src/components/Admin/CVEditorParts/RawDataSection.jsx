@@ -11,7 +11,7 @@ const RawDataSection = ({ rawDataText, onChange, onApply, onDownload }) => (
           onClick={onApply}
           className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
         >
-          <Save size={14} className="mr-1" /> Apply Changes
+          <Save size={14} className="mr-1" /> Apply & Save
         </button>
         <button
           type="button"

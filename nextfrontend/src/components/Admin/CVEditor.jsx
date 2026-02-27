@@ -375,7 +375,7 @@ const CVEditor = () => {
     });
   };
 
-  const applyRawDataChanges = () => {
+  const applyRawDataChanges = async () => {
     try {
       const trimmed = rawDataText.trim();
       if (!trimmed) {
@@ -384,8 +384,20 @@ const CVEditor = () => {
       }
 
       const parsed = JSON.parse(trimmed);
-      setNormalizedData(parsed);
-      showToast({ type: 'success', message: 'Raw data applied successfully' });
+      const normalized = normalizeCVData(parsed);
+      setNormalizedData(normalized);
+
+      // Save immediately so the user doesn't have to click "Save" separately
+      setSaving(true);
+      try {
+        await updateCVDataApi(normalized);
+        showToast({ type: 'success', message: 'Raw data applied and saved successfully' });
+      } catch (saveErr) {
+        console.error('Error saving CV data:', saveErr);
+        showToast({ type: 'error', message: 'Changes applied locally but failed to save. Please try "Save Changes".' });
+      } finally {
+        setSaving(false);
+      }
     } catch (err) {
       let errorMessage = 'Invalid JSON format';
       if (err.message.includes('Unexpected token')) {
