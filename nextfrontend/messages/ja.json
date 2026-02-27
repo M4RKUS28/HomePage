@@ -179,7 +179,8 @@
       "projects": "プロジェクト",
       "messages": "メッセージ",
       "users": "ユーザー",
-      "cv": "履歴書エディター"
+      "cv": "履歴書エディター",
+      "access": "アクセスログ"
     },
     "projects": {
       "title": "プロジェクト管理",
@@ -239,6 +240,24 @@
       "personalInfo": "個人情報",
       "moveUp": "上へ移動",
       "moveDown": "下へ移動"
+    },
+    "access": {
+      "title": "アクセスログ",
+      "totalAccesses": "総アクセス数",
+      "uniqueIPs": "ユニークIP",
+      "last24h": "過去24時間",
+      "topCountry": "トップ国",
+      "mapView": "マップ",
+      "listView": "リスト",
+      "refresh": "更新",
+      "noLogs": "アクセスログはまだありません。",
+      "loadError": "アクセスログの読み込みに失敗しました。",
+      "allTime": "全期間",
+      "lastHour": "過去1時間",
+      "last6Hours": "過去6時間",
+      "last24Hours": "過去24時間",
+      "last7Days": "過去7日間",
+      "last30Days": "過去30日間"
     }
   },
   "notFound": {

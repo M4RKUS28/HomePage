@@ -2,7 +2,7 @@
 
 import enum
 
-from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Enum as SQLEnum, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -34,6 +34,9 @@ class Project(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=True
     )
     language: Mapped[str] = mapped_column(String(10), default="en", server_default="en")
+    # Translation tracking
+    has_changes: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    translation_group_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     position: Mapped[int] = mapped_column(Integer, default=0)
     owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     # Optional URLs for health checking (all must be UP for project to be UP)

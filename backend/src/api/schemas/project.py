@@ -19,6 +19,7 @@ class ProjectCreate(BaseModel):
     position: Optional[int] = 0
     language: str = Field(default="en", max_length=10)
     health_check_urls: Optional[List[str]] = []
+    translation_group_id: Optional[int] = None
 
 
 class ProjectUpdate(BaseModel):
@@ -47,6 +48,8 @@ class ProjectRead(BaseModel):
     last_checked: Optional[datetime] = None
     position: int = 0
     language: str = "en"
+    has_changes: bool = False
+    translation_group_id: Optional[int] = None
     owner_id: int
     health_check_urls: Optional[List[str]] = []
 
@@ -63,6 +66,8 @@ class ProjectListItem(BaseModel):
     last_checked: Optional[datetime] = None
     position: int = 0
     language: str = "en"
+    has_changes: bool = False
+    translation_group_id: Optional[int] = None
     owner_id: int
     health_check_urls: Optional[List[str]] = []
 

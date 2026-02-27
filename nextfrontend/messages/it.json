@@ -179,7 +179,8 @@
       "projects": "Progetti",
       "messages": "Messaggi",
       "users": "Utenti",
-      "cv": "Editor CV"
+      "cv": "Editor CV",
+      "access": "Registro accessi"
     },
     "projects": {
       "title": "Gestione progetti",
@@ -239,6 +240,24 @@
       "personalInfo": "Informazioni personali",
       "moveUp": "Sposta su",
       "moveDown": "Sposta giù"
+    },
+    "access": {
+      "title": "Registro accessi",
+      "totalAccesses": "Accessi totali",
+      "uniqueIPs": "IP unici",
+      "last24h": "Ultime 24h",
+      "topCountry": "Paese principale",
+      "mapView": "Mappa",
+      "listView": "Lista",
+      "refresh": "Aggiorna",
+      "noLogs": "Nessun registro di accesso.",
+      "loadError": "Errore nel caricamento dei registri di accesso.",
+      "allTime": "Tutto il tempo",
+      "lastHour": "Ultima ora",
+      "last6Hours": "Ultime 6 ore",
+      "last24Hours": "Ultime 24 ore",
+      "last7Days": "Ultimi 7 giorni",
+      "last30Days": "Ultimi 30 giorni"
     }
   },
   "notFound": {

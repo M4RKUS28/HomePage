@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { createProjectApi, updateProjectApi, uploadProjectImageApi } from '../../api/projects';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { parseApiError } from '../../lib/error-utils';
 import Spinner from '../UI/Spinner';
 import ImageUpload from '../UI/ImageUpload';
@@ -9,6 +10,7 @@ import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
 
 const ProjectForm = ({ project, onFormSubmit }) => {
   const t = useTranslations('admin.projects');
+  const { locale } = useLanguage();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -83,6 +85,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       const submitData = {
         ...formData,
         health_check_urls: healthCheckUrls.filter(u => u && u.trim() !== ''),
+        language: locale,
       };
 
       let savedProject;
@@ -115,7 +118,12 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       onFormSubmit(true);
     } catch (err) {
       console.error('ProjectForm Error:', err);
-      setApiError(parseApiError(err, 'An error occurred. Please try again.'));
+      // Show specific conflict error from 409
+      if (err.response?.status === 409) {
+        setApiError(err.response.data?.detail || 'Translation conflict. Please wait for automatic translation to complete.');
+      } else {
+        setApiError(parseApiError(err, 'An error occurred. Please try again.'));
+      }
     } finally {
       setIsLoading(false);
     }

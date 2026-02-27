@@ -28,6 +28,8 @@ def _project_to_read(project) -> dict:
         "last_checked": project.last_checked,
         "position": project.position,
         "language": project.language,
+        "has_changes": project.has_changes,
+        "translation_group_id": project.translation_group_id,
         "owner_id": project.owner_id,
         "health_check_urls": project.health_check_urls or [],
     }

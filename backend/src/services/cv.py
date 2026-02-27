@@ -5,6 +5,7 @@ CV service - business logic for curriculum vitae management.
 import logging
 from typing import Optional
 
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.schemas.cv import CVData
@@ -28,8 +29,28 @@ async def update_cv_data(
     owner_id: int,
     language: str = "en",
 ) -> CVData:
-    """Create or update the CV record for a given language."""
-    cv = await cv_crud.upsert_cv(db, data=data.model_dump(), owner_id=owner_id, language=language)
+    """Create or update the CV record for a given language.
+
+    Raises HTTP 409 if another language has pending (untranslated) changes.
+    """
+    # Conflict check: reject if another language has pending changes
+    has_conflict = await cv_crud.check_pending_changes_other_language(
+        db, exclude_language=language
+    )
+    if has_conflict:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Cannot save CV for '{language}': another language has pending "
+                "changes that must be translated first. Please wait for the "
+                "automatic translation to complete."
+            ),
+        )
+
+    cv = await cv_crud.upsert_cv(
+        db, data=data.model_dump(), owner_id=owner_id,
+        language=language, has_changes=True,
+    )
     return CVData.model_validate(cv.data)
 
 

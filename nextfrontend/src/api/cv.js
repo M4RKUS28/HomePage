@@ -7,13 +7,15 @@
 import apiClient from './client';
 import { uploadFileViaPresigned } from './storage';
 
-export const getCVDataApi = async () => {
-  const { data } = await apiClient.get('/cv/');
+export const getCVDataApi = async (language) => {
+  const params = language ? { language } : {};
+  const { data } = await apiClient.get('/cv/', { params });
   return data;
 };
 
-export const updateCVDataApi = async (cvData) => {
-  const { data } = await apiClient.put('/cv/', cvData);
+export const updateCVDataApi = async (cvData, language) => {
+  const params = language ? { language } : {};
+  const { data } = await apiClient.put('/cv/', cvData, { params });
   return data;
 };
 

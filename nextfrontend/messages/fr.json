@@ -179,7 +179,8 @@
       "projects": "Projets",
       "messages": "Messages",
       "users": "Utilisateurs",
-      "cv": "Éditeur de CV"
+      "cv": "Éditeur de CV",
+      "access": "Journal d'accès"
     },
     "projects": {
       "title": "Gestion des projets",
@@ -239,6 +240,24 @@
       "personalInfo": "Informations personnelles",
       "moveUp": "Déplacer vers le haut",
       "moveDown": "Déplacer vers le bas"
+    },
+    "access": {
+      "title": "Journal d'accès",
+      "totalAccesses": "Accès totaux",
+      "uniqueIPs": "IPs uniques",
+      "last24h": "Dernières 24h",
+      "topCountry": "Pays principal",
+      "mapView": "Carte",
+      "listView": "Liste",
+      "refresh": "Actualiser",
+      "noLogs": "Aucun journal d'accès pour le moment.",
+      "loadError": "Échec du chargement des journaux d'accès.",
+      "allTime": "Tout le temps",
+      "lastHour": "Dernière heure",
+      "last6Hours": "Dernières 6 heures",
+      "last24Hours": "Dernières 24 heures",
+      "last7Days": "7 derniers jours",
+      "last30Days": "30 derniers jours"
     }
   },
   "notFound": {

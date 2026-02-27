@@ -44,7 +44,7 @@ export default async function LocaleLayout({ children, params }) {
   setRequestLocale(locale);
 
   // Fetch CV data for header text and footer data
-  const cvData = await fetchCVDataSSR();
+  const cvData = await fetchCVDataSSR(locale);
   const headerText = cvData?.personalInfo?.headerText || 'Portfolio';
   const socialLinks = cvData?.personalInfo?.socialLinks || [];
   const ownerName = cvData?.personalInfo?.name || 'Portfolio';

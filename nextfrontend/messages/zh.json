@@ -179,7 +179,8 @@
       "projects": "项目",
       "messages": "消息",
       "users": "用户",
-      "cv": "简历编辑器"
+      "cv": "简历编辑器",
+      "access": "访问日志"
     },
     "projects": {
       "title": "项目管理",
@@ -239,6 +240,24 @@
       "personalInfo": "个人信息",
       "moveUp": "上移",
       "moveDown": "下移"
+    },
+    "access": {
+      "title": "访问日志",
+      "totalAccesses": "总访问量",
+      "uniqueIPs": "唯一IP",
+      "last24h": "最近24小时",
+      "topCountry": "访问最多的国家",
+      "mapView": "地图",
+      "listView": "列表",
+      "refresh": "刷新",
+      "noLogs": "暂无访问日志。",
+      "loadError": "加载访问日志失败。",
+      "allTime": "所有时间",
+      "lastHour": "最近1小时",
+      "last6Hours": "最近6小时",
+      "last24Hours": "最近24小时",
+      "last7Days": "最近7天",
+      "last30Days": "最近30天"
     }
   },
   "notFound": {

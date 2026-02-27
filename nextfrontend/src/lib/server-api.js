@@ -29,14 +29,14 @@ async function getSSRAuthHeaders() {
   }
 }
 
-export const fetchCVDataSSR = async () => {
+export const fetchCVDataSSR = async (language = 'en') => {
   try {
     const authHeaders = await getSSRAuthHeaders();
 
     const headers = { 'Content-Type': 'application/json' };
     if (authHeaders) Object.assign(headers, authHeaders);
 
-    const response = await fetch(`${BACKEND_URL}/cv/`, {
+    const response = await fetch(`${BACKEND_URL}/cv/?language=${encodeURIComponent(language)}`, {
       headers,
       cache: 'no-store',
     });

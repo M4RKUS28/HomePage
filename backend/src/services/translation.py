@@ -1,0 +1,273 @@
+"""
+Translation service – automatic translation of CV and Project content
+using Google Gemini API.
+
+Called periodically by the APScheduler job.  When a CV or project is
+saved by the admin, ``has_changes`` is set to True.  This routine
+picks up those records, translates them into every other supported
+language, and resets the flag.
+"""
+
+import json
+import logging
+from typing import Dict, List, Sequence
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..core.config import get_settings
+from ..db.crud import cv as cv_crud, project as project_crud
+from ..db.session import AsyncSessionLocal
+
+logger = logging.getLogger(__name__)
+
+settings = get_settings()
+
+# Human-readable names for the system prompt
+_LANG_NAMES: Dict[str, str] = {
+    "en": "English",
+    "de": "German",
+}
+
+
+# ---------------------------------------------------------------------------
+# Gemini helpers
+# ---------------------------------------------------------------------------
+
+def _get_client():
+    """Lazy-initialise the google-genai client."""
+    from google import genai  # noqa: local import to avoid startup cost
+
+    return genai.Client(api_key=settings.gemini.api_key)
+
+
+async def translate_cv_data(
+    source_data: dict,
+    source_lang: str,
+    target_lang: str,
+) -> dict:
+    """Translate the full CV JSON blob from *source_lang* → *target_lang*."""
+    from google.genai import types  # noqa
+
+    client = _get_client()
+    src = _LANG_NAMES.get(source_lang, source_lang)
+    tgt = _LANG_NAMES.get(target_lang, target_lang)
+
+    system_prompt = (
+        f"You are a professional CV/resume translator.\n"
+        f"Translate the following CV data from {src} to {tgt}.\n\n"
+        "Rules:\n"
+        "- Preserve the exact JSON structure and all keys (keys stay in English).\n"
+        "- Translate text content: summary, role/position descriptions, degree names, "
+        "detail texts, headerText, title (job title), award details, volunteering details.\n"
+        "- DO NOT translate: company names, institution names, organisation names, "
+        "project names, people's names.\n"
+        "- DO NOT translate: dates, time periods, URLs, email addresses, "
+        "platform identifiers (github, linkedin, …).\n"
+        "- DO NOT translate: skill names, programming languages, technology names.\n"
+        "- DO NOT translate: image URLs, logo URLs, any URL fields.\n"
+        "- Return ONLY valid JSON — no markdown fences, no explanation."
+    )
+
+    response = client.models.generate_content(
+        model=settings.gemini.model,
+        contents=json.dumps(source_data, ensure_ascii=False),
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            response_mime_type="application/json",
+            temperature=0.3,
+        ),
+    )
+
+    return json.loads(response.text)
+
+
+async def translate_projects_batch(
+    projects: List[dict],
+    source_lang: str,
+    target_lang: str,
+) -> List[dict]:
+    """Translate project *titles* and *descriptions* in one Gemini call."""
+    from google.genai import types  # noqa
+
+    client = _get_client()
+    src = _LANG_NAMES.get(source_lang, source_lang)
+    tgt = _LANG_NAMES.get(target_lang, target_lang)
+
+    items = [
+        {
+            "id": p["id"],
+            "title": p["title"],
+            "description": p["description"] or "",
+        }
+        for p in projects
+    ]
+
+    system_prompt = (
+        f"You are a professional translator for software project descriptions.\n"
+        f"Translate the following project data from {src} to {tgt}.\n\n"
+        "Rules:\n"
+        "- Translate the \"title\" and \"description\" fields.\n"
+        "- Keep \"id\" values unchanged.\n"
+        "- Return ONLY a valid JSON array — no markdown fences, no explanation."
+    )
+
+    response = client.models.generate_content(
+        model=settings.gemini.model,
+        contents=json.dumps(items, ensure_ascii=False),
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            response_mime_type="application/json",
+            temperature=0.3,
+        ),
+    )
+
+    return json.loads(response.text)
+
+
+# ---------------------------------------------------------------------------
+# Main scheduler routine
+# ---------------------------------------------------------------------------
+
+async def run_translation_sync() -> None:
+    """Check for pending changes and translate them.
+
+    Called by APScheduler every N minutes (see ``lifespan.py``).
+    """
+    if not settings.gemini.api_key:
+        return
+
+    supported = settings.translation.supported_languages
+    logger.info("[translation] Starting translation sync …")
+
+    async with AsyncSessionLocal() as db:
+        # ── CV translation ──────────────────────────────────────────
+        changed_cvs = await cv_crud.get_cvs_with_changes(db)
+        for cv in changed_cvs:
+            source_lang = cv.language
+            logger.info("[translation] Translating CV from '%s'", source_lang)
+
+            for target_lang in supported:
+                if target_lang == source_lang:
+                    continue
+                try:
+                    translated = await translate_cv_data(
+                        cv.data, source_lang, target_lang
+                    )
+                    await cv_crud.upsert_cv(
+                        db,
+                        data=translated,
+                        owner_id=cv.owner_id,
+                        language=target_lang,
+                        has_changes=False,
+                    )
+                    logger.info(
+                        "[translation] CV translated %s → %s", source_lang, target_lang
+                    )
+                except Exception as exc:
+                    logger.error(
+                        "[translation] CV translation failed %s → %s: %s",
+                        source_lang,
+                        target_lang,
+                        exc,
+                    )
+
+            # Reset flag on the source record
+            cv.has_changes = False
+            await db.commit()
+
+        # ── Project translation ─────────────────────────────────────
+        changed_projects: Sequence = await project_crud.get_projects_with_changes(db)
+        if not changed_projects:
+            if not changed_cvs:
+                logger.info("[translation] No pending translations.")
+            return
+
+        # Group by source language so we batch per target language
+        by_lang: Dict[str, list] = {}
+        for proj in changed_projects:
+            by_lang.setdefault(proj.language, []).append(proj)
+
+        for source_lang, projects in by_lang.items():
+            for target_lang in supported:
+                if target_lang == source_lang:
+                    continue
+                try:
+                    batch = [
+                        {
+                            "id": p.id,
+                            "title": p.title,
+                            "description": p.description,
+                        }
+                        for p in projects
+                    ]
+                    translated_items = await translate_projects_batch(
+                        batch, source_lang, target_lang
+                    )
+                    translated_map = {item["id"]: item for item in translated_items}
+
+                    for source_proj in projects:
+                        trans = translated_map.get(source_proj.id, {})
+                        if not trans:
+                            continue
+
+                        # Find (or create) the matching project in the target language
+                        target_proj = (
+                            await project_crud.get_project_by_group_and_language(
+                                db,
+                                source_proj.translation_group_id,
+                                target_lang,
+                            )
+                        )
+
+                        if target_proj:
+                            target_proj.title = trans.get("title", source_proj.title)
+                            target_proj.description = trans.get(
+                                "description", source_proj.description
+                            )
+                            target_proj.link = source_proj.link
+                            target_proj.image_object_name = (
+                                source_proj.image_object_name
+                            )
+                            target_proj.position = source_proj.position
+                            target_proj.health_check_urls = (
+                                source_proj.health_check_urls or []
+                            )
+                            target_proj.has_changes = False
+                        else:
+                            await project_crud.create_project(
+                                db,
+                                title=trans.get("title", source_proj.title),
+                                description=trans.get(
+                                    "description", source_proj.description
+                                ),
+                                link=source_proj.link,
+                                image_object_name=source_proj.image_object_name,
+                                position=source_proj.position,
+                                owner_id=source_proj.owner_id,
+                                language=target_lang,
+                                health_check_urls=source_proj.health_check_urls
+                                or [],
+                                translation_group_id=source_proj.translation_group_id,
+                                has_changes=False,
+                            )
+
+                    logger.info(
+                        "[translation] %d projects translated %s → %s",
+                        len(projects),
+                        source_lang,
+                        target_lang,
+                    )
+                except Exception as exc:
+                    logger.error(
+                        "[translation] Project translation failed %s → %s: %s",
+                        source_lang,
+                        target_lang,
+                        exc,
+                    )
+
+            # Reset flags for source projects in this language batch
+            for proj in projects:
+                proj.has_changes = False
+            await db.commit()
+
+    logger.info("[translation] Translation sync complete.")

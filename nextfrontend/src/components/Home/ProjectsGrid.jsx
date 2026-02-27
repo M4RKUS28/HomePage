@@ -3,15 +3,16 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import ProjectCard from './ProjectCard';
 import { getProjectsApi, getProjectApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
-import { useAuth } from '../../hooks/useAuth';
-import Spinner from '../UI/Spinner';
+import { useAuth } from '../../hooks/useAuth';import { useLanguage } from '../../contexts/LanguageContext';import Spinner from '../UI/Spinner';
 import ProjectForm from '../Admin/ProjectForm';
 import Modal from '../UI/Modal';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, FolderOpen } from 'lucide-react';
+import { useTheme } from '../../hooks/useTheme';
 
 
 const ProjectsGrid = () => {
   const t = useTranslations('projects');
+  const { theme } = useTheme();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,7 +46,7 @@ const ProjectsGrid = () => {
 
   const fetchProjectsData = useCallback(async () => {
     try {
-      const data = await getProjectsApi();
+      const data = await getProjectsApi(locale);
       setProjects(data);
       setError(null);
       data.forEach(p => fetchImageForProject(p));
@@ -59,7 +60,7 @@ const ProjectsGrid = () => {
 
   useEffect(() => {
     fetchProjectsData();
-    const intervalId = setInterval(fetchProjectsData, 60000); // Every minute
+    const intervalId = setInterval(fetchProjectsData, 60000);
     return () => clearInterval(intervalId);
   }, [fetchProjectsData]);
 
@@ -76,29 +77,24 @@ const ProjectsGrid = () => {
   
   const handleCheckStatus = async (projectId) => {
     try {
-      // Optimistic update to "checking"
       setProjects(prevProjects => 
         prevProjects.map(p => p.id === projectId ? { ...p, status: 'checking' } : p)
       );
       const updatedProject = await checkProjectStatusApi(projectId);
-      // Update with actual status from API response
       setProjects(prevProjects => 
         prevProjects.map(p => p.id === updatedProject.id ? updatedProject : p)
       );
     } catch (err) {
       alert("Failed to trigger status check: " + (err.response?.data?.detail || err.message));
-      // Revert optimistic update on error or refetch
       fetchProjectsData();
     }
   };
 
   const handleEdit = async (project) => {
     try {
-      // Fetch full detail (includes image_url) for the edit form
       const detail = await getProjectApi(project.id);
       setEditingProject(detail);
     } catch {
-      // Fall back to list data if detail fetch fails
       setEditingProject(project);
     }
     setShowModal(true);
@@ -114,13 +110,12 @@ const ProjectsGrid = () => {
     });
     
     const currentIndex = sortedProjects.findIndex(p => p.id === projectId);
-    if (currentIndex <= 0) return; // Can't move up if it's already first
+    if (currentIndex <= 0) return;
     
     try {
       const currentProject = sortedProjects[currentIndex];
       const previousProject = sortedProjects[currentIndex - 1];
       
-      // Swap positions
       const updatedCurrentProject = { 
         ...currentProject, 
         position: previousProject.position !== undefined ? previousProject.position : currentIndex - 1 
@@ -130,13 +125,11 @@ const ProjectsGrid = () => {
         position: currentProject.position !== undefined ? currentProject.position : currentIndex 
       };
       
-      // Update both projects in the API
       await Promise.all([
         updateProjectApi(updatedCurrentProject.id, updatedCurrentProject),
         updateProjectApi(updatedPreviousProject.id, updatedPreviousProject)
       ]);
       
-      // Update local state
       setProjects(prev => prev.map(p => {
         if (p.id === updatedCurrentProject.id) return updatedCurrentProject;
         if (p.id === updatedPreviousProject.id) return updatedPreviousProject;
@@ -156,13 +149,12 @@ const ProjectsGrid = () => {
     });
     
     const currentIndex = sortedProjects.findIndex(p => p.id === projectId);
-    if (currentIndex < 0 || currentIndex >= sortedProjects.length - 1) return; // Can't move down if it's already last
+    if (currentIndex < 0 || currentIndex >= sortedProjects.length - 1) return;
     
     try {
       const currentProject = sortedProjects[currentIndex];
       const nextProject = sortedProjects[currentIndex + 1];
       
-      // Swap positions
       const updatedCurrentProject = { 
         ...currentProject, 
         position: nextProject.position !== undefined ? nextProject.position : currentIndex + 1 
@@ -172,13 +164,11 @@ const ProjectsGrid = () => {
         position: currentProject.position !== undefined ? currentProject.position : currentIndex 
       };
       
-      // Update both projects in the API
       await Promise.all([
         updateProjectApi(updatedCurrentProject.id, updatedCurrentProject),
         updateProjectApi(updatedNextProject.id, updatedNextProject)
       ]);
       
-      // Update local state
       setProjects(prev => prev.map(p => {
         if (p.id === updatedCurrentProject.id) return updatedCurrentProject;
         if (p.id === updatedNextProject.id) return updatedNextProject;
@@ -192,7 +182,6 @@ const ProjectsGrid = () => {
   const handleModalClose = (refresh = false) => { 
     setShowModal(false);
     if (editingProject && refresh) {
-      // Clear the cached image for the edited project so it re-fetches
       fetchedImageIds.current.delete(editingProject.id);
     }
     setEditingProject(null);
@@ -207,48 +196,101 @@ const ProjectsGrid = () => {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+      transition: { staggerChildren: 0.12, delayChildren: 0.15 },
     },
   };
 
   return (
-    <section id="projects" className="py-16 md:py-24 bg-gray-800/30 backdrop-blur-sm">
-      <div className="container mx-auto px-4">
-        <motion.h2 
-          initial={{ opacity:0, y:20 }}
-          whileInView={{ opacity:1, y:0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl md:text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
-        >
-          {t('title')}
-        </motion.h2>
+    <section id="projects" className="relative py-20 md:py-32 overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className={`absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl ${
+          theme === 'dark' ? 'bg-emerald-500/5' : 'bg-emerald-500/8'
+        }`} />
+        <div className={`absolute bottom-0 right-1/4 w-80 h-80 rounded-full blur-3xl ${
+          theme === 'dark' ? 'bg-blue-500/5' : 'bg-blue-500/8'
+        }`} />
+      </div>
+
+      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section header */}
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className={`inline-block text-sm font-semibold tracking-widest uppercase mb-3 ${
+              theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'
+            }`}>
+              {t('subtitle')}
+            </span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-500 to-blue-500">
+              {t('title')}
+            </h2>
+            <div className={`mx-auto mt-4 h-1 w-16 rounded-full bg-gradient-to-r from-emerald-400 to-blue-500`} />
+          </motion.div>
+        </div>
         
         {currentUser?.is_admin && (
-          <div className="text-center mb-10">
-            <button onClick={handleAdd} className="btn btn-primary inline-flex items-center">
-              <PlusCircle size={20} className="mr-2"/> {t('addProject')}
-            </button>
+          <div className="text-center mb-12">
+            <motion.button
+              onClick={handleAdd}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                theme === 'dark'
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-400/50'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300'
+              }`}
+            >
+              <PlusCircle size={18} />
+              {t('addProject')}
+            </motion.button>
           </div>
         )}
 
-        {error && <p className="text-red-400 text-center mb-8 bg-red-900/50 p-3 rounded-md">{error}</p>}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={`text-center mb-8 p-4 rounded-xl text-sm font-medium ${
+              theme === 'dark'
+                ? 'text-red-300 bg-red-500/10 border border-red-500/20'
+                : 'text-red-700 bg-red-50 border border-red-200'
+            }`}
+          >
+            {error}
+          </motion.p>
+        )}
 
         {projects.length === 0 && !loading && !error && (
-          <p className="text-center text-gray-400 text-xl py-10">
-            {t('noProjects')}
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20"
+          >
+            <FolderOpen size={48} className={`mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
+            }`} />
+            <p className={`text-lg ${
+              theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+            }`}>
+              {t('noProjects')}
+            </p>
+          </motion.div>
         )}
 
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
         >
           {projects
             .sort((a, b) => {
-              // Sort by position if available, otherwise by id
               if (a.position !== undefined && b.position !== undefined) {
                 return a.position - b.position;
               }
@@ -273,6 +315,7 @@ const ProjectsGrid = () => {
           }
         </motion.div>
       </div>
+
       {showModal && (
         <Modal title={editingProject ? t('editProject') : t('addProject')} onClose={() => handleModalClose(false)}>
           <ProjectForm project={editingProject} onFormSubmit={() => handleModalClose(true)} />

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useTheme } from '../../hooks/useTheme';
+import { useLanguage } from '../../contexts/LanguageContext';
 import Spinner from '../UI/Spinner';
 import { getCVDataApi } from '../../api/cv';
 
@@ -242,6 +243,7 @@ const AwardItem = ({ award, index = 0 }) => {
 const InteractiveCV = () => {
   const { theme } = useTheme();
   const t = useTranslations('cv');
+  const { locale } = useLanguage();
   const [cvData, setCvData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -250,7 +252,7 @@ const InteractiveCV = () => {
     const fetchCVData = async () => {
       setLoading(true);
       try {
-        const data = await getCVDataApi();
+        const data = await getCVDataApi(locale);
         setCvData(data);
         setError(null);
       } catch (err) {
@@ -262,7 +264,7 @@ const InteractiveCV = () => {
     };
 
     fetchCVData();
-  }, []);
+  }, [locale]);
 
   if (loading) {
     return (

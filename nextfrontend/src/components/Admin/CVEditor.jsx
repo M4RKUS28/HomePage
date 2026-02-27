@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../hooks/useTheme';
+import { useLanguage } from '../../contexts/LanguageContext';
 import Spinner from '../UI/Spinner';
 import {
   Save,
@@ -181,6 +182,7 @@ const CVEditor = () => {
   const t = useTranslations('admin.cv');
   const { theme } = useTheme();
   const { showToast } = useToast();
+  const { locale } = useLanguage();
 
   const [cvData, setCVData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -200,7 +202,7 @@ const CVEditor = () => {
   const fetchCVData = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getCVDataApi();
+      const data = await getCVDataApi(locale);
       setNormalizedData(data);
       setError(null);
     } catch (err) {
@@ -210,7 +212,7 @@ const CVEditor = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     fetchCVData();
@@ -222,11 +224,16 @@ const CVEditor = () => {
     try {
       const normalized = normalizeCVData(cvData);
       setNormalizedData(normalized);
-      await updateCVDataApi(normalized);
+      await updateCVDataApi(normalized, locale);
       showToast({ type: 'success', message: t('saveSuccess') });
     } catch (err) {
       console.error('Error saving CV data:', err);
-      showToast({ type: 'error', message: t('saveFailed') });
+      // Show specific conflict error
+      if (err.response?.status === 409) {
+        showToast({ type: 'error', message: err.response.data?.detail || t('saveFailed') });
+      } else {
+        showToast({ type: 'error', message: t('saveFailed') });
+      }
     } finally {
       setSaving(false);
     }

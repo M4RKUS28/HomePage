@@ -6,6 +6,7 @@ import { getCVDataApi } from '../../api/cv';
 import Spinner from '../UI/Spinner';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 // Next.js static imports return an object {src, width, height} - extract the plain string.
 const ProfilePicPlaceholder =
@@ -32,6 +33,7 @@ const HeroSection = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const t = useTranslations('hero');
+  const { locale } = useLanguage();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,7 +41,7 @@ const HeroSection = () => {
       setImageLoading(false);
       setImageFailed(false);
       try {
-        const data = await getCVDataApi();
+        const data = await getCVDataApi(locale);
         setCvData(data);
         setError(null);
       } catch (err) {
@@ -51,7 +53,7 @@ const HeroSection = () => {
     };
 
     fetchData();
-  }, []);
+  }, [locale]);
 
   // Derive a validated URL - null if missing or not a real URL string
   const profileImageUrl = toValidUrl(cvData?.personalInfo?.profileImage);

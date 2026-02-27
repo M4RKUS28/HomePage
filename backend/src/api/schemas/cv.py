@@ -24,6 +24,7 @@ class CVRead(BaseModel):
     id: int
     owner_id: int
     language: str = "en"
+    has_changes: bool = False
     data: CVData
 
     model_config = {"from_attributes": True}

@@ -33,6 +33,9 @@ aiosmtplib>=3.0
 # ── Background Scheduling ──
 apscheduler>=3.10
 
+# ── AI Translation (Google Gemini) ──
+google-genai>=1.0
+
 # ── Utilities ──
 python-dotenv
 python-multipart           # file uploads in FastAPI

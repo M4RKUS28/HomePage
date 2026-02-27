@@ -47,6 +47,37 @@ async def get_next_position(db: AsyncSession) -> int:
     return max_pos + 1
 
 
+async def get_projects_with_changes(db: AsyncSession) -> Sequence[Project]:
+    """Return all projects where has_changes is True."""
+    result = await db.execute(select(Project).where(Project.has_changes == True))  # noqa: E712
+    return result.scalars().all()
+
+
+async def check_pending_changes_other_language(
+    db: AsyncSession, *, exclude_language: str
+) -> bool:
+    """Check if any project in a DIFFERENT language has pending changes."""
+    result = await db.execute(
+        select(Project.id)
+        .where(Project.language != exclude_language, Project.has_changes == True)  # noqa: E712
+        .limit(1)
+    )
+    return result.scalar_one_or_none() is not None
+
+
+async def get_project_by_group_and_language(
+    db: AsyncSession, group_id: int, language: str
+) -> Optional[Project]:
+    """Find a project by its translation_group_id and language."""
+    result = await db.execute(
+        select(Project).where(
+            Project.translation_group_id == group_id,
+            Project.language == language,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
 # ---------------------------------------------------------------------------
 # Create
 # ---------------------------------------------------------------------------
@@ -62,6 +93,8 @@ async def create_project(
     owner_id: int,
     language: str = "en",
     health_check_urls: Optional[list] = None,
+    translation_group_id: Optional[int] = None,
+    has_changes: bool = True,
 ) -> Project:
     project = Project(
         title=title,
@@ -72,8 +105,14 @@ async def create_project(
         owner_id=owner_id,
         language=language,
         health_check_urls=health_check_urls or [],
+        has_changes=has_changes,
     )
     db.add(project)
+    await db.flush()  # get the ID before commit
+
+    # Auto-assign translation_group_id (self-reference for new projects)
+    project.translation_group_id = translation_group_id or project.id
+
     await db.commit()
     await db.refresh(project)
     return project

@@ -124,8 +124,25 @@ async def update_project(
     """
     Update a project. Returns ``(project, link_changed)`` so the router
     can decide whether to trigger a health check.
+
+    Raises HTTP 409 if another language has pending (untranslated) changes.
     """
     project = await get_project(db, project_id)
+
+    # Conflict check: reject if another language has pending changes
+    has_conflict = await project_crud.check_pending_changes_other_language(
+        db, exclude_language=project.language
+    )
+    if has_conflict:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Cannot update project for '{project.language}': another language "
+                "has pending changes that must be translated first. Please wait for "
+                "the automatic translation to complete."
+            ),
+        )
+
     changes = data.model_dump(exclude_unset=True)
     link_changed = False
 
@@ -137,6 +154,9 @@ async def update_project(
 
     if "health_check_urls" in changes:
         changes["health_check_urls"] = changes["health_check_urls"] or []
+
+    # Mark as changed for translation
+    changes["has_changes"] = True
 
     updated = await project_crud.update_project(db, project, **changes)
     return updated, link_changed

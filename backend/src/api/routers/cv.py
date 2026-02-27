@@ -23,7 +23,10 @@ async def read_cv(
 @router.put("/", response_model=CVData)
 async def update_cv(
     data: CVData,
+    language: str = "en",
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin_user),
 ):
-    return await cv_service.update_cv_data(db, data=data, owner_id=current_user.id)
+    return await cv_service.update_cv_data(
+        db, data=data, owner_id=current_user.id, language=language
+    )

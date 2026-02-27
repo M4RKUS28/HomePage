@@ -10,8 +10,9 @@ import { uploadFileViaPresigned, getPresignedDownloadUrl } from './storage';
 // CRUD
 // ---------------------------------------------------------------------------
 
-export const getProjectsApi = async () => {
-  const { data } = await apiClient.get('/projects/');
+export const getProjectsApi = async (language) => {
+  const params = language ? { language } : {};
+  const { data } = await apiClient.get('/projects/', { params });
   return data;
 };
 
@@ -26,6 +27,7 @@ export const createProjectApi = async (projectData) => {
     description: projectData.description,
     link: projectData.link,
     health_check_urls: projectData.health_check_urls || [],
+    language: projectData.language || 'en',
   };
 
   if (projectData.position != null && projectData.position !== '') {

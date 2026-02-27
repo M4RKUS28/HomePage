@@ -179,7 +179,8 @@
       "projects": "Dự án",
       "messages": "Tin nhắn",
       "users": "Người dùng",
-      "cv": "Trình chỉnh sửa CV"
+      "cv": "Trình chỉnh sửa CV",
+      "access": "Nhật ký truy cập"
     },
     "projects": {
       "title": "Quản lý dự án",
@@ -239,6 +240,24 @@
       "personalInfo": "Thông tin cá nhân",
       "moveUp": "Di chuyển lên",
       "moveDown": "Di chuyển xuống"
+    },
+    "access": {
+      "title": "Nhật ký truy cập",
+      "totalAccesses": "Tổng truy cập",
+      "uniqueIPs": "IP duy nhất",
+      "last24h": "24 giờ qua",
+      "topCountry": "Quốc gia hàng đầu",
+      "mapView": "Bản đồ",
+      "listView": "Danh sách",
+      "refresh": "Làm mới",
+      "noLogs": "Chưa có nhật ký truy cập.",
+      "loadError": "Không thể tải nhật ký truy cập.",
+      "allTime": "Tất cả thời gian",
+      "lastHour": "Giờ qua",
+      "last6Hours": "6 giờ qua",
+      "last24Hours": "24 giờ qua",
+      "last7Days": "7 ngày qua",
+      "last30Days": "30 ngày qua"
     }
   },
   "notFound": {

@@ -1,265 +1,267 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Zap, AlertTriangle, Loader2, Edit, Trash2, CheckCircle, RefreshCcw, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  ExternalLink,
+  Zap,
+  AlertTriangle,
+  Loader2,
+  Edit,
+  Trash2,
+  CheckCircle,
+  RefreshCcw,
+  ArrowUp,
+  ArrowDown,
+  Globe,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
 import { useTheme } from '../../hooks/useTheme';
 
+/* ------------------------------------------------------------------ */
+/*  Status badge – floating on the card image                         */
+/* ------------------------------------------------------------------ */
 const StatusIndicator = ({ status }) => {
-  let color, bgColor, Icon, text;
   const { theme } = useTheme();
   const t = useTranslations('projects');
-  
-  const darkModeColors = {
-    up: 'bg-green-500/80 border-green-400',
-    down: 'bg-red-500/80 border-red-400',
-    checking: 'bg-yellow-500/80 border-yellow-400',
-    unknown: 'bg-gray-500/80 border-gray-400'
+
+  const cfg = {
+    up:       { icon: Zap,            label: t('status.up'),       dot: 'bg-emerald-400', ring: 'ring-emerald-400/30', bg: theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+    down:     { icon: AlertTriangle,  label: t('status.down'),     dot: 'bg-red-400',     ring: 'ring-red-400/30',     bg: theme === 'dark' ? 'bg-red-500/20 text-red-300'       : 'bg-red-50 text-red-700 border border-red-200' },
+    checking: { icon: () => <Loader2 size={12} className="animate-spin" />, label: t('status.checking'), dot: 'bg-amber-400', ring: 'ring-amber-400/30', bg: theme === 'dark' ? 'bg-amber-500/20 text-amber-300'   : 'bg-amber-50 text-amber-700 border border-amber-200' },
+    unknown:  { icon: CheckCircle,    label: t('status.unknown'),  dot: 'bg-gray-400',    ring: 'ring-gray-400/30',    bg: theme === 'dark' ? 'bg-gray-500/20 text-gray-300'     : 'bg-gray-100 text-gray-600 border border-gray-200' },
   };
-  
-  const lightModeColors = {
-    up: 'bg-green-500/90 border-green-600',
-    down: 'bg-red-500/90 border-red-600',
-    checking: 'bg-yellow-500/90 border-yellow-600',
-    unknown: 'bg-gray-500/90 border-gray-600'
-  };
-  
-  switch (status?.toLowerCase()) {
-    case 'up':
-      color = theme === 'dark' ? darkModeColors.up : lightModeColors.up;
-      bgColor = 'from-green-600 to-emerald-500';
-      Icon = Zap;
-      text = t('status.up');
-      break;
-    case 'down':
-      color = theme === 'dark' ? darkModeColors.down : lightModeColors.down;
-      bgColor = 'from-red-600 to-rose-500';
-      Icon = AlertTriangle;
-      text = t('status.down');
-      break;
-    case 'checking':
-      color = theme === 'dark' ? darkModeColors.checking : lightModeColors.checking;
-      bgColor = 'from-yellow-500 to-amber-400';
-      Icon = () => <Loader2 size={14} className="animate-spin" />;
-      text = t('status.checking');
-      break;
-    default:
-      color = theme === 'dark' ? darkModeColors.unknown : lightModeColors.unknown;
-      bgColor = 'from-gray-500 to-slate-400';
-      Icon = CheckCircle;
-      text = t('status.unknown');
-  }
-  
+
+  const s = cfg[status?.toLowerCase()] ?? cfg.unknown;
+  const Icon = s.icon;
+
   return (
-    <div className={`flex items-center space-x-1.5 px-2.5 py-1 text-xs font-medium text-white rounded-full border shadow-sm bg-gradient-to-r ${bgColor} ${color}`}>
-      <Icon size={14} />
-      <span>{text}</span>
-    </div>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase backdrop-blur-md ${s.bg}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${s.dot} ring-2 ${s.ring}`} />
+      <Icon size={12} />
+      {s.label}
+    </span>
   );
 };
 
-const ProjectCard = ({ project, isAdmin, onEdit, onDelete, onCheckStatus, onMoveUp, onMoveDown, isFirst, isLast, imageUrl, imageLoading }) => {
+/* ------------------------------------------------------------------ */
+/*  Project Card                                                       */
+/* ------------------------------------------------------------------ */
+const ProjectCard = ({
+  project,
+  isAdmin,
+  onEdit,
+  onDelete,
+  onCheckStatus,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+  imageUrl,
+  imageLoading,
+}) => {
   const { theme } = useTheme();
   const t = useTranslations('projects');
   const [imageError, setImageError] = useState(false);
-  
+  const [isHovered, setIsHovered] = useState(false);
+
+  /* --- animation variants --- */
   const cardVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
-  };
-  
-  const buttonVariants = {
-    rest: { scale: 1 },
-    hover: { scale: 1.1 },
-    tap: { scale: 0.9 }
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+    },
   };
 
-  // Use lazy-loaded imageUrl if provided; fall back to project.image for backwards compatibility
-  const rawImageUrl = imageUrl !== undefined ? imageUrl : project.image;
-  const resolvedImageUrl = typeof rawImageUrl === 'string' ? rawImageUrl : null;
-  const isImageLoading = imageLoading !== undefined ? imageLoading : false;
+  const iconBtn =
+    'p-1.5 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95';
 
-  // Determine if we have a valid image to display
-  const hasValidImage = resolvedImageUrl && !imageError;
-  
-  // Handle image loading errors
-  const handleImageError = () => {
-    console.log(`Image failed to load for project: ${project.title}`);
-    setImageError(true);
-  };
+  /* --- image resolution --- */
+  const rawImageUrl   = imageUrl !== undefined ? imageUrl : project.image;
+  const resolvedImage = typeof rawImageUrl === 'string' ? rawImageUrl : null;
+  const isImgLoading  = imageLoading !== undefined ? imageLoading : false;
+  const hasImage      = resolvedImage && !imageError;
 
-  const trimmedName = project?.name?.trim();
+  const handleImageError = () => setImageError(true);
+
+  /* --- heading logic --- */
+  const trimmedName  = project?.name?.trim();
   const trimmedTitle = project?.title?.trim();
-  const primaryHeading = trimmedName || trimmedTitle || 'Untitled Project';
-  const secondaryHeading = trimmedName && trimmedTitle && trimmedName !== trimmedTitle ? trimmedTitle : null;
+  const heading      = trimmedName || trimmedTitle || 'Untitled Project';
+  const subHeading   =
+    trimmedName && trimmedTitle && trimmedName !== trimmedTitle
+      ? trimmedTitle
+      : null;
 
   return (
     <motion.div
       variants={cardVariants}
-      className={`card flex flex-col justify-between transform transition-all duration-300 hover:shadow-2xl ${
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl transition-all duration-500 ${
         theme === 'dark'
-          ? 'hover:-translate-y-1 hover:bg-gray-750 shadow-black/20'
-          : 'hover:-translate-y-1 hover:shadow-xl shadow-gray-200/60'
+          ? 'bg-gray-800/60 backdrop-blur-xl border border-gray-700/50 hover:border-emerald-500/30 shadow-lg shadow-black/20 hover:shadow-emerald-500/10'
+          : 'bg-white/80 backdrop-blur-xl border border-gray-200 hover:border-emerald-500/40 shadow-md shadow-gray-200/60 hover:shadow-xl hover:shadow-emerald-500/10'
       }`}
     >
-      <div>
-        <div className="relative overflow-hidden h-52">
-          {isImageLoading ? (
-            /* Skeleton loader while image is being fetched */
-            <div className={`w-full h-full flex items-center justify-center ${
-              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
-            }`}>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
-              <div className="flex flex-col items-center space-y-2 opacity-40">
-                <Loader2 size={28} className="animate-spin" />
-              </div>
-            </div>
-          ) : (
-            <motion.img 
-              src={hasValidImage ? resolvedImageUrl : DefaultProjectImage} 
-              alt={project.title} 
-              className="w-full h-full object-cover" 
-              onError={handleImageError}
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.5 }}
-            />
-          )}
-          <motion.div 
-            className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
+      {/* Subtle gradient border glow on hover */}
+      <div className={`absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${
+        theme === 'dark'
+          ? 'bg-gradient-to-br from-emerald-500/20 via-transparent to-blue-500/20'
+          : 'bg-gradient-to-br from-emerald-500/10 via-transparent to-blue-500/10'
+      }`} />
+
+      {/* ---- Image area ---- */}
+      <div className="relative overflow-hidden aspect-[16/10]">
+        {isImgLoading ? (
+          <div className={`absolute inset-0 flex items-center justify-center ${
+            theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'
+          }`}>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+            <Loader2 size={24} className="animate-spin opacity-40" />
+          </div>
+        ) : (
+          <motion.img
+            src={hasImage ? resolvedImage : DefaultProjectImage}
+            alt={project.title}
+            className="w-full h-full object-cover"
+            onError={handleImageError}
+            animate={{ scale: isHovered ? 1.05 : 1 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
           />
-        </div>
-        <div className="p-5">
-          <div className="flex justify-between items-start mb-3 gap-3">
-            <div className="flex-1">
-              <h3
-                className={`text-xl font-semibold leading-tight ${
-                  theme === 'dark'
-                    ? 'text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)]'
-                    : 'text-gray-900'
-                }`}
-              >
-                {primaryHeading}
-              </h3>
-              {secondaryHeading && (
-                <p className={`text-sm font-medium mt-1 ${
-                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  {secondaryHeading}
-                </p>
-              )}
-            </div>
-            <StatusIndicator status={project.status} />
-          </div>
-          <div
-            className={`text-sm mb-4 min-h-[3.5rem] max-h-32 overflow-y-auto pr-1 whitespace-pre-line scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent ${
-              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-            }`}
-          >
-            {project.description || "No description provided."}
-          </div>
+        )}
+
+        {/* Gradient overlay */}
+        <div className={`absolute inset-0 transition-opacity duration-500 ${
+          theme === 'dark'
+            ? 'bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent'
+            : 'bg-gradient-to-t from-black/50 via-black/10 to-transparent'
+        }`} />
+
+        {/* Status badge, top-right */}
+        <div className="absolute top-3 right-3 z-10">
+          <StatusIndicator status={project.status} />
         </div>
       </div>
-      
-      <div className={`p-5 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-        <div className="flex justify-between items-center">
+
+      {/* ---- Content ---- */}
+      <div className="relative flex flex-col flex-1 p-5">
+        {/* Title */}
+        <h3 className={`text-lg font-bold leading-snug mb-1 ${
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}>
+          {heading}
+        </h3>
+
+        {subHeading && (
+          <p className={`text-sm font-medium mb-2 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+          }`}>
+            {subHeading}
+          </p>
+        )}
+
+        {/* Description */}
+        <p className={`text-sm leading-relaxed flex-1 mb-4 line-clamp-3 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+        }`}>
+          {project.description || 'No description provided.'}
+        </p>
+
+        {/* Footer: CTA + Admin */}
+        <div className={`flex items-center justify-between pt-4 border-t ${
+          theme === 'dark' ? 'border-gray-700/50' : 'border-gray-100'
+        }`}>
+          {/* Visit button */}
           <motion.a
             href={project.link ? String(project.link) : '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-secondary btn-sm text-sm !py-1.5 !px-3 inline-flex items-center"
-            variants={buttonVariants}
-            initial="rest"
-            whileHover="hover"
-            whileTap="tap"
+            whileHover={{ x: 3 }}
+            whileTap={{ scale: 0.97 }}
+            className={`inline-flex items-center gap-2 text-sm font-semibold transition-colors ${
+              theme === 'dark'
+                ? 'text-emerald-400 hover:text-emerald-300'
+                : 'text-emerald-600 hover:text-emerald-700'
+            }`}
           >
-            {t('visitProject')} <ExternalLink size={14} className="ml-1.5" />
+            <Globe size={15} />
+            {t('visitProject')}
+            <ExternalLink size={13} className="opacity-60" />
           </motion.a>
+
+          {/* Admin controls */}
           {isAdmin && (
-            <div className="flex space-x-2">
-              <motion.button 
-                onClick={() => onMoveUp(project.id)} 
-                title={t('moveUp')} 
+            <div className={`flex items-center gap-1 rounded-lg px-1 py-0.5 ${
+              theme === 'dark' ? 'bg-gray-700/40' : 'bg-gray-100/80'
+            }`}>
+              <button
+                onClick={() => onMoveUp(project.id)}
+                title={t('moveUp')}
                 disabled={isFirst}
-                className={`p-1.5 transition-colors ${
-                  isFirst 
-                    ? 'text-gray-500 cursor-not-allowed opacity-50'
-                    : theme === 'dark' 
-                      ? 'text-gray-400 hover:text-gray-300' 
-                      : 'text-gray-500 hover:text-gray-700'
+                className={`${iconBtn} ${
+                  isFirst
+                    ? 'opacity-30 cursor-not-allowed'
+                    : theme === 'dark'
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-600/50'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/60'
                 }`}
-                variants={buttonVariants}
-                initial="rest"
-                whileHover={!isFirst ? "hover" : "rest"}
-                whileTap={!isFirst ? "tap" : "rest"}
               >
-                <ArrowUp size={18}/>
-              </motion.button>
-              <motion.button 
-                onClick={() => onMoveDown(project.id)} 
-                title={t('moveDown')} 
+                <ArrowUp size={15} />
+              </button>
+              <button
+                onClick={() => onMoveDown(project.id)}
+                title={t('moveDown')}
                 disabled={isLast}
-                className={`p-1.5 transition-colors ${
-                  isLast 
-                    ? 'text-gray-500 cursor-not-allowed opacity-50'
-                    : theme === 'dark' 
-                      ? 'text-gray-400 hover:text-gray-300' 
-                      : 'text-gray-500 hover:text-gray-700'
+                className={`${iconBtn} ${
+                  isLast
+                    ? 'opacity-30 cursor-not-allowed'
+                    : theme === 'dark'
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-600/50'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/60'
                 }`}
-                variants={buttonVariants}
-                initial="rest"
-                whileHover={!isLast ? "hover" : "rest"}
-                whileTap={!isLast ? "tap" : "rest"}
               >
-                <ArrowDown size={18}/>
-              </motion.button>
-              <motion.button 
-                onClick={() => onCheckStatus(project.id)} 
-                title={t('checkStatus')} 
-                className={`p-1.5 transition-colors ${
-                  theme === 'dark' 
-                    ? 'text-blue-400 hover:text-blue-300' 
-                    : 'text-blue-500 hover:text-blue-700'
+                <ArrowDown size={15} />
+              </button>
+
+              <span className={`w-px h-4 mx-0.5 ${
+                theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'
+              }`} />
+
+              <button
+                onClick={() => onCheckStatus(project.id)}
+                title={t('checkStatus')}
+                className={`${iconBtn} ${
+                  theme === 'dark'
+                    ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/10'
+                    : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'
                 }`}
-                variants={buttonVariants}
-                initial="rest"
-                whileHover="hover"
-                whileTap="tap"
               >
-                <RefreshCcw size={18}/>
-              </motion.button>
-              <motion.button 
-                onClick={() => onEdit(project)} 
-                title={t('editProject')} 
-                className={`p-1.5 transition-colors ${
-                  theme === 'dark' 
-                    ? 'text-yellow-400 hover:text-yellow-300' 
-                    : 'text-yellow-500 hover:text-yellow-700'
+                <RefreshCcw size={15} />
+              </button>
+              <button
+                onClick={() => onEdit(project)}
+                title={t('editProject')}
+                className={`${iconBtn} ${
+                  theme === 'dark'
+                    ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+                    : 'text-amber-500 hover:text-amber-700 hover:bg-amber-50'
                 }`}
-                variants={buttonVariants}
-                initial="rest"
-                whileHover="hover"
-                whileTap="tap"
               >
-                <Edit size={18}/>
-              </motion.button>
-              <motion.button 
-                onClick={() => onDelete(project.id)} 
-                title={t('deleteProject')} 
-                className={`p-1.5 transition-colors ${
-                  theme === 'dark' 
-                    ? 'text-red-500 hover:text-red-400' 
-                    : 'text-red-500 hover:text-red-700'
+                <Edit size={15} />
+              </button>
+              <button
+                onClick={() => onDelete(project.id)}
+                title={t('deleteProject')}
+                className={`${iconBtn} ${
+                  theme === 'dark'
+                    ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
+                    : 'text-red-500 hover:text-red-700 hover:bg-red-50'
                 }`}
-                variants={buttonVariants}
-                initial="rest"
-                whileHover="hover"
-                whileTap="tap"
               >
-                <Trash2 size={18}/>
-              </motion.button>
+                <Trash2 size={15} />
+              </button>
             </div>
           )}
         </div>
