@@ -26,6 +26,13 @@ settings = get_settings()
 _LANG_NAMES: Dict[str, str] = {
     "en": "English",
     "de": "German",
+    "vi": "Vietnamese",
+    "fr": "French",
+    "it": "Italian",
+    "zh": "Chinese",
+    "ja": "Japanese",
+    "es": "Spanish",
+    "pt": "Portuguese",
 }
 
 
@@ -134,6 +141,7 @@ async def run_translation_sync() -> None:
     Called by APScheduler every N minutes (see ``lifespan.py``).
     """
     if not settings.gemini.api_key:
+        logger.warning("[translation] Gemini API key not configured, skipping translation sync.")
         return
 
     supported = settings.translation.supported_languages

@@ -134,7 +134,7 @@ class TranslationSettings(BaseSettings):
 
     enabled: bool = False
     interval_minutes: int = 5
-    supported_languages: List[str] = ["en", "de"]
+    supported_languages: List[str] = ["en", "de", "vi", "fr", "it", "zh", "ja", "es", "pt"]
 
 
 class PasswordPolicySettings(BaseSettings):

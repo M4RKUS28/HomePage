@@ -196,7 +196,9 @@
         "save": "Save Project",
         "saving": "Saving...",
         "cancel": "Cancel",
-        "imageUpload": "Project Image"
+        "imageUpload": "Project Image",
+        "create": "Create Project",
+        "update": "Update Project"
       }
     },
     "messages": {

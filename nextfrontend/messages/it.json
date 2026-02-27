@@ -196,7 +196,9 @@
         "save": "Salva progetto",
         "saving": "Salvataggio...",
         "cancel": "Annulla",
-        "imageUpload": "Immagine del progetto"
+        "imageUpload": "Immagine del progetto",
+        "create": "Crea progetto",
+        "update": "Aggiorna progetto"
       }
     },
     "messages": {

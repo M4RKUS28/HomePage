@@ -196,7 +196,9 @@
         "save": "保存项目",
         "saving": "正在保存...",
         "cancel": "取消",
-        "imageUpload": "项目图片"
+        "imageUpload": "项目图片",
+        "create": "创建项目",
+        "update": "更新项目"
       }
     },
     "messages": {

@@ -196,7 +196,9 @@
         "save": "Guardar proyecto",
         "saving": "Guardando...",
         "cancel": "Cancelar",
-        "imageUpload": "Imagen del proyecto"
+        "imageUpload": "Imagen del proyecto",
+        "create": "Crear proyecto",
+        "update": "Actualizar proyecto"
       }
     },
     "messages": {

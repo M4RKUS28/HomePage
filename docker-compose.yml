@@ -138,6 +138,7 @@ services:
     volumes:
       - ./nextfrontend/src:/app/src
       - ./nextfrontend/public:/app/public
+      - ./nextfrontend/messages:/app/messages:ro
       - ./nextfrontend/next.config.mjs:/app/next.config.mjs:ro
       - ./nextfrontend/postcss.config.mjs:/app/postcss.config.mjs:ro
       - ./nextfrontend/jsconfig.json:/app/jsconfig.json:ro

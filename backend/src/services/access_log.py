@@ -16,7 +16,7 @@ import redis.asyncio as aioredis
 
 from ..core.config import get_settings
 from ..db.crud import access_log as access_crud
-from ..db.redis import redis_pool
+from ..db import redis as redis_mod
 from ..db.session import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)
@@ -39,11 +39,12 @@ async def track_ip(ip: str) -> bool:
     Returns True if this is a **new** access (not seen in the last 10 min).
     Uses SET NX + EX for atomic dedup.
     """
-    if redis_pool is None:
+    pool = redis_mod.redis_pool
+    if pool is None:
         logger.warning("[access] Redis pool not initialised, skipping IP tracking")
         return False
 
-    client = aioredis.Redis(connection_pool=redis_pool)
+    client = aioredis.Redis(connection_pool=pool)
     key = f"{_DEDUP_PREFIX}{ip}"
     now_iso = datetime.now(timezone.utc).isoformat()
 
@@ -102,10 +103,11 @@ async def resolve_pending_ips() -> None:
 
     Called periodically by APScheduler.
     """
-    if redis_pool is None:
+    pool = redis_mod.redis_pool
+    if pool is None:
         return
 
-    client = aioredis.Redis(connection_pool=redis_pool)
+    client = aioredis.Redis(connection_pool=pool)
 
     # Atomically pop all members from the pending set
     members = await client.smembers(_PENDING_SET)

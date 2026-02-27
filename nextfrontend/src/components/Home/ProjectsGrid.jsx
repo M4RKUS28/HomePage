@@ -13,6 +13,7 @@ import { useTheme } from '../../hooks/useTheme';
 const ProjectsGrid = () => {
   const t = useTranslations('projects');
   const { theme } = useTheme();
+  const { locale } = useLanguage();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -56,7 +57,7 @@ const ProjectsGrid = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchImageForProject]);
+  }, [fetchImageForProject, locale]);
 
   useEffect(() => {
     fetchProjectsData();

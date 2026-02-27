@@ -387,7 +387,7 @@ const InteractiveCV = () => {
             )}
 
             {projects.length > 0 && (
-              <Section title={t('projects')} icon={Code}>
+              <Section title={t('projectsHighlight')} icon={Code}>
                 <div className="space-y-5">
                   {projects.map((proj, idx) => (
                     <ProjectItem key={`proj-${proj.id || idx}-${proj.name || proj.title || idx}`} project={proj} index={idx} />

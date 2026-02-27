@@ -196,7 +196,9 @@
         "save": "プロジェクトを保存",
         "saving": "保存中...",
         "cancel": "キャンセル",
-        "imageUpload": "プロジェクト画像"
+        "imageUpload": "プロジェクト画像",
+        "create": "プロジェクトを作成",
+        "update": "プロジェクトを更新"
       }
     },
     "messages": {

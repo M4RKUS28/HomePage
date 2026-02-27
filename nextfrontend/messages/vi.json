@@ -196,7 +196,9 @@
         "save": "Lưu dự án",
         "saving": "Đang lưu...",
         "cancel": "Hủy",
-        "imageUpload": "Hình ảnh dự án"
+        "imageUpload": "Hình ảnh dự án",
+        "create": "Tạo dự án",
+        "update": "Cập nhật dự án"
       }
     },
     "messages": {
