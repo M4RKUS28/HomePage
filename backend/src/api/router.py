@@ -6,7 +6,7 @@ Imported by ``main.py`` and mounted on the FastAPI app.
 
 from fastapi import APIRouter
 
-from .routers import cv, internal, messages, projects, storage, users
+from .routers import access_log, cv, internal, messages, projects, storage, users
 
 api_router = APIRouter()
 
@@ -16,3 +16,4 @@ api_router.include_router(messages.router)
 api_router.include_router(cv.router)
 api_router.include_router(storage.router)
 api_router.include_router(internal.router)
+api_router.include_router(access_log.router)

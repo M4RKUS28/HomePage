@@ -16,6 +16,8 @@ from ..db.session import AsyncSessionLocal
 from ..db.crud import user as user_crud
 from ..services.cv import init_default_cv
 from ..services.project import check_all_projects_health
+from ..services.translation import run_translation_sync
+from ..services.access_log import resolve_pending_ips
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +69,14 @@ async def _scheduled_health_check() -> None:
         await check_all_projects_health(db)
 
 
+async def _scheduled_translation_sync() -> None:
+    """Periodic translation sync triggered by APScheduler."""
+    try:
+        await run_translation_sync()
+    except Exception as exc:
+        logger.error("[translation] Scheduled sync failed: %s", exc)
+
+
 # ---------------------------------------------------------------------------
 # Lifespan (replaces deprecated on_event)
 # ---------------------------------------------------------------------------
@@ -89,8 +99,34 @@ async def lifespan(app: FastAPI):
         id="health_check_all_projects",
         replace_existing=True,
     )
+
+    # Resolve pending IPs every 2 minutes
+    scheduler.add_job(
+        resolve_pending_ips,
+        "interval",
+        minutes=2,
+        id="resolve_pending_ips",
+        replace_existing=True,
+    )
+
     scheduler.start()
-    logger.info("[startup] APScheduler started (health checks every 20 min).")
+    logger.info("[startup] APScheduler started (health checks every 20 min, IP resolve every 2 min).")
+
+    # Start translation sync scheduler (if enabled)
+    if settings.translation.enabled and settings.gemini.api_key:
+        scheduler.add_job(
+            _scheduled_translation_sync,
+            "interval",
+            minutes=settings.translation.interval_minutes,
+            id="translation_sync",
+            replace_existing=True,
+        )
+        logger.info(
+            "[startup] Translation sync enabled (every %d min).",
+            settings.translation.interval_minutes,
+        )
+    else:
+        logger.info("[startup] Translation sync disabled (TRANSLATION_ENABLED=false or no GEMINI_API_KEY).")
 
     yield  # ── Application runs ──
 

@@ -6,7 +6,8 @@ import ProjectsGrid from '../../../components/Home/ProjectsGrid';
 import MessageList from '../../../components/Admin/MessageList';
 import UserManagement from '../../../components/Admin/UserManagement';
 import CVEditor from '../../../components/Admin/CVEditor';
-import { Briefcase, MessageCircle, UserCog, FileEdit } from 'lucide-react';
+import AccessLog from '../../../components/Admin/AccessLog';
+import { Briefcase, MessageCircle, UserCog, FileEdit, MapPin } from 'lucide-react';
 import { useTheme } from '../../../hooks/useTheme';
 import AdminRoute from '../../../components/Auth/AdminRoute';
 import { useTranslations } from 'next-intl';
@@ -47,6 +48,8 @@ export default function AdminDashboardPage() {
         return <UserManagement />;
       case 'cv':
         return <CVEditor />;
+      case 'access':
+        return <AccessLog />;
       default:
         return null;
     }
@@ -85,6 +88,9 @@ export default function AdminDashboardPage() {
           </TabButton>
           <TabButton onClick={() => setActiveTab('cv')} isActive={activeTab === 'cv'}>
             <FileEdit size={16} className="inline mr-1.5" /> {t('tabs.cv')}
+          </TabButton>
+          <TabButton onClick={() => setActiveTab('access')} isActive={activeTab === 'access'}>
+            <MapPin size={16} className="inline mr-1.5" /> {t('tabs.access')}
           </TabButton>
         </div>
 

@@ -120,6 +120,23 @@ class AdminSettings(BaseSettings):
     password: str = ""
 
 
+class GeminiSettings(BaseSettings):
+    """Google Gemini API settings for automatic translation."""
+    model_config = SettingsConfigDict(env_prefix="GEMINI_")
+
+    api_key: str = ""
+    model: str = "gemini-2.0-flash"
+
+
+class TranslationSettings(BaseSettings):
+    """Automatic translation sync settings."""
+    model_config = SettingsConfigDict(env_prefix="TRANSLATION_")
+
+    enabled: bool = False
+    interval_minutes: int = 5
+    supported_languages: List[str] = ["en", "de"]
+
+
 class PasswordPolicySettings(BaseSettings):
     """Password complexity policy (enforced in NextJS; kept here for reference/validation)."""
     model_config = SettingsConfigDict(env_prefix="PW_")
@@ -160,6 +177,9 @@ class Settings(BaseSettings):
         "https://www.m4rkus28.de",
     ]
 
+    # IPinfo token for geolocation (optional – works without token at lower rate limit)
+    ipinfo_token: str = ""
+
     # Sub-configs (populated from env with their respective prefixes)
     db: DatabaseSettings = DatabaseSettings()
     redis: RedisSettings = RedisSettings()
@@ -168,6 +188,8 @@ class Settings(BaseSettings):
     auth: AuthSettings = AuthSettings()
     admin: AdminSettings = AdminSettings()
     password_policy: PasswordPolicySettings = PasswordPolicySettings()
+    gemini: GeminiSettings = GeminiSettings()
+    translation: TranslationSettings = TranslationSettings()
 
 
 @lru_cache
