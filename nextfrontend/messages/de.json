@@ -179,7 +179,8 @@
       "projects": "Projekte",
       "messages": "Nachrichten",
       "users": "Benutzer",
-      "cv": "Lebenslauf-Editor"
+      "cv": "Lebenslauf-Editor",
+      "access": "Zugriffsprotokoll"
     },
     "projects": {
       "title": "Projektverwaltung",
@@ -239,6 +240,24 @@
       "personalInfo": "Persönliche Daten",
       "moveUp": "Nach oben",
       "moveDown": "Nach unten"
+    },
+    "access": {
+      "title": "Zugriffsprotokoll",
+      "totalAccesses": "Zugriffe gesamt",
+      "uniqueIPs": "Eindeutige IPs",
+      "last24h": "Letzte 24h",
+      "topCountry": "Top Land",
+      "mapView": "Karte",
+      "listView": "Liste",
+      "refresh": "Aktualisieren",
+      "noLogs": "Noch keine Zugriffsprotokolle.",
+      "loadError": "Zugriffsprotokolle konnten nicht geladen werden.",
+      "allTime": "Gesamter Zeitraum",
+      "lastHour": "Letzte Stunde",
+      "last6Hours": "Letzte 6 Stunden",
+      "last24Hours": "Letzte 24 Stunden",
+      "last7Days": "Letzte 7 Tage",
+      "last30Days": "Letzte 30 Tage"
     }
   },
   "notFound": {

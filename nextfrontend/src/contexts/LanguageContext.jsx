@@ -26,7 +26,7 @@ export function LanguageProvider({ children }) {
 
   /**
    * Change the locale — updates the URL and optionally syncs to backend.
-   * @param {string} newLocale - 'en' or 'de'
+   * @param {string} newLocale - e.g. 'en', 'de', 'vi', 'fr', 'it', 'zh', 'ja', 'es', 'pt'
    * @param {object} [options]
    * @param {number} [options.userId] - If provided, also update the backend user record.
    */

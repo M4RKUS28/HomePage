@@ -32,7 +32,7 @@ export default auth((req) => {
   const intlResponse = intlMiddleware(req);
 
   // Determine the actual path without locale prefix for auth checks
-  const localePattern = /^\/(en|de)(\/|$)/;
+  const localePattern = /^\/(en|de|vi|fr|it|zh|ja|es|pt)(\/|$)/;
   const match = pathname.match(localePattern);
   const locale = match ? match[1] : routing.defaultLocale;
   const pathWithoutLocale = match ? pathname.replace(localePattern, '/') : pathname;

@@ -11,6 +11,13 @@ import { Github, Linkedin, Mail, Globe, Twitter, Languages } from 'lucide-react'
 const LOCALE_LABELS = {
   en: 'English',
   de: 'Deutsch',
+  vi: 'Tiếng Việt',
+  fr: 'Français',
+  it: 'Italiano',
+  zh: '中文',
+  ja: '日本語',
+  es: 'Español',
+  pt: 'Português',
 };
 
 const Footer = ({ 
