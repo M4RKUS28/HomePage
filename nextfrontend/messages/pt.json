@@ -23,6 +23,7 @@
   },
   "projects": {
     "title": "Projetos",
+    "subtitle": "Portfólio",
     "noProjects": "Nenhum projeto ainda.",
     "addProject": "Adicionar projeto",
     "editProject": "Editar projeto",

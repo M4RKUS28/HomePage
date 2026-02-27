@@ -23,6 +23,7 @@
   },
   "projects": {
     "title": "项目",
+    "subtitle": "作品集",
     "noProjects": "暂无项目。",
     "addProject": "添加项目",
     "editProject": "编辑项目",

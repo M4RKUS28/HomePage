@@ -23,6 +23,7 @@
   },
   "projects": {
     "title": "Dự án",
+    "subtitle": "Danh mục đầu tư",
     "noProjects": "Chưa có dự án nào.",
     "addProject": "Thêm dự án",
     "editProject": "Chỉnh sửa dự án",

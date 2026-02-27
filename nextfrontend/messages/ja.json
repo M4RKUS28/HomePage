@@ -23,6 +23,7 @@
   },
   "projects": {
     "title": "プロジェクト",
+    "subtitle": "ポートフォリオ",
     "noProjects": "プロジェクトはまだありません。",
     "addProject": "プロジェクトを追加",
     "editProject": "プロジェクトを編集",
