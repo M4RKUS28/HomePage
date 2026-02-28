@@ -34,7 +34,7 @@ aiosmtplib>=3.0
 apscheduler>=3.10
 
 # ── AI Translation (Google Gemini) ──
-google-genai>=1.0
+google-adk~=1.26.0
 
 # ── Utilities ──
 python-dotenv

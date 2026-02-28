@@ -11,10 +11,11 @@ language, and resets the flag.
 import json
 import logging
 import asyncio
-from typing import Dict, List, Sequence
+from typing import Dict, List, Sequence, Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel, Field
 
 from ..core.config import get_settings
 from ..db.crud import cv as cv_crud, project as project_crud
@@ -42,12 +43,28 @@ _LANG_NAMES: Dict[str, str] = {
 # Gemini helpers
 # ---------------------------------------------------------------------------
 
-def _get_client():
-    """Lazy-initialise the google-genai client."""
-    from google import genai  # noqa: local import to avoid startup cost
+def _get_agent(system_instruction: str, output_schema: type = None):
+    """Initialise a google-adk Agent."""
+    from google.adk.agents.llm_agent import Agent
+    from google.genai import types
 
-    return genai.Client(api_key=settings.gemini.api_key)
+    kwargs = {
+        "name": "translator_agent",
+        "model": settings.gemini.model,
+        "instruction": system_instruction,
+    }
+    
+    if output_schema:
+        kwargs["output_schema"] = output_schema
+    else:
+        kwargs["generate_content_config"] = types.GenerateContentConfig(
+            response_mime_type="application/json"
+        )
+        
+    return Agent(**kwargs)
 
+
+# Removed OutputTranslatedCV because Gemini doesn't support additionalProperties for Dict[str, Any]
 
 async def translate_cv_data(
     source_data: dict,
@@ -55,9 +72,8 @@ async def translate_cv_data(
     target_lang: str,
 ) -> dict:
     """Translate the full CV JSON blob from *source_lang* → *target_lang*."""
-    from google.genai import types  # noqa
+    # ADK uses different typing if needed
 
-    client = _get_client()
     src = _LANG_NAMES.get(source_lang, source_lang)
     tgt = _LANG_NAMES.get(target_lang, target_lang)
 
@@ -73,24 +89,54 @@ async def translate_cv_data(
         "- DO NOT translate: dates, time periods, URLs, email addresses, "
         "platform identifiers (github, linkedin, …).\n"
         "- DO NOT translate: skill names, programming languages, technology names.\n"
-        "- DO NOT translate: image URLs, logo URLs, any URL fields.\n"
-        "- Return ONLY valid JSON — no markdown fences, no explanation."
+        "Please return a valid JSON object with exactly one key 'cv_data', containing the fully translated dictionary."
     )
 
-    def sync_call():
-        response = client.models.generate_content(
-            model=settings.gemini.model,
-            contents=json.dumps(source_data, ensure_ascii=False),
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                response_mime_type="application/json",
-                temperature=0.3,
-            ),
-        )
-        return response.text
+    logger.info(f"[translation] [Gemini ADK] Initiating async run for CV {source_lang} -> {target_lang}")
+    agent = _get_agent(system_prompt) # Use raw JSON mime-type instead of schema constraint
+    try:
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+        from google.genai import types
 
-    response_text = await asyncio.to_thread(sync_call)
-    return json.loads(response_text)
+        session_service = InMemorySessionService()
+        try:
+            await session_service.create_session(app_name="transl", user_id="system", session_id="cv_translation")
+        except Exception:
+            # InMemorySessionService might raise if session already exists, though Docs state we can just get or create
+            pass
+        
+        runner = Runner(agent=agent, app_name="transl", session_service=session_service)
+        content = types.Content(role="user", parts=[types.Part(text=json.dumps(source_data, ensure_ascii=False))])
+        
+        final_text = ""
+        # Native async loop for ADK
+        async for event in runner.run_async(user_id="system", session_id="cv_translation", new_message=content):
+            if event.is_final_response() and event.content and event.content.parts:
+                final_text = event.content.parts[0].text.strip()
+                
+        if not final_text:
+            raise ValueError("No final response text received from ADK runner.")
+            
+        logger.info(f"[translation] [Gemini ADK] async run succeeded for CV {source_lang} -> {target_lang}")
+        
+        stripped_text = final_text.strip()
+        if stripped_text.startswith("```json"):
+            stripped_text = stripped_text[7:]
+        if stripped_text.endswith("```"):
+            stripped_text = stripped_text[:-3]
+        parsed = json.loads(stripped_text.strip())
+        return parsed.get("cv_data", parsed)
+        
+    except Exception as e:
+        if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+            logger.error(f"[translation] Gemini API 429 Quota Exhausted: {e}")
+            raise
+        logger.error(f"[translation] Gemini API Error during CV translation: {e}")
+        raise
+
+
+
 
 
 async def translate_projects_batch(
@@ -98,10 +144,8 @@ async def translate_projects_batch(
     source_lang: str,
     target_lang: str,
 ) -> List[dict]:
-    """Translate project *titles* and *descriptions* in one Gemini call."""
-    from google.genai import types  # noqa
+    # ADK uses different typing if needed
 
-    client = _get_client()
     src = _LANG_NAMES.get(source_lang, source_lang)
     tgt = _LANG_NAMES.get(target_lang, target_lang)
 
@@ -119,24 +163,50 @@ async def translate_projects_batch(
         f"Translate the following project data from {src} to {tgt}.\n\n"
         "Rules:\n"
         "- Translate the \"title\" and \"description\" fields.\n"
-        "- Keep \"id\" values unchanged.\n"
-        "- Return ONLY a valid JSON array — no markdown fences, no explanation."
+        "Please return a valid JSON object with exactly one key 'projects', containing the array of translated items."
     )
 
-    def sync_call():
-        response = client.models.generate_content(
-            model=settings.gemini.model,
-            contents=json.dumps(items, ensure_ascii=False),
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                response_mime_type="application/json",
-                temperature=0.3,
-            ),
-        )
-        return response.text
+    logger.info(f"[translation] [Gemini ADK] Initiating async run for {len(projects)} Projects {source_lang} -> {target_lang}")
+    agent = _get_agent(system_prompt)
+    try:
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+        from google.genai import types
 
-    response_text = await asyncio.to_thread(sync_call)
-    return json.loads(response_text)
+        session_service = InMemorySessionService()
+        try:
+            await session_service.create_session(app_name="transl", user_id="system", session_id="project_translation")
+        except Exception:
+            pass
+        
+        runner = Runner(agent=agent, app_name="transl", session_service=session_service)
+        content = types.Content(role="user", parts=[types.Part(text=json.dumps(items, ensure_ascii=False))])
+        
+        final_text = ""
+        # Native async loop for ADK
+        async for event in runner.run_async(user_id="system", session_id="project_translation", new_message=content):
+            if event.is_final_response() and event.content and event.content.parts:
+                final_text = event.content.parts[0].text.strip()
+                
+        if not final_text:
+            raise ValueError("No final response text received from ADK runner.")
+        
+        logger.info(f"[translation] [Gemini ADK] async run succeeded for {len(projects)} Projects {source_lang} -> {target_lang}")
+        
+        stripped_text = final_text.strip()
+        if stripped_text.startswith("```json"):
+            stripped_text = stripped_text[7:]
+        if stripped_text.endswith("```"):
+            stripped_text = stripped_text[:-3]
+        parsed = json.loads(stripped_text.strip())
+        return parsed.get("projects", [])
+        
+    except Exception as e:
+        if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+            logger.error(f"[translation] Gemini API 429 Quota Exhausted: {e}")
+            raise
+        logger.error(f"[translation] Gemini API Error during Project translation: {e}")
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -157,13 +227,19 @@ async def run_translation_sync() -> None:
 
     async with AsyncSessionLocal() as db:
         # Advisory Lock: Only one worker runs translation sync at a time
+        logger.info("[translation] Attempting to acquire advisory lock (1234567890)")
         await db.execute(
-            text("SELECT pg_advisory_lock(123456789)")
+            text("SELECT pg_advisory_lock(1234567890)")
         )
+        logger.info("[translation] Advisory lock acquired successfully.")
         try:
             # Nach Lock: Nochmals prüfen, ob Übersetzungen ausstehen
             changed_cvs = await cv_crud.get_cvs_with_changes(db)
+            logger.info(f"[translation] Found {len(changed_cvs) if changed_cvs else 0} CVs with changes.")
+            
             changed_projects: Sequence = await project_crud.get_projects_with_changes(db)
+            logger.info(f"[translation] Found {len(changed_projects) if changed_projects else 0} projects with changes.")
+            
             if not changed_cvs and not changed_projects:
                 logger.info("[translation] No pending translations after lock.")
                 return
@@ -298,8 +374,10 @@ async def run_translation_sync() -> None:
                             proj.has_changes = False
                     await db.commit()
         finally:
+            logger.info("[translation] Releasing advisory lock (1234567890)")
             await db.execute(
-                text("SELECT pg_advisory_unlock(123456789)")
+                text("SELECT pg_advisory_unlock(1234567890)")
             )
+            logger.info("[translation] Advisory lock released.")
 
     logger.info("[translation] Translation sync complete.")

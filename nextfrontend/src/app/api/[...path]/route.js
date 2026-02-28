@@ -13,11 +13,11 @@
  *
  * The browser NEVER sees the FastAPI JWT – only the NextAuth session cookie.
  */
-import { NextResponse } from 'next/server';
-import { auth } from '../../../auth';
-import { signInternalJWT } from '../../../lib/internal-jwt';
+import { NextResponse } from "next/server";
+import { auth, handlers } from "../../../auth";
+import { signInternalJWT } from "../../../lib/internal-jwt";
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -31,12 +31,12 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
  * the original trailing slash from the request URL.
  */
 function buildBackendUrl(pathSegments, requestUrl) {
-  const path = pathSegments.join('/');
+  const path = pathSegments.join("/");
   const url = new URL(requestUrl);
   // Preserve trailing slash: /api/cv/ → /cv/
-  const trailingSlash = url.pathname.endsWith('/') ? '/' : '';
+  const trailingSlash = url.pathname.endsWith("/") ? "/" : "";
   const qs = url.searchParams.toString();
-  return `${BACKEND_URL}/${path}${trailingSlash}${qs ? `?${qs}` : ''}`;
+  return `${BACKEND_URL}/${path}${trailingSlash}${qs ? `?${qs}` : ""}`;
 }
 
 /**
@@ -46,6 +46,15 @@ async function proxyRequest(request, { params }) {
   try {
     const resolvedParams = await params;
     const pathSegments = resolvedParams.path || [];
+
+    // Next.js routing conflict: [...path] and auth/[...nextauth] are both catch-alls.
+    // If Next.js routes NextAuth calls here, explicitly delegate them to Auth.js handlers:
+    if (pathSegments.length > 0 && pathSegments[0] === "auth") {
+      if (request.method === "GET") return handlers.GET(request);
+      if (request.method === "POST") return handlers.POST(request);
+      return new NextResponse("Method Not Allowed", { status: 405 });
+    }
+
     const backendUrl = buildBackendUrl(pathSegments, request.url);
 
     // --- NextAuth session → internal JWT ---
@@ -60,15 +69,15 @@ async function proxyRequest(request, { params }) {
         username: session.user.username,
         isAdmin: session.user.isAdmin,
       });
-      headers.set('Authorization', `Bearer ${token}`);
+      headers.set("Authorization", `Bearer ${token}`);
     }
 
     // Forward relevant request headers
-    const contentType = request.headers.get('content-type');
-    if (contentType) headers.set('Content-Type', contentType);
+    const contentType = request.headers.get("content-type");
+    if (contentType) headers.set("Content-Type", contentType);
 
-    const accept = request.headers.get('accept');
-    if (accept) headers.set('Accept', accept);
+    const accept = request.headers.get("accept");
+    if (accept) headers.set("Accept", accept);
 
     // --- Build fetch options ---
     const fetchOpts = {
@@ -78,20 +87,23 @@ async function proxyRequest(request, { params }) {
 
     // Buffer body for non-GET/HEAD requests.
     // We must buffer (not stream) so we can re-send on 3xx redirects.
-    if (!['GET', 'HEAD'].includes(request.method)) {
+    if (!["GET", "HEAD"].includes(request.method)) {
       fetchOpts.body = await request.arrayBuffer();
     }
 
     // --- Forward to backend (intercept redirects so we can re-send body) ---
-    let backendRes = await fetch(backendUrl, { ...fetchOpts, redirect: 'manual' });
+    let backendRes = await fetch(backendUrl, {
+      ...fetchOpts,
+      redirect: "manual",
+    });
 
     // FastAPI uses redirect_slashes=True → trailing-slash 307/308 redirects.
     // Follow one level manually so non-GET methods work correctly.
     if (backendRes.status >= 300 && backendRes.status < 400) {
-      const location = backendRes.headers.get('location');
+      const location = backendRes.headers.get("location");
       if (location) {
         // Location may be relative (e.g. "/cv/") – resolve against backend base
-        const redirectUrl = location.startsWith('http')
+        const redirectUrl = location.startsWith("http")
           ? location
           : `${BACKEND_URL}${location}`;
         backendRes = await fetch(redirectUrl, fetchOpts);
@@ -105,7 +117,8 @@ async function proxyRequest(request, { params }) {
     for (const [key, value] of backendRes.headers.entries()) {
       const lower = key.toLowerCase();
       // Skip headers that NextJS / the browser should manage
-      if (['transfer-encoding', 'connection', 'keep-alive'].includes(lower)) continue;
+      if (["transfer-encoding", "connection", "keep-alive"].includes(lower))
+        continue;
       responseHeaders.set(key, value);
     }
 
@@ -115,9 +128,9 @@ async function proxyRequest(request, { params }) {
       headers: responseHeaders,
     });
   } catch (error) {
-    console.error('[api/proxy] Error:', error);
+    console.error("[api/proxy] Error:", error);
     return NextResponse.json(
-      { detail: 'Proxy error: could not reach backend' },
+      { detail: "Proxy error: could not reach backend" },
       { status: 502 },
     );
   }

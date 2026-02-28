@@ -122,7 +122,7 @@ class AdminSettings(BaseSettings):
 
 class GeminiSettings(BaseSettings):
     """Google Gemini API settings for automatic translation."""
-    model_config = SettingsConfigDict(env_prefix="GEMINI_")
+    model_config = SettingsConfigDict(env_prefix="GOOGLE_")
 
     api_key: str = ""
     model: str = "gemini-3-flash-preview"
