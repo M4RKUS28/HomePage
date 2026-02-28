@@ -3,8 +3,8 @@
  *
  * Image uploads use presigned MinIO URLs via the storage module.
  */
-import apiClient from './client';
-import { uploadFileViaPresigned, getPresignedDownloadUrl } from './storage';
+import apiClient from "./client";
+import { uploadFileViaPresigned, getPresignedDownloadUrl } from "./storage";
 
 // ---------------------------------------------------------------------------
 // CRUD
@@ -12,7 +12,7 @@ import { uploadFileViaPresigned, getPresignedDownloadUrl } from './storage';
 
 export const getProjectsApi = async (language) => {
   const params = language ? { language } : {};
-  const { data } = await apiClient.get('/projects/', { params });
+  const { data } = await apiClient.get("/projects/", { params });
   return data;
 };
 
@@ -27,14 +27,14 @@ export const createProjectApi = async (projectData) => {
     description: projectData.description,
     link: projectData.link,
     health_check_urls: projectData.health_check_urls || [],
-    language: projectData.language || 'en',
+    language: projectData.language || "en",
   };
 
-  if (projectData.position != null && projectData.position !== '') {
+  if (projectData.position != null && projectData.position !== "") {
     payload.position = parseInt(projectData.position, 10);
   }
 
-  const { data } = await apiClient.post('/projects/', payload);
+  const { data } = await apiClient.post("/projects/", payload);
   return data;
 };
 
@@ -45,6 +45,7 @@ export const updateProjectApi = async (projectId, projectData) => {
     link: projectData.link,
     position: projectData.position,
     health_check_urls: projectData.health_check_urls ?? [],
+    image_object_name: projectData.image_object_name,
   };
 
   // Remove undefined values
@@ -78,7 +79,7 @@ export const checkProjectStatusApi = async (projectId) => {
  * @returns {Promise<{ object_name: string }>}
  */
 export const uploadProjectImageApi = async (projectId, file) => {
-  return uploadFileViaPresigned(file, 'projects', projectId);
+  return uploadFileViaPresigned(file, "projects", projectId);
 };
 
 /**

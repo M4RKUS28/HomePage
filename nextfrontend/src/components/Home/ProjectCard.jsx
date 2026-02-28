@@ -123,7 +123,7 @@ const ProjectCard = ({
           </div>
         ) : (
           <motion.img
-            src={hasImage ? resolvedImage : DefaultProjectImage}
+            src={hasImage ? resolvedImage : DefaultProjectImage.src}
             alt={project.title}
             className="w-full h-full object-cover"
             onError={handleImageError}
