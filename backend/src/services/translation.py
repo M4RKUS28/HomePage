@@ -245,15 +245,16 @@ async def run_translation_sync() -> None:
                 return
 
             # ── CV translation ──────────────────────────────────────────
-            async def _process_cv_target(db_session, cv_item, src, tgt):
-                translated_data = await translate_cv_data(cv_item.data, src, tgt)
-                await cv_crud.upsert_cv(
-                    db_session,
-                    data=translated_data,
-                    owner_id=cv_item.owner_id,
-                    language=tgt,
-                    has_changes=False,
-                )
+            async def _process_cv_target(cv_data: dict, owner_id: int, src: str, tgt: str):
+                translated_data = await translate_cv_data(cv_data, src, tgt)
+                async with AsyncSessionLocal() as db_session:
+                    await cv_crud.upsert_cv(
+                        db_session,
+                        data=translated_data,
+                        owner_id=owner_id,
+                        language=tgt,
+                        has_changes=False,
+                    )
                 logger.info("[translation] CV translated %s → %s", src, tgt)
                 return True
 
@@ -265,7 +266,8 @@ async def run_translation_sync() -> None:
                 for target_lang in supported:
                     if target_lang == source_lang:
                         continue
-                    tasks.append(_process_cv_target(db, cv, source_lang, target_lang))
+                    # Pass extracted scalar values instead of the detached ORM model to prevent lazy loading errors in other thread
+                    tasks.append(_process_cv_target(cv.data, cv.owner_id, source_lang, target_lang))
 
                 results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -287,69 +289,89 @@ async def run_translation_sync() -> None:
                 for proj in changed_projects:
                     by_lang.setdefault(proj.language, []).append(proj)
 
-                async def _process_projects_target(db_session, projs, src, tgt):
+                # Pass a list of dictionaries containing only the scalar data we need instead of detached ORM models
+                async def _process_projects_target(projs_data: list, src: str, tgt: str):
                     batch_data = [
                         {
-                            "id": p.id,
-                            "title": p.title,
-                            "description": p.description,
+                            "id": p["id"],
+                            "title": p["title"],
+                            "description": p["description"],
                         }
-                        for p in projs
+                        for p in projs_data
                     ]
                     translated_items = await translate_projects_batch(batch_data, src, tgt)
                     translated_map = {item["id"]: item for item in translated_items}
 
-                    for source_proj in projs:
-                        trans = translated_map.get(source_proj.id, {})
-                        if not trans:
-                            continue
+                    async with AsyncSessionLocal() as db_session:
+                        for source_proj_data in projs_data:
+                            trans = translated_map.get(source_proj_data["id"], {})
+                            if not trans:
+                                continue
 
-                        # Find (or create) the matching project in the target language
-                        target_proj = (
-                            await project_crud.get_project_by_group_and_language(
-                                db_session,
-                                source_proj.translation_group_id,
-                                tgt,
-                            )
-                        )
-
-                        if target_proj:
-                            target_proj.title = trans.get("title", source_proj.title)
-                            target_proj.description = trans.get(
-                                "description", source_proj.description
-                            )
-                            target_proj.link = source_proj.link
-                            target_proj.image_object_name = source_proj.image_object_name
-                            target_proj.position = source_proj.position
-                            target_proj.health_check_urls = source_proj.health_check_urls or []
-                            target_proj.has_changes = False
-                        else:
-                            await project_crud.create_project(
-                                db_session,
-                                title=trans.get("title", source_proj.title),
-                                description=trans.get(
-                                    "description", source_proj.description
-                                ),
-                                link=source_proj.link,
-                                image_object_name=source_proj.image_object_name,
-                                position=source_proj.position,
-                                owner_id=source_proj.owner_id,
-                                language=tgt,
-                                health_check_urls=source_proj.health_check_urls or [],
-                                translation_group_id=source_proj.translation_group_id,
-                                has_changes=False,
+                            # Find (or create) the matching project in the target language
+                            target_proj = (
+                                await project_crud.get_project_by_group_and_language(
+                                    db_session,
+                                    source_proj_data["translation_group_id"],
+                                    tgt,
+                                )
                             )
 
-                    logger.info("[translation] %d projects translated %s → %s", len(projs), src, tgt)
+                            if target_proj:
+                                target_proj.title = trans.get("title", source_proj_data["title"])
+                                target_proj.description = trans.get(
+                                    "description", source_proj_data["description"]
+                                )
+                                target_proj.link = source_proj_data["link"]
+                                target_proj.image_object_name = source_proj_data["image_object_name"]
+                                target_proj.position = source_proj_data["position"]
+                                target_proj.health_check_urls = source_proj_data["health_check_urls"] or []
+                                target_proj.has_changes = False
+                            else:
+                                await project_crud.create_project(
+                                    db_session,
+                                    title=trans.get("title", source_proj_data["title"]),
+                                    description=trans.get(
+                                        "description", source_proj_data["description"]
+                                    ),
+                                    link=source_proj_data["link"],
+                                    image_object_name=source_proj_data["image_object_name"],
+                                    position=source_proj_data["position"],
+                                    owner_id=source_proj_data["owner_id"],
+                                    language=tgt,
+                                    health_check_urls=source_proj_data["health_check_urls"] or [],
+                                    translation_group_id=source_proj_data["translation_group_id"],
+                                    has_changes=False,
+                                )
+                        await db_session.commit()
+
+                    logger.info("[translation] %d projects translated %s → %s", len(projs_data), src, tgt)
                     return True
 
                 for source_lang, projects in by_lang.items():
                     logger.info("[translation] Translating %d projects from '%s' concurrently", len(projects), source_lang)
+                    
+                    # Pre-serialize project data so threaded tasks don't touch unattached ORM models
+                    projs_data = [
+                        {
+                            "id": p.id,
+                            "title": p.title,
+                            "description": p.description,
+                            "translation_group_id": p.translation_group_id,
+                            "link": p.link,
+                            "image_object_name": p.image_object_name,
+                            "position": p.position,
+                            "owner_id": p.owner_id,
+                            "health_check_urls": p.health_check_urls
+                        }
+                        for p in projects
+                    ]
+                    
                     tasks = []
                     for target_lang in supported:
                         if target_lang == source_lang:
                             continue
-                        tasks.append(_process_projects_target(db, projects, source_lang, target_lang))
+                        tasks.append(_process_projects_target(projs_data, source_lang, target_lang))
                         
                     results = await asyncio.gather(*tasks, return_exceptions=True)
                     

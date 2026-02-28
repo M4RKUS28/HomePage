@@ -152,6 +152,10 @@ async def set_project_status(
 # Delete
 # ---------------------------------------------------------------------------
 
-async def delete_project(db: AsyncSession, project: Project) -> None:
-    await db.delete(project)
+async def delete_projects_by_group(db: AsyncSession, translation_group_id: int) -> None:
+    """Delete all projects (in all languages) that share the given translation_group_id."""
+    from sqlalchemy import delete
+    await db.execute(
+        delete(Project).where(Project.translation_group_id == translation_group_id)
+    )
     await db.commit()

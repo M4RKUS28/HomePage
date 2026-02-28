@@ -164,10 +164,31 @@ async def update_project(
 
 async def delete_project(db: AsyncSession, project_id: int) -> None:
     project = await get_project(db, project_id)
-    # Clean up image from MinIO
-    if project.image_object_name:
-        get_minio().delete_file(project.image_object_name)
-    await project_crud.delete_project(db, project)
+    
+    # Fetch all projects in the same translation group to cascade delete
+    group_id = project.translation_group_id
+    if group_id:
+        from sqlalchemy import select
+        result = await db.execute(
+            select(Project).where(Project.translation_group_id == group_id)
+        )
+        all_projects_in_group = result.scalars().all()
+    else:
+        # Fallback if for some reason group_id is missing
+        all_projects_in_group = [project]
+
+    # Clean up image from MinIO for all projects in the group
+    minio_client = get_minio()
+    for p in all_projects_in_group:
+        if p.image_object_name:
+            minio_client.delete_file(p.image_object_name)
+
+    if group_id:
+        await project_crud.delete_projects_by_group(db, group_id)
+    else:
+        # Fallback deletion
+        await db.delete(project)
+        await db.commit()
 
 
 def get_project_image_url(project: Project) -> Optional[str]:

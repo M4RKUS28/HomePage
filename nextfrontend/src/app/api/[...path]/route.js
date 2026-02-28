@@ -83,6 +83,7 @@ async function proxyRequest(request, { params }) {
     const fetchOpts = {
       method: request.method,
       headers,
+      cache: "no-store", // Prevents Next.js 15 from caching GET requests
     };
 
     // Buffer body for non-GET/HEAD requests.

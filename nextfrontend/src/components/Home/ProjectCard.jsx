@@ -123,7 +123,7 @@ const ProjectCard = ({
           </div>
         ) : (
           <motion.img
-            src={hasImage ? resolvedImage : DefaultProjectImage.src}
+            src={hasImage ? resolvedImage : (DefaultProjectImage?.src || DefaultProjectImage)}
             alt={project.title}
             className="w-full h-full object-cover"
             onError={handleImageError}
@@ -252,7 +252,7 @@ const ProjectCard = ({
                 <Edit size={15} />
               </button>
               <button
-                onClick={() => onDelete(project.id)}
+                onClick={() => onDelete(project)}
                 title={t('deleteProject')}
                 className={`${iconBtn} ${
                   theme === 'dark'

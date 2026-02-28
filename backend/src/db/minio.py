@@ -70,7 +70,13 @@ class MinioStorage:
             return url
         parsed = urlparse(url)
         public = urlparse(self._public_url)
-        return urlunparse(parsed._replace(scheme=public.scheme, netloc=public.netloc))
+        
+        # Merge paths if public_url has a path component (e.g., /minio)
+        new_path = parsed.path
+        if public.path and public.path != "/":
+            new_path = f"{public.path.rstrip('/')}/{parsed.path.lstrip('/')}"
+            
+        return urlunparse(parsed._replace(scheme=public.scheme, netloc=public.netloc, path=new_path))
 
     def presigned_put_url(
         self,
