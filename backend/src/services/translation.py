@@ -245,36 +245,35 @@ async def run_translation_sync() -> None:
                 return
 
             # ── CV translation ──────────────────────────────────────────
+            async def _process_cv_target(db_session, cv_item, src, tgt):
+                translated_data = await translate_cv_data(cv_item.data, src, tgt)
+                await cv_crud.upsert_cv(
+                    db_session,
+                    data=translated_data,
+                    owner_id=cv_item.owner_id,
+                    language=tgt,
+                    has_changes=False,
+                )
+                logger.info("[translation] CV translated %s → %s", src, tgt)
+                return True
+
             for cv in changed_cvs:
                 source_lang = cv.language
-                logger.info("[translation] Translating CV from '%s'", source_lang)
+                logger.info("[translation] Translating CV from '%s' concurrently", source_lang)
 
-                cv_translation_success = True
+                tasks = []
                 for target_lang in supported:
                     if target_lang == source_lang:
                         continue
-                    try:
-                        translated = await translate_cv_data(
-                            cv.data, source_lang, target_lang
-                        )
-                        await cv_crud.upsert_cv(
-                            db,
-                            data=translated,
-                            owner_id=cv.owner_id,
-                            language=target_lang,
-                            has_changes=False,
-                        )
-                        logger.info(
-                            "[translation] CV translated %s → %s", source_lang, target_lang
-                        )
-                    except Exception as exc:
+                    tasks.append(_process_cv_target(db, cv, source_lang, target_lang))
+
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+
+                cv_translation_success = True
+                for res in results:
+                    if isinstance(res, Exception):
                         cv_translation_success = False
-                        logger.error(
-                            "[translation] CV translation failed %s → %s: %s",
-                            source_lang,
-                            target_lang,
-                            exc,
-                        )
+                        logger.error("[translation] CV translation failed: %s", res)
 
                 if cv_translation_success:
                     # Reset flag on the source record
@@ -288,85 +287,77 @@ async def run_translation_sync() -> None:
                 for proj in changed_projects:
                     by_lang.setdefault(proj.language, []).append(proj)
 
+                async def _process_projects_target(db_session, projs, src, tgt):
+                    batch_data = [
+                        {
+                            "id": p.id,
+                            "title": p.title,
+                            "description": p.description,
+                        }
+                        for p in projs
+                    ]
+                    translated_items = await translate_projects_batch(batch_data, src, tgt)
+                    translated_map = {item["id"]: item for item in translated_items}
+
+                    for source_proj in projs:
+                        trans = translated_map.get(source_proj.id, {})
+                        if not trans:
+                            continue
+
+                        # Find (or create) the matching project in the target language
+                        target_proj = (
+                            await project_crud.get_project_by_group_and_language(
+                                db_session,
+                                source_proj.translation_group_id,
+                                tgt,
+                            )
+                        )
+
+                        if target_proj:
+                            target_proj.title = trans.get("title", source_proj.title)
+                            target_proj.description = trans.get(
+                                "description", source_proj.description
+                            )
+                            target_proj.link = source_proj.link
+                            target_proj.image_object_name = source_proj.image_object_name
+                            target_proj.position = source_proj.position
+                            target_proj.health_check_urls = source_proj.health_check_urls or []
+                            target_proj.has_changes = False
+                        else:
+                            await project_crud.create_project(
+                                db_session,
+                                title=trans.get("title", source_proj.title),
+                                description=trans.get(
+                                    "description", source_proj.description
+                                ),
+                                link=source_proj.link,
+                                image_object_name=source_proj.image_object_name,
+                                position=source_proj.position,
+                                owner_id=source_proj.owner_id,
+                                language=tgt,
+                                health_check_urls=source_proj.health_check_urls or [],
+                                translation_group_id=source_proj.translation_group_id,
+                                has_changes=False,
+                            )
+
+                    logger.info("[translation] %d projects translated %s → %s", len(projs), src, tgt)
+                    return True
+
                 for source_lang, projects in by_lang.items():
-                    projects_translation_success = True
+                    logger.info("[translation] Translating %d projects from '%s' concurrently", len(projects), source_lang)
+                    tasks = []
                     for target_lang in supported:
                         if target_lang == source_lang:
                             continue
-                        try:
-                            batch = [
-                                {
-                                    "id": p.id,
-                                    "title": p.title,
-                                    "description": p.description,
-                                }
-                                for p in projects
-                            ]
-                            translated_items = await translate_projects_batch(
-                                batch, source_lang, target_lang
-                            )
-                            translated_map = {item["id"]: item for item in translated_items}
-
-                            for source_proj in projects:
-                                trans = translated_map.get(source_proj.id, {})
-                                if not trans:
-                                    continue
-
-                                # Find (or create) the matching project in the target language
-                                target_proj = (
-                                    await project_crud.get_project_by_group_and_language(
-                                        db,
-                                        source_proj.translation_group_id,
-                                        target_lang,
-                                    )
-                                )
-
-                                if target_proj:
-                                    target_proj.title = trans.get("title", source_proj.title)
-                                    target_proj.description = trans.get(
-                                        "description", source_proj.description
-                                    )
-                                    target_proj.link = source_proj.link
-                                    target_proj.image_object_name = (
-                                        source_proj.image_object_name
-                                    )
-                                    target_proj.position = source_proj.position
-                                    target_proj.health_check_urls = (
-                                        source_proj.health_check_urls or []
-                                    )
-                                    target_proj.has_changes = False
-                                else:
-                                    await project_crud.create_project(
-                                        db,
-                                        title=trans.get("title", source_proj.title),
-                                        description=trans.get(
-                                            "description", source_proj.description
-                                        ),
-                                        link=source_proj.link,
-                                        image_object_name=source_proj.image_object_name,
-                                        position=source_proj.position,
-                                        owner_id=source_proj.owner_id,
-                                        language=target_lang,
-                                        health_check_urls=source_proj.health_check_urls
-                                        or [],
-                                        translation_group_id=source_proj.translation_group_id,
-                                        has_changes=False,
-                                    )
-
-                            logger.info(
-                                "[translation] %d projects translated %s → %s",
-                                len(projects),
-                                source_lang,
-                                target_lang,
-                            )
-                        except Exception as exc:
+                        tasks.append(_process_projects_target(db, projects, source_lang, target_lang))
+                        
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
+                    
+                    projects_translation_success = True
+                    for res in results:
+                        if isinstance(res, Exception):
                             projects_translation_success = False
-                            logger.error(
-                                "[translation] Project translation failed %s → %s: %s",
-                                source_lang,
-                                target_lang,
-                                exc,
-                            )
+                            logger.error("[translation] Project translation failed: %s", res)
 
                     if projects_translation_success:
                         # Reset flags for source projects in this language batch
