@@ -235,14 +235,15 @@
       "save": "Speichern",
       "saving": "Wird gespeichert...",
       "saved": "Lebenslauf erfolgreich gespeichert!",
-      "saveFailed": "Speichern des Lebenslaufs fehlgeschlagen.",
+      "saveFailed": "Lebenslauf konnte nicht gespeichert werden.",
       "addItem": "Eintrag hinzufügen",
       "editItem": "Eintrag bearbeiten",
       "deleteItem": "Eintrag löschen",
       "rawData": "Rohdaten",
       "personalInfo": "Persönliche Daten",
       "moveUp": "Nach oben",
-      "moveDown": "Nach unten"
+      "moveDown": "Nach unten",
+      "saveSuccess": "Lebenslauf erfolgreich gespeichert!"
     },
     "access": {
       "title": "Zugriffsprotokoll",

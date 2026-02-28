@@ -235,14 +235,15 @@
       "save": "Salvar",
       "saving": "Salvando...",
       "saved": "CV salvo com sucesso!",
-      "saveFailed": "Falha ao salvar o CV.",
+      "saveFailed": "Falha ao guardar o CV.",
       "addItem": "Adicionar item",
       "editItem": "Editar item",
       "deleteItem": "Excluir item",
       "rawData": "Dados brutos",
       "personalInfo": "Informações pessoais",
       "moveUp": "Mover para cima",
-      "moveDown": "Mover para baixo"
+      "moveDown": "Mover para baixo",
+      "saveSuccess": "CV salvo com sucesso!"
     },
     "access": {
       "title": "Registro de acesso",

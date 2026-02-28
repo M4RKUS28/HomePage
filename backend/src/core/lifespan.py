@@ -98,6 +98,7 @@ async def lifespan(app: FastAPI):
         minutes=20,
         id="health_check_all_projects",
         replace_existing=True,
+        misfire_grace_time=60,
     )
 
     # Resolve pending IPs every 2 minutes
@@ -107,6 +108,7 @@ async def lifespan(app: FastAPI):
         minutes=2,
         id="resolve_pending_ips",
         replace_existing=True,
+        misfire_grace_time=60,
     )
 
     scheduler.start()
@@ -120,6 +122,7 @@ async def lifespan(app: FastAPI):
             minutes=settings.translation.interval_minutes,
             id="translation_sync",
             replace_existing=True,
+            misfire_grace_time=60,
         )
         logger.info(
             "[startup] Translation sync enabled (every %d min).",

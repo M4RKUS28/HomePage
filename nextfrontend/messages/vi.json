@@ -235,14 +235,15 @@
       "save": "Lưu",
       "saving": "Đang lưu...",
       "saved": "CV đã được lưu thành công!",
-      "saveFailed": "Lưu CV thất bại.",
+      "saveFailed": "Lỗi khi lưu sơ yếu lý lịch.",
       "addItem": "Thêm mục",
       "editItem": "Chỉnh sửa mục",
       "deleteItem": "Xóa mục",
       "rawData": "Dữ liệu thô",
       "personalInfo": "Thông tin cá nhân",
       "moveUp": "Di chuyển lên",
-      "moveDown": "Di chuyển xuống"
+      "moveDown": "Di chuyển xuống",
+      "saveSuccess": "CV đã được lưu thành công!"
     },
     "access": {
       "title": "Nhật ký truy cập",

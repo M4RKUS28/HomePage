@@ -125,7 +125,7 @@ class GeminiSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GEMINI_")
 
     api_key: str = ""
-    model: str = "gemini-2.0-flash"
+    model: str = "gemini-3-flash-preview"
 
 
 class TranslationSettings(BaseSettings):
@@ -133,7 +133,7 @@ class TranslationSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="TRANSLATION_")
 
     enabled: bool = False
-    interval_minutes: int = 5
+    interval_minutes: int = 1
     supported_languages: List[str] = ["en", "de", "vi", "fr", "it", "zh", "ja", "es", "pt"]
 
 

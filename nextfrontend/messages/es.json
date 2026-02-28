@@ -242,7 +242,8 @@
       "rawData": "Datos sin procesar",
       "personalInfo": "Información personal",
       "moveUp": "Mover arriba",
-      "moveDown": "Mover abajo"
+      "moveDown": "Mover abajo",
+      "saveSuccess": "¡CV guardado con éxito!"
     },
     "access": {
       "title": "Registro de acceso",

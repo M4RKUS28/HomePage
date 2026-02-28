@@ -242,7 +242,8 @@
       "rawData": "Raw Data",
       "personalInfo": "Personal Info",
       "moveUp": "Move Up",
-      "moveDown": "Move Down"
+      "moveDown": "Move Down",
+      "saveSuccess": "CV saved successfully!"
     },
     "access": {
       "title": "Access Log",

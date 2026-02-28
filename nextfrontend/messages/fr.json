@@ -242,7 +242,8 @@
       "rawData": "Données brutes",
       "personalInfo": "Informations personnelles",
       "moveUp": "Déplacer vers le haut",
-      "moveDown": "Déplacer vers le bas"
+      "moveDown": "Déplacer vers le bas",
+      "saveSuccess": "CV enregistré avec succès !"
     },
     "access": {
       "title": "Journal d'accès",

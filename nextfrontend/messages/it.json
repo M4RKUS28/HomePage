@@ -242,7 +242,8 @@
       "rawData": "Dati grezzi",
       "personalInfo": "Informazioni personali",
       "moveUp": "Sposta su",
-      "moveDown": "Sposta giù"
+      "moveDown": "Sposta giù",
+      "saveSuccess": "CV salvato con successo!"
     },
     "access": {
       "title": "Registro accessi",

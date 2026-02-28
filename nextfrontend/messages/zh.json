@@ -242,7 +242,8 @@
       "rawData": "原始数据",
       "personalInfo": "个人信息",
       "moveUp": "上移",
-      "moveDown": "下移"
+      "moveDown": "下移",
+      "saveSuccess": "简历保存成功！"
     },
     "access": {
       "title": "访问日志",
