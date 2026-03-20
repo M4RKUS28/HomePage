@@ -53,7 +53,8 @@
     "present": "至今",
     "noData": "暂无数据。",
     "showMore": "显示更多",
-    "showLess": "收起"
+    "showLess": "收起",
+    "clickForDetails": "点击查看详情"
   },
   "connect": {
     "title": "联系我",

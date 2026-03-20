@@ -53,7 +53,8 @@
     "present": "Hiện tại",
     "noData": "Không có dữ liệu.",
     "showMore": "Xem thêm",
-    "showLess": "Thu gọn"
+    "showLess": "Thu gọn",
+    "clickForDetails": "Nhấp để xem chi tiết"
   },
   "connect": {
     "title": "Liên hệ",

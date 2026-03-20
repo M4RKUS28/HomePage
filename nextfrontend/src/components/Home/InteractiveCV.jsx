@@ -63,6 +63,7 @@ const Section = ({ title, children, icon: IconComponent }) => (
 const TimelineItem = ({ item, index = 0 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const t = useTranslations('cv');
   const ItemIcon = item.icon;
   
   // Extract details and links
@@ -110,7 +111,7 @@ const TimelineItem = ({ item, index = 0 }) => {
             className="pointer-events-none absolute top-3 right-3 flex items-center rounded-full bg-gray-900/80 px-2 py-1 text-[11px] font-medium text-gray-100 shadow-lg"
           >
             <MousePointerClick size={12} className="mr-1" />
-            Für Details klicken
+            {t('clickForDetails')}
           </motion.div>
         )}
       </AnimatePresence>

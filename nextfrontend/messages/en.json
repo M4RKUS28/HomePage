@@ -53,7 +53,8 @@
     "present": "Present",
     "noData": "No data available.",
     "showMore": "Show More",
-    "showLess": "Show Less"
+    "showLess": "Show Less",
+    "clickForDetails": "Click for details"
   },
   "connect": {
     "title": "Let's Connect",

@@ -53,7 +53,8 @@
     "present": "Heute",
     "noData": "Keine Daten verfügbar.",
     "showMore": "Mehr anzeigen",
-    "showLess": "Weniger anzeigen"
+    "showLess": "Weniger anzeigen",
+    "clickForDetails": "Für Details klicken"
   },
   "connect": {
     "title": "Kontakt aufnehmen",

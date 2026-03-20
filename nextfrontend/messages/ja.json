@@ -53,7 +53,8 @@
     "present": "現在",
     "noData": "データがありません。",
     "showMore": "もっと見る",
-    "showLess": "閉じる"
+    "showLess": "閉じる",
+    "clickForDetails": "詳細はクリック"
   },
   "connect": {
     "title": "お問い合わせ",

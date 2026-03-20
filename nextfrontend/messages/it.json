@@ -53,7 +53,8 @@
     "present": "Presente",
     "noData": "Nessun dato disponibile.",
     "showMore": "Mostra di più",
-    "showLess": "Mostra di meno"
+    "showLess": "Mostra di meno",
+    "clickForDetails": "Clicca per i dettagli"
   },
   "connect": {
     "title": "Contattami",
