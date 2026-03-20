@@ -54,12 +54,16 @@ async def get_projects_with_changes(db: AsyncSession) -> Sequence[Project]:
 
 
 async def check_pending_changes_other_language(
-    db: AsyncSession, *, exclude_language: str
+    db: AsyncSession, *, translation_group_id: int, exclude_language: str
 ) -> bool:
-    """Check if any project in a DIFFERENT language has pending changes."""
+    """Check if any project in the SAME translation group but a DIFFERENT language has pending changes."""
     result = await db.execute(
         select(Project.id)
-        .where(Project.language != exclude_language, Project.has_changes == True)  # noqa: E712
+        .where(
+            Project.translation_group_id == translation_group_id,
+            Project.language != exclude_language,
+            Project.has_changes == True,  # noqa: E712
+        )
         .limit(1)
     )
     return result.scalar_one_or_none() is not None

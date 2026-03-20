@@ -129,17 +129,19 @@ async def update_project(
     """
     project = await get_project(db, project_id)
 
-    # Conflict check: reject if another language has pending changes
+    # Conflict check: reject if another language of THIS PROJECT has pending changes
     has_conflict = await project_crud.check_pending_changes_other_language(
-        db, exclude_language=project.language
+        db,
+        translation_group_id=project.translation_group_id,
+        exclude_language=project.language,
     )
     if has_conflict:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
-                f"Cannot update project for '{project.language}': another language "
-                "has pending changes that must be translated first. Please wait for "
-                "the automatic translation to complete."
+                f"Cannot update project for '{project.language}': another language version "
+                "of this project has pending changes that must be translated first. "
+                "Please wait for the automatic translation to complete."
             ),
         )
 
