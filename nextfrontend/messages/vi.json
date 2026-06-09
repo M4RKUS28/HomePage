@@ -182,7 +182,8 @@
       "messages": "Tin nhắn",
       "users": "Người dùng",
       "cv": "Trình chỉnh sửa CV",
-      "access": "Nhật ký truy cập"
+      "access": "Nhật ký truy cập",
+      "settings": "Cài đặt"
     },
     "projects": {
       "title": "Quản lý dự án",
@@ -263,6 +264,17 @@
       "last24Hours": "24 giờ qua",
       "last7Days": "7 ngày qua",
       "last30Days": "30 ngày qua"
+    },
+    "settings": {
+      "title": "Cài đặt dịch thuật",
+      "modelLabel": "Mô hình dịch Gemini",
+      "modelHelp": "Mô hình dùng để tự động dịch CV & dự án. Thay đổi sẽ áp dụng ở lần dịch tiếp theo.",
+      "defaultBadge": "Mặc định: {model}",
+      "save": "Lưu",
+      "saving": "Đang lưu…",
+      "saved": "Đã cập nhật mô hình dịch.",
+      "saveError": "Không thể cập nhật mô hình dịch.",
+      "loadError": "Không thể tải cài đặt."
     }
   },
   "notFound": {

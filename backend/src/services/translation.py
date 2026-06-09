@@ -17,7 +17,7 @@ from typing import Dict, List, Sequence
 from sqlalchemy import text
 
 from ..core.config import get_settings
-from ..db.crud import cv as cv_crud, project as project_crud
+from ..db.crud import cv as cv_crud, project as project_crud, app_setting as app_setting_crud
 from ..db.session import AsyncSessionLocal, async_engine
 
 logger = logging.getLogger(__name__)
@@ -50,14 +50,20 @@ _LANG_NAMES: Dict[str, str] = {
 # Gemini helpers
 # ---------------------------------------------------------------------------
 
-def _get_agent(system_instruction: str, output_schema: type = None):
+async def _get_active_model(db) -> str:
+    """Resolve the translation model: admin DB override → env/config default."""
+    stored = await app_setting_crud.get_setting(db, app_setting_crud.TRANSLATION_MODEL_KEY)
+    return stored or settings.gemini.model
+
+
+def _get_agent(system_instruction: str, model: str, output_schema: type = None):
     """Initialise a google-adk Agent."""
     from google.adk.agents.llm_agent import Agent
     from google.genai import types
 
     kwargs = {
         "name": "translator_agent",
-        "model": settings.gemini.model,
+        "model": model,
         "instruction": system_instruction,
     }
     
@@ -77,6 +83,7 @@ async def translate_cv_data(
     source_data: dict,
     source_lang: str,
     target_lang: str,
+    model: str,
 ) -> dict:
     """Translate the full CV JSON blob from *source_lang* → *target_lang*."""
     # ADK uses different typing if needed
@@ -100,7 +107,7 @@ async def translate_cv_data(
     )
 
     logger.info(f"[translation] [Gemini ADK] Initiating async run for CV {source_lang} -> {target_lang}")
-    agent = _get_agent(system_prompt) # Use raw JSON mime-type instead of schema constraint
+    agent = _get_agent(system_prompt, model) # Use raw JSON mime-type instead of schema constraint
     try:
         from google.adk.runners import Runner
         from google.adk.sessions import InMemorySessionService
@@ -153,6 +160,7 @@ async def translate_projects_batch(
     projects: List[dict],
     source_lang: str,
     target_lang: str,
+    model: str,
 ) -> List[dict]:
     # ADK uses different typing if needed
 
@@ -178,7 +186,7 @@ async def translate_projects_batch(
     )
 
     logger.info(f"[translation] [Gemini ADK] Initiating async run for {len(projects)} Projects {source_lang} -> {target_lang}")
-    agent = _get_agent(system_prompt)
+    agent = _get_agent(system_prompt, model)
     try:
         from google.adk.runners import Runner
         from google.adk.sessions import InMemorySessionService
@@ -257,6 +265,10 @@ async def run_translation_sync() -> None:
 
     async with AsyncSessionLocal() as db:
         try:
+            # Admin-configurable model (falls back to env/config default)
+            active_model = await _get_active_model(db)
+            logger.info("[translation] Using Gemini model: %s", active_model)
+
             # Nach Lock: Nochmals prüfen, ob Übersetzungen ausstehen
             changed_cvs = await cv_crud.get_cvs_with_changes(db)
             logger.info(f"[translation] Found {len(changed_cvs) if changed_cvs else 0} CVs with changes.")
@@ -270,7 +282,7 @@ async def run_translation_sync() -> None:
 
             # ── CV translation ──────────────────────────────────────────
             async def _process_cv_target(cv_data: dict, owner_id: int, src: str, tgt: str):
-                translated_data = await translate_cv_data(cv_data, src, tgt)
+                translated_data = await translate_cv_data(cv_data, src, tgt, active_model)
                 async with AsyncSessionLocal() as db_session:
                     await cv_crud.upsert_cv(
                         db_session,
@@ -323,7 +335,7 @@ async def run_translation_sync() -> None:
                         }
                         for p in projs_data
                     ]
-                    translated_items = await translate_projects_batch(batch_data, src, tgt)
+                    translated_items = await translate_projects_batch(batch_data, src, tgt, active_model)
                     # Key by str(id) so an int/str type mismatch in the model
                     # output never silently drops a translation.
                     translated_map = {

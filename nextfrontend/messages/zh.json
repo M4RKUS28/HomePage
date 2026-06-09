@@ -182,7 +182,8 @@
       "messages": "消息",
       "users": "用户",
       "cv": "简历编辑器",
-      "access": "访问日志"
+      "access": "访问日志",
+      "settings": "设置"
     },
     "projects": {
       "title": "项目管理",
@@ -263,6 +264,17 @@
       "last24Hours": "最近24小时",
       "last7Days": "最近7天",
       "last30Days": "最近30天"
+    },
+    "settings": {
+      "title": "翻译设置",
+      "modelLabel": "Gemini 翻译模型",
+      "modelHelp": "用于自动翻译简历和项目的模型。更改将在下次翻译时生效。",
+      "defaultBadge": "默认：{model}",
+      "save": "保存",
+      "saving": "保存中…",
+      "saved": "翻译模型已更新。",
+      "saveError": "更新翻译模型失败。",
+      "loadError": "加载设置失败。"
     }
   },
   "notFound": {

@@ -182,7 +182,8 @@
       "messages": "Nachrichten",
       "users": "Benutzer",
       "cv": "Lebenslauf-Editor",
-      "access": "Zugriffsprotokoll"
+      "access": "Zugriffsprotokoll",
+      "settings": "Einstellungen"
     },
     "projects": {
       "title": "Projektverwaltung",
@@ -263,6 +264,17 @@
       "last24Hours": "Letzte 24 Stunden",
       "last7Days": "Letzte 7 Tage",
       "last30Days": "Letzte 30 Tage"
+    },
+    "settings": {
+      "title": "Übersetzungseinstellungen",
+      "modelLabel": "Gemini-Übersetzungsmodell",
+      "modelHelp": "Modell für die automatische Übersetzung von Lebenslauf & Projekten. Änderungen gelten ab dem nächsten Übersetzungslauf.",
+      "defaultBadge": "Standard: {model}",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Übersetzungsmodell aktualisiert.",
+      "saveError": "Aktualisierung des Übersetzungsmodells fehlgeschlagen.",
+      "loadError": "Einstellungen konnten nicht geladen werden."
     }
   },
   "notFound": {

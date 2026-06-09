@@ -182,7 +182,8 @@
       "messages": "Mensagens",
       "users": "Usuários",
       "cv": "Editor de CV",
-      "access": "Registro de acesso"
+      "access": "Registro de acesso",
+      "settings": "Configurações"
     },
     "projects": {
       "title": "Gerenciamento de projetos",
@@ -263,6 +264,17 @@
       "last24Hours": "Últimas 24 horas",
       "last7Days": "Últimos 7 dias",
       "last30Days": "Últimos 30 dias"
+    },
+    "settings": {
+      "title": "Configurações de tradução",
+      "modelLabel": "Modelo de tradução Gemini",
+      "modelHelp": "Modelo usado para a tradução automática de currículo e projetos. As alterações se aplicam na próxima tradução.",
+      "defaultBadge": "Padrão: {model}",
+      "save": "Salvar",
+      "saving": "Salvando…",
+      "saved": "Modelo de tradução atualizado.",
+      "saveError": "Falha ao atualizar o modelo de tradução.",
+      "loadError": "Falha ao carregar as configurações."
     }
   },
   "notFound": {

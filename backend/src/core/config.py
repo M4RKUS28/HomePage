@@ -125,7 +125,7 @@ class GeminiSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOGLE_")
 
     api_key: str = ""
-    model: str = "gemini-3-flash-preview"
+    model: str = "gemini-3.1-pro-preview"
 
 
 class TranslationSettings(BaseSettings):
