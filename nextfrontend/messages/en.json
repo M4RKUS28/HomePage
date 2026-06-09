@@ -182,7 +182,8 @@
       "messages": "Messages",
       "users": "Users",
       "cv": "CV Editor",
-      "access": "Access Log"
+      "access": "Access Log",
+      "settings": "Settings"
     },
     "projects": {
       "title": "Project Management",
@@ -263,6 +264,17 @@
       "last24Hours": "Last 24 hours",
       "last7Days": "Last 7 days",
       "last30Days": "Last 30 days"
+    },
+    "settings": {
+      "title": "Translation Settings",
+      "modelLabel": "Gemini Translation Model",
+      "modelHelp": "Model used for automatic CV & project translation. Changes apply on the next translation run.",
+      "defaultBadge": "Default: {model}",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Translation model updated.",
+      "saveError": "Failed to update the translation model.",
+      "loadError": "Failed to load settings."
     }
   },
   "notFound": {

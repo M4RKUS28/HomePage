@@ -182,7 +182,8 @@
       "messages": "メッセージ",
       "users": "ユーザー",
       "cv": "履歴書エディター",
-      "access": "アクセスログ"
+      "access": "アクセスログ",
+      "settings": "設定"
     },
     "projects": {
       "title": "プロジェクト管理",
@@ -263,6 +264,17 @@
       "last24Hours": "過去24時間",
       "last7Days": "過去7日間",
       "last30Days": "過去30日間"
+    },
+    "settings": {
+      "title": "翻訳設定",
+      "modelLabel": "Gemini 翻訳モデル",
+      "modelHelp": "履歴書とプロジェクトの自動翻訳に使用するモデル。変更は次回の翻訳から適用されます。",
+      "defaultBadge": "デフォルト：{model}",
+      "save": "保存",
+      "saving": "保存中…",
+      "saved": "翻訳モデルを更新しました。",
+      "saveError": "翻訳モデルの更新に失敗しました。",
+      "loadError": "設定の読み込みに失敗しました。"
     }
   },
   "notFound": {

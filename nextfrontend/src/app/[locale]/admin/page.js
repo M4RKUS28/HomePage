@@ -7,7 +7,8 @@ import MessageList from '../../../components/Admin/MessageList';
 import UserManagement from '../../../components/Admin/UserManagement';
 import CVEditor from '../../../components/Admin/CVEditor';
 import AccessLog from '../../../components/Admin/AccessLog';
-import { Briefcase, MessageCircle, UserCog, FileEdit, MapPin } from 'lucide-react';
+import AdminSettings from '../../../components/Admin/Settings';
+import { Briefcase, MessageCircle, UserCog, FileEdit, MapPin, Cog } from 'lucide-react';
 import { useTheme } from '../../../hooks/useTheme';
 import AdminRoute from '../../../components/Auth/AdminRoute';
 import { useTranslations } from 'next-intl';
@@ -50,6 +51,8 @@ export default function AdminDashboardPage() {
         return <CVEditor />;
       case 'access':
         return <AccessLog />;
+      case 'settings':
+        return <AdminSettings />;
       default:
         return null;
     }
@@ -91,6 +94,9 @@ export default function AdminDashboardPage() {
           </TabButton>
           <TabButton onClick={() => setActiveTab('access')} isActive={activeTab === 'access'}>
             <MapPin size={16} className="inline mr-1.5" /> {t('tabs.access')}
+          </TabButton>
+          <TabButton onClick={() => setActiveTab('settings')} isActive={activeTab === 'settings'}>
+            <Cog size={16} className="inline mr-1.5" /> {t('tabs.settings')}
           </TabButton>
         </div>
 

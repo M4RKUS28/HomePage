@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($env:Path = \"C:\\\\Users\\\\marku\\\\AppData\\\\Local\\\\nvm\\\\v22.18.0;$env:Path\"; $fe = \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\nextfrontend\"; Set-Location $fe; & \"C:\\\\Users\\\\marku\\\\AppData\\\\Local\\\\nvm\\\\v22.18.0\\\\node.exe\" \"node_modules\\\\next\\\\dist\\\\bin\\\\next\" build 2>&1 | Out-String -Stream | Select-Object -Last 70)",
+      "Bash(git checkout *)",
+      "Bash(\"C:/Users/marku/AppData/Local/nvm/v22.18.0/node.exe\" -e \"const fs=require\\('fs'\\),p='nextfrontend/messages';let ok=true;for\\(const f of fs.readdirSync\\(p\\)\\){if\\(!f.endsWith\\('.json'\\)\\)continue;try{const j=JSON.parse\\(fs.readFileSync\\(p+'/'+f,'utf8'\\)\\);const h=j.hero||{};const leftover=['badge','scrollHint','statsProjects','statsSkills','statsLanguages'].filter\\(k=>k in h\\);console.log\\(f,'OK', leftover.length?\\('STILL HAS:'+leftover\\):'hero clean'\\)}catch\\(e\\){ok=false;console.log\\(f,'PARSE ERROR',e.message\\)}}process.exit\\(ok?0:1\\)\")",
+      "Bash(git -c core.autocrlf=false status --short)",
+      "Bash(git --no-pager diff HEAD -- backend/src/services/access_log.py)",
+      "Bash(git --no-pager diff HEAD -- backend/src/core/lifespan.py)",
+      "Bash(git --no-pager diff HEAD -- backend/.env.example)",
+      "Bash(git --no-pager show 633d623 --stat --oneline)",
+      "Bash(python -c \"import sys,json; print\\('badge' in json.load\\(sys.stdin\\).get\\('hero',{}\\)\\)\")",
+      "Bash(python -c \"import io,json; d=json.load\\(io.open\\('nextfrontend/messages/en.json',encoding='utf-8'\\)\\); print\\('hero.badge=', 'badge' in d.get\\('hero',{}\\)\\); print\\('admin.settings=', 'settings' in d.get\\('admin',{}\\)\\)\")",
+      "Bash(git --no-pager diff --stat HEAD -- nextfrontend/src/components/Home/HeroSection.jsx nextfrontend/src/app/[locale]/page.js nextfrontend/src/app/globals.css)",
+      "Bash(git --no-pager reflog -8)",
+      "Bash(git --no-pager diff --cached backend/src/core/config.py)",
+      "Bash(git --no-pager diff --cached backend/src/services/translation.py)",
+      "Bash(git --no-pager diff --cached nextfrontend/messages/)"
+    ]
+  }
+}

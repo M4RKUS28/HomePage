@@ -6,3 +6,4 @@ from .project import Project  # noqa: F401
 from .message import Message  # noqa: F401
 from .cv import CV  # noqa: F401
 from .access_log import AccessLog  # noqa: F401
+from .app_setting import AppSetting  # noqa: F401

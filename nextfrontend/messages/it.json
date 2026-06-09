@@ -182,7 +182,8 @@
       "messages": "Messaggi",
       "users": "Utenti",
       "cv": "Editor CV",
-      "access": "Registro accessi"
+      "access": "Registro accessi",
+      "settings": "Impostazioni"
     },
     "projects": {
       "title": "Gestione progetti",
@@ -263,6 +264,17 @@
       "last24Hours": "Ultime 24 ore",
       "last7Days": "Ultimi 7 giorni",
       "last30Days": "Ultimi 30 giorni"
+    },
+    "settings": {
+      "title": "Impostazioni di traduzione",
+      "modelLabel": "Modello di traduzione Gemini",
+      "modelHelp": "Modello usato per la traduzione automatica di CV e progetti. Le modifiche si applicano alla prossima traduzione.",
+      "defaultBadge": "Predefinito: {model}",
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "saved": "Modello di traduzione aggiornato.",
+      "saveError": "Impossibile aggiornare il modello di traduzione.",
+      "loadError": "Impossibile caricare le impostazioni."
     }
   },
   "notFound": {
