@@ -11,19 +11,26 @@ language, and resets the flag.
 import json
 import logging
 import asyncio
-from typing import Dict, List, Sequence, Any
+import os
+from typing import Dict, List, Sequence
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, Field
 
 from ..core.config import get_settings
 from ..db.crud import cv as cv_crud, project as project_crud
-from ..db.session import AsyncSessionLocal
+from ..db.session import AsyncSessionLocal, async_engine
 
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
+
+# google-adk / google-genai authenticate via the GOOGLE_API_KEY *environment*
+# variable. pydantic reads .env into ``settings`` but does NOT export to
+# os.environ, and there is no load_dotenv(), so make sure the key is present in
+# the process env for the ADK client (no-op under docker-compose env_file).
+if settings.gemini.api_key:
+    os.environ.setdefault("GOOGLE_API_KEY", settings.gemini.api_key)
+    os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "FALSE")
 
 # Human-readable names for the system prompt
 _LANG_NAMES: Dict[str, str] = {
@@ -126,8 +133,11 @@ async def translate_cv_data(
         if stripped_text.endswith("```"):
             stripped_text = stripped_text[:-3]
         parsed = json.loads(stripped_text.strip())
-        return parsed.get("cv_data", parsed)
-        
+        # Model may wrap the result in {"cv_data": {...}} or return the dict directly.
+        if isinstance(parsed, dict):
+            return parsed.get("cv_data", parsed)
+        return parsed
+
     except Exception as e:
         if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
             logger.error(f"[translation] Gemini API 429 Quota Exhausted: {e}")
@@ -163,6 +173,7 @@ async def translate_projects_batch(
         f"Translate the following project data from {src} to {tgt}.\n\n"
         "Rules:\n"
         "- Translate the \"title\" and \"description\" fields.\n"
+        "- Keep the \"id\" of each item unchanged (same integer value as the input).\n"
         "Please return a valid JSON object with exactly one key 'projects', containing the array of translated items."
     )
 
@@ -199,8 +210,13 @@ async def translate_projects_batch(
         if stripped_text.endswith("```"):
             stripped_text = stripped_text[:-3]
         parsed = json.loads(stripped_text.strip())
-        return parsed.get("projects", [])
-        
+        # Model may return {"projects": [...]} or a bare [...] array.
+        if isinstance(parsed, dict):
+            return parsed.get("projects", [])
+        if isinstance(parsed, list):
+            return parsed
+        return []
+
     except Exception as e:
         if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
             logger.error(f"[translation] Gemini API 429 Quota Exhausted: {e}")
@@ -225,13 +241,21 @@ async def run_translation_sync() -> None:
     supported = settings.translation.supported_languages
     logger.info("[translation] Starting translation sync …")
 
+    # Advisory lock on a DEDICATED connection, held for the whole run.
+    # Session-level advisory locks are bound to one physical connection; the
+    # sessions below commit repeatedly (which can return their connection to the
+    # pool), so the lock must live on its own connection that we never reuse for
+    # queries. pg_try_advisory_lock is non-blocking: if another uvicorn instance
+    # already holds it, we skip this run instead of piling up.
+    lock_conn = await async_engine.connect()
+    got_lock = await lock_conn.scalar(text("SELECT pg_try_advisory_lock(1234567890)"))
+    if not got_lock:
+        logger.info("[translation] Another instance holds the translation lock, skipping this run.")
+        await lock_conn.close()
+        return
+    logger.info("[translation] Advisory lock acquired.")
+
     async with AsyncSessionLocal() as db:
-        # Advisory Lock: Only one worker runs translation sync at a time
-        logger.info("[translation] Attempting to acquire advisory lock (1234567890)")
-        await db.execute(
-            text("SELECT pg_advisory_lock(1234567890)")
-        )
-        logger.info("[translation] Advisory lock acquired successfully.")
         try:
             # Nach Lock: Nochmals prüfen, ob Übersetzungen ausstehen
             changed_cvs = await cv_crud.get_cvs_with_changes(db)
@@ -300,11 +324,15 @@ async def run_translation_sync() -> None:
                         for p in projs_data
                     ]
                     translated_items = await translate_projects_batch(batch_data, src, tgt)
-                    translated_map = {item["id"]: item for item in translated_items}
+                    # Key by str(id) so an int/str type mismatch in the model
+                    # output never silently drops a translation.
+                    translated_map = {
+                        str(item.get("id")): item for item in translated_items if "id" in item
+                    }
 
                     async with AsyncSessionLocal() as db_session:
                         for source_proj_data in projs_data:
-                            trans = translated_map.get(source_proj_data["id"], {})
+                            trans = translated_map.get(str(source_proj_data["id"]), {})
                             if not trans:
                                 continue
 
@@ -387,10 +415,8 @@ async def run_translation_sync() -> None:
                             proj.has_changes = False
                     await db.commit()
         finally:
-            logger.info("[translation] Releasing advisory lock (1234567890)")
-            await db.execute(
-                text("SELECT pg_advisory_unlock(1234567890)")
-            )
+            await lock_conn.execute(text("SELECT pg_advisory_unlock(1234567890)"))
+            await lock_conn.close()
             logger.info("[translation] Advisory lock released.")
 
     logger.info("[translation] Translation sync complete.")

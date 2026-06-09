@@ -129,7 +129,7 @@ async def lifespan(app: FastAPI):
             settings.translation.interval_minutes,
         )
     else:
-        logger.info("[startup] Translation sync disabled (TRANSLATION_ENABLED=false or no GEMINI_API_KEY).")
+        logger.info("[startup] Translation sync disabled (TRANSLATION_ENABLED=false or no GOOGLE_API_KEY).")
 
     yield  # ── Application runs ──
 

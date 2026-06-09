@@ -117,16 +117,19 @@ async def resolve_pending_ips() -> None:
 
     client = aioredis.Redis(connection_pool=pool)
 
-    # Atomically pop all members from the pending set
-    logger.debug("[access] Fetching pending IPs from Redis set %s", _PENDING_SET)
-    members = await client.smembers(_PENDING_SET)
+    # Atomically pop all members so concurrent workers (multiple uvicorn
+    # instances each run this scheduler) never process the same entry twice.
+    # SPOP removes-and-returns in one operation → two schedulers get disjoint
+    # sets, instead of the previous smembers()+srem() read-then-delete race.
+    logger.debug("[access] Popping pending IPs from Redis set %s", _PENDING_SET)
+    count = await client.scard(_PENDING_SET)
+    if not count:
+        logger.debug("[access] No pending IPs to resolve.")
+        return
+    members = await client.spop(_PENDING_SET, count)
     if not members:
         logger.debug("[access] No pending IPs to resolve.")
         return
-
-    # Remove them from the set immediately to avoid re-processing
-    if members:
-        await client.srem(_PENDING_SET, *members)
 
     logger.info("[access] Resolving %d pending IP(s)…", len(members))
 
