@@ -37,7 +37,8 @@
       "down": "Ngoại tuyến",
       "unknown": "Không xác định",
       "checking": "Đang kiểm tra..."
-    }
+    },
+    "onlineCount": "{count} trực tuyến"
   },
   "cv": {
     "loading": "Đang tải dữ liệu CV...",
@@ -54,7 +55,8 @@
     "noData": "Không có dữ liệu.",
     "showMore": "Xem thêm",
     "showLess": "Thu gọn",
-    "clickForDetails": "Nhấp để xem chi tiết"
+    "clickForDetails": "Nhấp để xem chi tiết",
+    "subtitle": "Hồ sơ & sự nghiệp"
   },
   "connect": {
     "title": "Liên hệ",
@@ -62,7 +64,8 @@
     "sendMessage": "Gửi tin nhắn",
     "goToDashboard": "Đến bảng điều khiển",
     "registerHint": "Đăng ký để có trải nghiệm cá nhân hóa và nhắn tin trực tiếp",
-    "loading": "Đang tải..."
+    "loading": "Đang tải...",
+    "subtitle": "Liên hệ"
   },
   "registerCallout": {
     "title": "Tham gia cộng đồng",

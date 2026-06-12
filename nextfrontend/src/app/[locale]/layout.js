@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Archivo } from "next/font/google";
 import "../globals.css";
 import { fetchCVDataSSR } from '../../lib/server-api';
 import Providers from "../../components/Providers";
@@ -17,6 +17,13 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Display face: variable width axis lets us use the expanded cut for headlines
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  axes: ["wdth"],
 });
 
 export function generateStaticParams() {
@@ -53,7 +60,7 @@ export default async function LocaleLayout({ children, params }) {
 
   return (
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <MainLayout 

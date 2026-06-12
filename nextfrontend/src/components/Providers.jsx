@@ -8,6 +8,7 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
+import { MotionConfig } from 'framer-motion';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { ToastProvider } from '../contexts/ToastContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
@@ -15,13 +16,15 @@ import { LanguageProvider } from '../contexts/LanguageContext';
 export default function Providers({ children }) {
   return (
     <SessionProvider>
-      <ThemeProvider>
-        <ToastProvider>
-          <LanguageProvider>
-            {children}
-          </LanguageProvider>
-        </ToastProvider>
-      </ThemeProvider>
+      <MotionConfig reducedMotion="user">
+        <ThemeProvider>
+          <ToastProvider>
+            <LanguageProvider>
+              {children}
+            </LanguageProvider>
+          </ToastProvider>
+        </ThemeProvider>
+      </MotionConfig>
     </SessionProvider>
   );
 }

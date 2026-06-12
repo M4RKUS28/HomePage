@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { useTheme } from '../../hooks/useTheme';
 import { useLanguage } from '../../contexts/LanguageContext';
 import Spinner from '../UI/Spinner';
 import { getCVDataApi } from '../../api/cv';
@@ -13,7 +12,6 @@ import {
   Code,
   Award,
   Users,
-  Zap as SkillIcon,
   ExternalLink,
   AlertTriangle,
   MousePointerClick
@@ -44,17 +42,25 @@ const formatText = (text) => {
   });
 };
 
-const Section = ({ title, children, icon: IconComponent }) => (
-  <motion.div 
+const Section = ({ title, children, icon: IconComponent, count }) => (
+  <motion.div
     initial={{ opacity: 0, y: 50 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, amount: 0.1 }}
     transition={{ duration: 0.6, ease: "easeOut" }}
-    className="mb-12"
+    className="mb-14"
   >
-    <div className="flex items-center mb-6">
-      {IconComponent && <IconComponent size={32} className="mr-3 section-icon" />}
-      <h3 className="text-3xl font-semibold text-sky-400">{title}</h3>
+    <div className="flex items-center gap-4 mb-7">
+      {IconComponent && (
+        <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-surface text-accent">
+          <IconComponent size={18} />
+        </span>
+      )}
+      <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-ink">{title}</h3>
+      <span className="rule flex-1" />
+      {typeof count === 'number' && count > 0 && (
+        <span className="font-data text-xs text-ink-3">{String(count).padStart(2, '0')}</span>
+      )}
     </div>
     {children}
   </motion.div>
@@ -108,7 +114,7 @@ const TimelineItem = ({ item, index = 0 }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.2 }}
-            className="pointer-events-none absolute top-3 right-3 flex items-center rounded-full bg-gray-900/80 px-2 py-1 text-[11px] font-medium text-gray-100 shadow-lg"
+            className="pointer-events-none absolute top-3 right-3 flex items-center rounded-md border border-line bg-raised px-2 py-1 font-data text-[10px] font-medium uppercase tracking-[0.12em] text-ink-2 shadow-lg"
           >
             <MousePointerClick size={12} className="mr-1" />
             {t('clickForDetails')}
@@ -163,7 +169,7 @@ const TimelineItem = ({ item, index = 0 }) => {
                     href={link.url ? String(link.url) : '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-700 hover:bg-primary text-white transition-colors duration-200"
+                    className="inline-flex items-center px-3 py-1 font-data text-xs rounded-md border border-line bg-raised text-ink-2 hover:text-accent hover:border-accent transition-colors duration-200"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <ExternalLink size={12} className="mr-1" />
@@ -180,23 +186,20 @@ const TimelineItem = ({ item, index = 0 }) => {
 };
 
 const SkillBar = ({ skill, index }) => (
-  <motion.div 
-    className="mb-3"
+  <motion.div
+    className="mb-4"
     initial={{ opacity: 0, x: -20 }}
     whileInView={{ opacity: 1, x: 0 }}
     viewport={{ once: true, amount: 0.8 }}
     transition={{ duration: 0.5, delay: index * 0.05 }}
   >
-    <div className="flex justify-between mb-1">
-      <div className="flex items-center">
-        <SkillIcon size={16} className="mr-2 text-primary" />
-        <span className="text-sm font-medium text-mode-primary">{skill.name || "Unnamed Skill"}</span>
-      </div>
-      <span className="text-xs font-medium text-mode-secondary">{skill.level || 0}%</span>
+    <div className="flex justify-between items-baseline mb-1.5">
+      <span className="text-sm font-medium text-ink">{skill.name || "Unnamed Skill"}</span>
+      <span className="font-data text-xs text-ink-3">{skill.level || 0}%</span>
     </div>
-    <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden dark:bg-gray-700 light:bg-gray-300">
+    <div className="skill-track">
       <motion.div
-        className="bg-primary h-full rounded-full"
+        className="skill-fill"
         initial={{ width: 0 }}
         whileInView={{ width: `${skill.level || 0}%` }}
         viewport={{ once: true, amount: 0.8 }}
@@ -242,7 +245,6 @@ const AwardItem = ({ award, index = 0 }) => {
 };
 
 const InteractiveCV = () => {
-  const { theme } = useTheme();
   const t = useTranslations('cv');
   const { locale } = useLanguage();
   const [cvData, setCvData] = useState(null);
@@ -271,7 +273,7 @@ const InteractiveCV = () => {
     return (
       <section id="cv" className="py-16 md:py-24 flex justify-center items-center">
         <Spinner size="h-12 w-12" />
-        <span className="ml-3 text-mode-secondary">{t('loading')}</span>
+        <span className="ml-3 font-data text-sm text-ink-3">{t('loading')}</span>
       </section>
     );
   }
@@ -280,8 +282,8 @@ const InteractiveCV = () => {
     return (
       <section id="cv" className="py-16 md:py-24 text-center">
         <div className="container mx-auto px-4">
-          <div className="bg-red-900/20 border border-red-500/50 text-red-300 p-8 rounded-lg max-w-xl mx-auto">
-            <AlertTriangle size={48} className="mx-auto mb-4" />
+          <div className="panel border-red-500/40 bg-red-500/10 text-red-300 p-8 max-w-xl mx-auto">
+            <AlertTriangle size={44} className="mx-auto mb-4" />
             <h3 className="text-2xl font-semibold mb-4">Couldn't Load CV Data</h3>
             <p>{error || "Something went wrong. Please try again later."}</p>
           </div>
@@ -338,30 +340,32 @@ const InteractiveCV = () => {
   const languages = cvData.languages || [];
 
   return (
-    <section id="cv" className={`py-16 md:py-24 ${
-      theme === 'dark' 
-        ? 'bg-gray-900 text-white' 
-        : 'bg-gray-100 text-gray-800'
-      } rounded-lg mx-4 sm:mx-8 my-8`}>
-      <div className="container mx-auto px-4">
-        <motion.h2 
-          initial={{ opacity:0, y:20 }}
-          whileInView={{ opacity:1, y:0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl md:text-5xl font-bold text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-accent via-pink-500 to-rose-500"
-        >
-          {t('title')}
-        </motion.h2>
-        
+    <section id="cv" className="relative py-20 md:py-28 border-y border-line bg-band">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.5 }}
+            className="mb-16"
+          >
+            <span className="eyebrow mb-3">
+              <span className="status-dot status-dot--accent" />
+              {t('subtitle')}
+            </span>
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-ink">
+              {t('title')}
+            </h2>
+          </motion.div>
+
             <Section title={t('summary')} icon={Users}>
-              <p className="text-mode-secondary leading-relaxed text-md">{cvData.summary || t('noData')}</p>
+              <p className="text-ink-2 leading-relaxed text-md">{cvData.summary || t('noData')}</p>
             </Section>
 
             {skills.length > 0 && (
-              <Section title={t('skills')} icon={Code}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+              <Section title={t('skills')} icon={Code} count={skills.length}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1">
                   {skills
                     .sort((a, b) => (b.level || 0) - (a.level || 0))
                     .map((skill, idx) => (
@@ -372,7 +376,7 @@ const InteractiveCV = () => {
             )}
 
             {experience.length > 0 && (
-              <Section title={t('experience')} icon={Briefcase}>
+              <Section title={t('experience')} icon={Briefcase} count={experience.length}>
                 <div className="space-y-5">
                   {experience.map((exp, idx) => <TimelineItem key={`exp-${exp.id || idx}-${exp.title || exp.company || idx}`} item={exp} index={idx} />)}
                 </div>
@@ -380,7 +384,7 @@ const InteractiveCV = () => {
             )}
 
             {education.length > 0 && (
-              <Section title={t('education')} icon={GraduationCap}>
+              <Section title={t('education')} icon={GraduationCap} count={education.length}>
                 <div className="space-y-5">
                   {education.map((edu, idx) => <TimelineItem key={`edu-${edu.id || idx}-${edu.institution || edu.degree || idx}`} item={edu} index={idx} />)}
                 </div>
@@ -388,7 +392,7 @@ const InteractiveCV = () => {
             )}
 
             {projects.length > 0 && (
-              <Section title={t('projectsHighlight')} icon={Code}>
+              <Section title={t('projectsHighlight')} icon={Code} count={projects.length}>
                 <div className="space-y-5">
                   {projects.map((proj, idx) => (
                     <ProjectItem key={`proj-${proj.id || idx}-${proj.name || proj.title || idx}`} project={proj} index={idx} />
@@ -398,7 +402,7 @@ const InteractiveCV = () => {
             )}
 
             {awards.length > 0 && (
-              <Section title={t('awards')} icon={Award}>
+              <Section title={t('awards')} icon={Award} count={awards.length}>
                 <div className="space-y-5">
                   {awards.map((award, idx) => (
                     <AwardItem key={`award-${award.id || idx}-${award.title || idx}`} award={award} index={idx} />
@@ -408,7 +412,7 @@ const InteractiveCV = () => {
             )}
 
             {volunteering.length > 0 && (
-              <Section title={t('volunteering')} icon={Users}>
+              <Section title={t('volunteering')} icon={Users} count={volunteering.length}>
                 <div className="space-y-5">
                   {volunteering.map((vol, idx) => <TimelineItem key={`vol-${vol.id || idx}-${vol.title || idx}`} item={vol} index={idx} />)}
                 </div>
@@ -416,10 +420,10 @@ const InteractiveCV = () => {
             )}
 
             {languages.length > 0 && (
-              <Section title={t('languages')} icon={Users}>
-                <div className="grid grid-cols-2 gap-4">
+              <Section title={t('languages')} icon={Users} count={languages.length}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {languages.map((lang, idx) => (
-                    <div key={`lang-${lang.name || idx}-${lang.level || idx}`} className="language-item" style={{ margin: "12px 0 0 0" }}>
+                    <div key={`lang-${lang.name || idx}-${lang.level || idx}`} className="language-item">
                       <h4 className="language-name">{lang.name || "Unknown Language"}</h4>
                       <p className="language-level">{lang.level || "Unspecified Level"}</p>
                     </div>

@@ -1,11 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme';
 
 const Modal = ({ children, title, onClose, isOpen = true }) => { // Assume isOpen is controlled from parent for ProjectGrid
-  const { theme } = useTheme();
-  
   if (!isOpen) return null;
 
   const backdropVariants = {
@@ -23,7 +20,7 @@ const Modal = ({ children, title, onClose, isOpen = true }) => { // Assume isOpe
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -31,27 +28,17 @@ const Modal = ({ children, title, onClose, isOpen = true }) => { // Assume isOpe
           onClick={onClose} // Close on backdrop click
         >
           <motion.div
-            className={`rounded-lg shadow-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto relative ${
-              theme === 'dark' 
-                ? 'bg-gray-800' 
-                : 'bg-white'
-            }`}
+            className="panel shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto relative"
             variants={modalVariants}
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className={`text-xl font-semibold ${
-                theme === 'dark' ? 'text-white' : 'text-gray-900'
-              }`}>{title}</h3>
+              <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
               <button
                 onClick={onClose}
-                className={`transition-colors p-1 rounded-full ${
-                  theme === 'dark' 
-                    ? 'text-gray-400 hover:text-white hover:bg-gray-700' 
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                }`}
+                className="transition-colors p-1.5 rounded-lg text-ink-3 hover:text-ink hover:bg-accent-soft"
               >
-                <X size={24} />
+                <X size={22} />
               </button>
             </div>
             {children}

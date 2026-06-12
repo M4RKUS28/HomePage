@@ -5,58 +5,32 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { LogIn, LogOut, UserPlus, LayoutDashboard, ShieldCheck, Menu, X, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslations } from 'next-intl';
 import { Link } from '../../i18n/navigation';
 import ThemeToggle from '../UI/ThemeToggle';
 
-const NavLink = ({ href, children, onClick }) => {
-  const { theme } = useTheme();
-  
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={`hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition-colors relative group overflow-hidden ${
-        theme === 'dark' 
-          ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-          : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
-      }`}
-    >
-      <span className="relative z-10">{children}</span>
-      <motion.span
-        className={`absolute bottom-0 left-0 h-0.5 w-0 ${
-          theme === 'dark' ? 'bg-primary' : 'bg-secondary'
-        }`}
-        initial={{ width: '0%' }}
-        whileHover={{ width: '100%' }}
-        transition={{ duration: 0.3 }}
-      />
-    </Link>
-  );
-};
+const navItemClass =
+  'group relative inline-flex items-center gap-1.5 px-3 py-2 rounded-md font-data text-[0.72rem] font-medium uppercase tracking-[0.18em] text-ink-2 hover:text-ink transition-colors';
 
-const MobileNavLink = ({ href, children, onClick }) => {
-  const { theme } = useTheme();
-  
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-        theme === 'dark' 
-          ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-          : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
-      }`}
-    >
-      {children}
-    </Link>
-  );
-};
+const NavLink = ({ href, children, onClick }) => (
+  <Link href={href} onClick={onClick} className={navItemClass}>
+    <span className="relative z-10 inline-flex items-center gap-1.5">{children}</span>
+    <span className="absolute bottom-0.5 left-3 right-3 h-px origin-left scale-x-0 bg-[var(--app-accent)] transition-transform duration-300 group-hover:scale-x-100" />
+  </Link>
+);
+
+const MobileNavLink = ({ href, children, onClick }) => (
+  <Link
+    href={href}
+    onClick={onClick}
+    className="flex items-center gap-2 px-3 py-3 rounded-lg font-data text-xs font-medium uppercase tracking-[0.18em] text-ink-2 hover:text-ink hover:bg-accent-soft transition-colors"
+  >
+    {children}
+  </Link>
+);
 
 const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
   const { currentUser, logout } = useAuth();
-  const { theme } = useTheme();
   const t = useTranslations('nav');
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -68,76 +42,58 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
   };
 
   return (
-    <nav className={`shadow-lg sticky top-0 z-50 transition-colors ${
-      theme === 'dark' 
-        ? 'bg-gray-800' 
-        : 'bg-white'
-    }`}>
+    <nav className="nav-glass sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className={`flex-shrink-0 text-xl font-bold ${
-              theme === 'dark' 
-                ? 'text-white' 
-                : 'text-gray-900'
-            }`}>
-              <motion.span 
-                className="inline-block"
-                initial={false}
-                whileHover={{ scale: 1.05 }}
-              >
-                {initialHeaderText}
-              </motion.span>
-            </Link>
-          </div>
-          
-          <div className="hidden md:flex items-center space-x-2">
-            <div className="flex items-baseline space-x-4">
-              <NavLink href="/"><Home size={18} className="inline mr-1"/> {t('home')}</NavLink>
-              {currentUser ? (
-                <>
-                  <NavLink href="/dashboard"><LayoutDashboard size={18} className="inline mr-1"/> {t('dashboard')}</NavLink>
-                  {currentUser.is_admin && (
-                    <NavLink href="/admin"><ShieldCheck size={18} className="inline mr-1"/> {t('admin')}</NavLink>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      theme === 'dark' 
-                        ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-                        : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
-                    }`}
-                  >
-                    <LogOut size={18} className="inline mr-1"/> {t('logout')} ({currentUser.username})
-                  </button>
-                </>
-              ) : (
-                <>
-                  <NavLink href="/login"><LogIn size={18} className="inline mr-1"/> {t('login')}</NavLink>
-                  <NavLink href="/register"><UserPlus size={18} className="inline mr-1"/> {t('register')}</NavLink>
-                </>
-              )}
-            </div>
-            <div className="ml-4 flex items-center gap-2">
+          {/* Wordmark with live status dot */}
+          <Link href="/" className="flex-shrink-0 inline-flex items-center gap-2.5">
+            <span className="status-dot" />
+            <motion.span
+              className="inline-block font-display text-lg font-bold tracking-tight text-ink"
+              initial={false}
+              whileHover={{ scale: 1.04 }}
+            >
+              {initialHeaderText}
+            </motion.span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-1">
+            <NavLink href="/"><Home size={14} /> {t('home')}</NavLink>
+            {currentUser ? (
+              <>
+                <NavLink href="/dashboard"><LayoutDashboard size={14} /> {t('dashboard')}</NavLink>
+                {currentUser.is_admin && (
+                  <NavLink href="/admin"><ShieldCheck size={14} /> {t('admin')}</NavLink>
+                )}
+                <button onClick={handleLogout} className={navItemClass}>
+                  <span className="relative z-10 inline-flex items-center gap-1.5">
+                    <LogOut size={14} /> {t('logout')} ({currentUser.username})
+                  </span>
+                  <span className="absolute bottom-0.5 left-3 right-3 h-px origin-left scale-x-0 bg-[var(--app-accent)] transition-transform duration-300 group-hover:scale-x-100" />
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink href="/login"><LogIn size={14} /> {t('login')}</NavLink>
+                <NavLink href="/register"><UserPlus size={14} /> {t('register')}</NavLink>
+              </>
+            )}
+            <div className="ml-3 flex items-center">
               <ThemeToggle />
             </div>
           </div>
-          
-          <div className="md:hidden flex items-center space-x-2">
+
+          <div className="md:hidden flex items-center gap-2">
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className={`inline-flex items-center justify-center p-2 rounded-md ${
-                theme === 'dark' 
-                  ? 'text-gray-400 hover:text-white hover:bg-gray-700' 
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
+              className="inline-flex items-center justify-center p-2 rounded-lg border border-line-strong text-ink-2 hover:text-accent hover:border-accent transition-colors"
               aria-controls="mobile-menu"
-              aria-expanded="false"
+              aria-expanded={isOpen}
             >
               <span className="sr-only">{t('openMenu')}</span>
-              {!isOpen ? <Menu className="block h-6 w-6" /> : <X className="block h-6 w-6" />}
+              {!isOpen ? <Menu className="block h-5 w-5" /> : <X className="block h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -145,39 +101,33 @@ const Navbar = ({ initialHeaderText = 'Portfolio' }) => {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden overflow-hidden" 
+            className="md:hidden overflow-hidden border-t border-line"
             id="mobile-menu"
           >
-            <div className={`px-2 pt-2 pb-3 space-y-1 sm:px-3 ${
-              theme === 'dark' ? 'bg-gray-800' : 'bg-white'
-            }`}>
-              <MobileNavLink href="/" onClick={() => setIsOpen(false)}><Home size={18} className="inline mr-1"/> {t('home')}</MobileNavLink>
+            <div className="px-3 pt-2 pb-4 space-y-1 bg-surface">
+              <MobileNavLink href="/" onClick={() => setIsOpen(false)}><Home size={15} /> {t('home')}</MobileNavLink>
               {currentUser ? (
                 <>
-                  <MobileNavLink href="/dashboard" onClick={() => setIsOpen(false)}><LayoutDashboard size={18} className="inline mr-1"/> {t('dashboard')}</MobileNavLink>
+                  <MobileNavLink href="/dashboard" onClick={() => setIsOpen(false)}><LayoutDashboard size={15} /> {t('dashboard')}</MobileNavLink>
                   {currentUser.is_admin && (
-                    <MobileNavLink href="/admin" onClick={() => setIsOpen(false)}><ShieldCheck size={18} className="inline mr-1"/> {t('admin')}</MobileNavLink>
+                    <MobileNavLink href="/admin" onClick={() => setIsOpen(false)}><ShieldCheck size={15} /> {t('admin')}</MobileNavLink>
                   )}
                   <button
                     onClick={handleLogout}
-                    className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                      theme === 'dark' 
-                        ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-                        : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
-                    }`}
+                    className="flex w-full items-center gap-2 px-3 py-3 rounded-lg font-data text-xs font-medium uppercase tracking-[0.18em] text-ink-2 hover:text-ink hover:bg-accent-soft transition-colors text-left"
                   >
-                    <LogOut size={18} className="inline mr-1"/> {t('logout')} ({currentUser.username})
+                    <LogOut size={15} /> {t('logout')} ({currentUser.username})
                   </button>
                 </>
               ) : (
                 <>
-                  <MobileNavLink href="/login" onClick={() => setIsOpen(false)}><LogIn size={18} className="inline mr-1"/> {t('login')}</MobileNavLink>
-                  <MobileNavLink href="/register" onClick={() => setIsOpen(false)}><UserPlus size={18} className="inline mr-1"/> {t('register')}</MobileNavLink>
+                  <MobileNavLink href="/login" onClick={() => setIsOpen(false)}><LogIn size={15} /> {t('login')}</MobileNavLink>
+                  <MobileNavLink href="/register" onClick={() => setIsOpen(false)}><UserPlus size={15} /> {t('register')}</MobileNavLink>
                 </>
               )}
             </div>

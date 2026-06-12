@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ExternalLink,
-  Zap,
-  AlertTriangle,
   Loader2,
   Edit,
   Trash2,
-  CheckCircle,
   RefreshCcw,
   ArrowUp,
   ArrowDown,
@@ -15,29 +12,25 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
-import { useTheme } from '../../hooks/useTheme';
 
 /* ------------------------------------------------------------------ */
-/*  Status badge – floating on the card image                         */
+/*  Status chip – a live indicator LED floating on the card image      */
 /* ------------------------------------------------------------------ */
 const StatusIndicator = ({ status }) => {
-  const { theme } = useTheme();
   const t = useTranslations('projects');
 
   const cfg = {
-    up:       { icon: Zap,            label: t('status.up'),       dot: 'bg-emerald-400', ring: 'ring-emerald-400/30', bg: theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
-    down:     { icon: AlertTriangle,  label: t('status.down'),     dot: 'bg-red-400',     ring: 'ring-red-400/30',     bg: theme === 'dark' ? 'bg-red-500/20 text-red-300'       : 'bg-red-50 text-red-700 border border-red-200' },
-    checking: { icon: () => <Loader2 size={12} className="animate-spin" />, label: t('status.checking'), dot: 'bg-amber-400', ring: 'ring-amber-400/30', bg: theme === 'dark' ? 'bg-amber-500/20 text-amber-300'   : 'bg-amber-50 text-amber-700 border border-amber-200' },
-    unknown:  { icon: CheckCircle,    label: t('status.unknown'),  dot: 'bg-gray-400',    ring: 'ring-gray-400/30',    bg: theme === 'dark' ? 'bg-gray-500/20 text-gray-300'     : 'bg-gray-100 text-gray-600 border border-gray-200' },
+    up:       { label: t('status.up'),       dot: 'status-dot' },
+    down:     { label: t('status.down'),     dot: 'status-dot status-dot--red' },
+    checking: { label: t('status.checking'), dot: 'status-dot status-dot--accent' },
+    unknown:  { label: t('status.unknown'),  dot: 'status-dot status-dot--idle' },
   };
 
   const s = cfg[status?.toLowerCase()] ?? cfg.unknown;
-  const Icon = s.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase backdrop-blur-md ${s.bg}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot} ring-2 ${s.ring}`} />
-      <Icon size={12} />
+    <span className="inline-flex items-center gap-2 rounded-md border border-line bg-[color-mix(in_srgb,var(--app-surface)_82%,transparent)] px-2.5 py-1.5 font-data text-[10px] font-medium uppercase tracking-[0.14em] text-ink backdrop-blur-md">
+      <span className={s.dot} />
       {s.label}
     </span>
   );
@@ -59,10 +52,8 @@ const ProjectCard = ({
   imageUrl,
   imageLoading,
 }) => {
-  const { theme } = useTheme();
   const t = useTranslations('projects');
   const [imageError, setImageError] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   /* --- animation variants --- */
   const cardVariants = {
@@ -75,7 +66,7 @@ const ProjectCard = ({
   };
 
   const iconBtn =
-    'p-1.5 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95';
+    'p-1.5 rounded-md text-ink-3 transition-all duration-200 hover:scale-110 active:scale-95';
 
   /* --- image resolution --- */
   const rawImageUrl   = imageUrl !== undefined ? imageUrl : project.image;
@@ -97,116 +88,79 @@ const ProjectCard = ({
   return (
     <motion.div
       variants={cardVariants}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl transition-all duration-500 ${
-        theme === 'dark'
-          ? 'bg-gray-800/60 backdrop-blur-xl border border-gray-700/50 hover:border-emerald-500/30 shadow-lg shadow-black/20 hover:shadow-emerald-500/10'
-          : 'bg-white/80 backdrop-blur-xl border border-gray-200 hover:border-emerald-500/40 shadow-md shadow-gray-200/60 hover:shadow-xl hover:shadow-emerald-500/10'
-      }`}
+      whileHover={{ y: -6 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface border border-line hover:border-line-strong transition-colors duration-300"
     >
-      {/* Subtle gradient border glow on hover */}
-      <div className={`absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${
-        theme === 'dark'
-          ? 'bg-gradient-to-br from-emerald-500/20 via-transparent to-blue-500/20'
-          : 'bg-gradient-to-br from-emerald-500/10 via-transparent to-blue-500/10'
-      }`} />
+      {/* Corner bracket reveal on hover (top-right registration mark) */}
+      <span
+        className="pointer-events-none absolute top-3 right-3 z-20 h-4 w-4 border-t-2 border-r-2 border-[var(--app-accent-fill)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        aria-hidden="true"
+      />
 
       {/* ---- Image area ---- */}
       <div className="relative overflow-hidden aspect-[16/10]">
         {isImgLoading ? (
-          <div className={`absolute inset-0 flex items-center justify-center ${
-            theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'
-          }`}>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-            <Loader2 size={24} className="animate-spin opacity-40" />
+          <div className="absolute inset-0 flex items-center justify-center bg-raised">
+            <Loader2 size={24} className="animate-spin opacity-40 text-ink-3" />
           </div>
         ) : (
-          <motion.img
+          <img
             src={hasImage ? resolvedImage : (DefaultProjectImage?.src || DefaultProjectImage)}
             alt={project.title}
-            className="w-full h-full object-cover"
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
             onError={handleImageError}
-            animate={{ scale: isHovered ? 1.05 : 1 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
           />
         )}
 
-        {/* Gradient overlay */}
-        <div className={`absolute inset-0 transition-opacity duration-500 ${
-          theme === 'dark'
-            ? 'bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent'
-            : 'bg-gradient-to-t from-black/50 via-black/10 to-transparent'
-        }`} />
+        {/* Gradient overlay for status chip legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
 
-        {/* Status badge, top-right */}
-        <div className="absolute top-3 right-3 z-10">
+        {/* Status badge, bottom-left of the image */}
+        <div className="absolute bottom-3 left-3 z-10">
           <StatusIndicator status={project.status} />
         </div>
       </div>
 
       {/* ---- Content ---- */}
       <div className="relative flex flex-col flex-1 p-5">
-        {/* Title */}
-        <h3 className={`text-lg font-bold leading-snug mb-1 ${
-          theme === 'dark' ? 'text-white' : 'text-gray-900'
-        }`}>
+        <h3 className="font-display text-lg font-bold leading-snug text-ink mb-1">
           {heading}
         </h3>
 
         {subHeading && (
-          <p className={`text-sm font-medium mb-2 ${
-            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-          }`}>
+          <p className="text-sm font-medium text-ink-3 mb-2">
             {subHeading}
           </p>
         )}
 
-        {/* Description */}
-        <p className={`text-sm leading-relaxed flex-1 mb-4 line-clamp-3 ${
-          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-        }`}>
+        <p className="text-sm leading-relaxed flex-1 mb-4 line-clamp-3 text-ink-2">
           {project.description || 'No description provided.'}
         </p>
 
         {/* Footer: CTA + Admin */}
-        <div className={`flex items-center justify-between pt-4 border-t ${
-          theme === 'dark' ? 'border-gray-700/50' : 'border-gray-100'
-        }`}>
+        <div className="flex items-center justify-between pt-4 border-t border-line">
           {/* Visit button */}
-          <motion.a
+          <a
             href={project.link ? String(project.link) : '#'}
             target="_blank"
             rel="noopener noreferrer"
-            whileHover={{ x: 3 }}
-            whileTap={{ scale: 0.97 }}
-            className={`inline-flex items-center gap-2 text-sm font-semibold transition-colors ${
-              theme === 'dark'
-                ? 'text-emerald-400 hover:text-emerald-300'
-                : 'text-emerald-600 hover:text-emerald-700'
-            }`}
+            className="group/link inline-flex items-center gap-2 font-data text-xs font-semibold uppercase tracking-[0.14em] text-accent transition-colors hover:brightness-110"
           >
-            <Globe size={15} />
+            <Globe size={14} />
             {t('visitProject')}
-            <ExternalLink size={13} className="opacity-60" />
-          </motion.a>
+            <ExternalLink size={12} className="opacity-60 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+          </a>
 
           {/* Admin controls */}
           {isAdmin && (
-            <div className={`flex items-center gap-1 rounded-lg px-1 py-0.5 ${
-              theme === 'dark' ? 'bg-gray-700/40' : 'bg-gray-100/80'
-            }`}>
+            <div className="flex items-center gap-0.5 rounded-lg border border-line bg-raised px-1 py-0.5">
               <button
                 onClick={() => onMoveUp(project.id)}
                 title={t('moveUp')}
                 disabled={isFirst}
-                className={`${iconBtn} ${
-                  isFirst
-                    ? 'opacity-30 cursor-not-allowed'
-                    : theme === 'dark'
-                      ? 'text-gray-400 hover:text-white hover:bg-gray-600/50'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/60'
-                }`}
+                className={`${iconBtn} ${isFirst ? 'opacity-30 cursor-not-allowed' : 'hover:text-ink'}`}
               >
                 <ArrowUp size={15} />
               </button>
@@ -214,51 +168,31 @@ const ProjectCard = ({
                 onClick={() => onMoveDown(project.id)}
                 title={t('moveDown')}
                 disabled={isLast}
-                className={`${iconBtn} ${
-                  isLast
-                    ? 'opacity-30 cursor-not-allowed'
-                    : theme === 'dark'
-                      ? 'text-gray-400 hover:text-white hover:bg-gray-600/50'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/60'
-                }`}
+                className={`${iconBtn} ${isLast ? 'opacity-30 cursor-not-allowed' : 'hover:text-ink'}`}
               >
                 <ArrowDown size={15} />
               </button>
 
-              <span className={`w-px h-4 mx-0.5 ${
-                theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'
-              }`} />
+              <span className="w-px h-4 mx-0.5 bg-[var(--app-line-strong)]" />
 
               <button
                 onClick={() => onCheckStatus(project.id)}
                 title={t('checkStatus')}
-                className={`${iconBtn} ${
-                  theme === 'dark'
-                    ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/10'
-                    : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'
-                }`}
+                className={`${iconBtn} hover:text-sky-500`}
               >
                 <RefreshCcw size={15} />
               </button>
               <button
                 onClick={() => onEdit(project)}
                 title={t('editProject')}
-                className={`${iconBtn} ${
-                  theme === 'dark'
-                    ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
-                    : 'text-amber-500 hover:text-amber-700 hover:bg-amber-50'
-                }`}
+                className={`${iconBtn} hover:text-amber-500`}
               >
                 <Edit size={15} />
               </button>
               <button
                 onClick={() => onDelete(project)}
                 title={t('deleteProject')}
-                className={`${iconBtn} ${
-                  theme === 'dark'
-                    ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
-                    : 'text-red-500 hover:text-red-700 hover:bg-red-50'
-                }`}
+                className={`${iconBtn} hover:text-red-500`}
               >
                 <Trash2 size={15} />
               </button>

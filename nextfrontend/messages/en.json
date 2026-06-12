@@ -37,7 +37,8 @@
       "down": "Offline",
       "unknown": "Unknown",
       "checking": "Checking..."
-    }
+    },
+    "onlineCount": "{count} online"
   },
   "cv": {
     "loading": "Loading CV data...",
@@ -54,7 +55,8 @@
     "noData": "No data available.",
     "showMore": "Show More",
     "showLess": "Show Less",
-    "clickForDetails": "Click for details"
+    "clickForDetails": "Click for details",
+    "subtitle": "About & Career"
   },
   "connect": {
     "title": "Let's Connect",
@@ -62,7 +64,8 @@
     "sendMessage": "Send Message",
     "goToDashboard": "Go to Dashboard",
     "registerHint": "Register for a personalized experience and direct messaging",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "subtitle": "Contact"
   },
   "registerCallout": {
     "title": "Join the Community",

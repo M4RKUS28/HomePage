@@ -37,7 +37,8 @@
       "down": "オフライン",
       "unknown": "不明",
       "checking": "確認中..."
-    }
+    },
+    "onlineCount": "{count}件稼働中"
   },
   "cv": {
     "loading": "履歴書データを読み込み中...",
@@ -54,7 +55,8 @@
     "noData": "データがありません。",
     "showMore": "もっと見る",
     "showLess": "閉じる",
-    "clickForDetails": "詳細はクリック"
+    "clickForDetails": "詳細はクリック",
+    "subtitle": "経歴とスキル"
   },
   "connect": {
     "title": "お問い合わせ",
@@ -62,7 +64,8 @@
     "sendMessage": "メッセージを送る",
     "goToDashboard": "ダッシュボードへ",
     "registerHint": "パーソナライズされた体験とダイレクトメッセージのためにご登録ください",
-    "loading": "読み込み中..."
+    "loading": "読み込み中...",
+    "subtitle": "お問い合わせ"
   },
   "registerCallout": {
     "title": "コミュニティに参加",

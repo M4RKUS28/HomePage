@@ -37,7 +37,8 @@
       "down": "Offline",
       "unknown": "Sconosciuto",
       "checking": "Controllo..."
-    }
+    },
+    "onlineCount": "{count} online"
   },
   "cv": {
     "loading": "Caricamento dati CV...",
@@ -54,7 +55,8 @@
     "noData": "Nessun dato disponibile.",
     "showMore": "Mostra di più",
     "showLess": "Mostra di meno",
-    "clickForDetails": "Clicca per i dettagli"
+    "clickForDetails": "Clicca per i dettagli",
+    "subtitle": "Profilo e percorso"
   },
   "connect": {
     "title": "Contattami",
@@ -62,7 +64,8 @@
     "sendMessage": "Invia messaggio",
     "goToDashboard": "Vai alla dashboard",
     "registerHint": "Registrati per un'esperienza personalizzata e messaggi diretti",
-    "loading": "Caricamento..."
+    "loading": "Caricamento...",
+    "subtitle": "Contatti"
   },
   "registerCallout": {
     "title": "Unisciti alla comunità",

@@ -37,7 +37,8 @@
       "down": "离线",
       "unknown": "未知",
       "checking": "检查中..."
-    }
+    },
+    "onlineCount": "{count} 个在线"
   },
   "cv": {
     "loading": "正在加载简历数据...",
@@ -54,7 +55,8 @@
     "noData": "暂无数据。",
     "showMore": "显示更多",
     "showLess": "收起",
-    "clickForDetails": "点击查看详情"
+    "clickForDetails": "点击查看详情",
+    "subtitle": "个人背景与经历"
   },
   "connect": {
     "title": "联系我",
@@ -62,7 +64,8 @@
     "sendMessage": "发送消息",
     "goToDashboard": "前往控制面板",
     "registerHint": "注册以获得个性化体验和直接消息功能",
-    "loading": "加载中..."
+    "loading": "加载中...",
+    "subtitle": "联系方式"
   },
   "registerCallout": {
     "title": "加入社区",

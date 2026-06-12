@@ -37,7 +37,8 @@
       "down": "Offline",
       "unknown": "Desconhecido",
       "checking": "Verificando..."
-    }
+    },
+    "onlineCount": "{count} online"
   },
   "cv": {
     "loading": "Carregando dados do CV...",
@@ -54,7 +55,8 @@
     "noData": "Nenhum dado disponível.",
     "showMore": "Ver mais",
     "showLess": "Ver menos",
-    "clickForDetails": "Clique para detalhes"
+    "clickForDetails": "Clique para detalhes",
+    "subtitle": "Perfil e carreira"
   },
   "connect": {
     "title": "Entre em contato",
@@ -62,7 +64,8 @@
     "sendMessage": "Enviar mensagem",
     "goToDashboard": "Ir ao painel",
     "registerHint": "Registre-se para uma experiência personalizada e mensagens diretas",
-    "loading": "Carregando..."
+    "loading": "Carregando...",
+    "subtitle": "Contato"
   },
   "registerCallout": {
     "title": "Junte-se à comunidade",

@@ -37,7 +37,8 @@
       "down": "Offline",
       "unknown": "Unbekannt",
       "checking": "Wird geprüft..."
-    }
+    },
+    "onlineCount": "{count} online"
   },
   "cv": {
     "loading": "Lebenslauf wird geladen...",
@@ -54,7 +55,8 @@
     "noData": "Keine Daten verfügbar.",
     "showMore": "Mehr anzeigen",
     "showLess": "Weniger anzeigen",
-    "clickForDetails": "Für Details klicken"
+    "clickForDetails": "Für Details klicken",
+    "subtitle": "Über mich & Werdegang"
   },
   "connect": {
     "title": "Kontakt aufnehmen",
@@ -62,7 +64,8 @@
     "sendMessage": "Nachricht senden",
     "goToDashboard": "Zum Dashboard",
     "registerHint": "Registrieren Sie sich für eine personalisierte Erfahrung und Direktnachrichten",
-    "loading": "Laden..."
+    "loading": "Laden...",
+    "subtitle": "Kontakt"
   },
   "registerCallout": {
     "title": "Werden Sie Teil der Community",

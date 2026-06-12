@@ -7,12 +7,10 @@ import { useAuth } from '../../hooks/useAuth';import { useLanguage } from '../..
 import ProjectForm from '../Admin/ProjectForm';
 import Modal from '../UI/Modal';
 import { PlusCircle, FolderOpen } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme';
 
 
 const ProjectsGrid = () => {
   const t = useTranslations('projects');
-  const { theme } = useTheme();
   const { locale } = useLanguage();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -207,52 +205,56 @@ const ProjectsGrid = () => {
     },
   };
 
-  return (
-    <section id="projects" className="relative py-20 md:py-32 overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className={`absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl ${
-          theme === 'dark' ? 'bg-emerald-500/5' : 'bg-emerald-500/8'
-        }`} />
-        <div className={`absolute bottom-0 right-1/4 w-80 h-80 rounded-full blur-3xl ${
-          theme === 'dark' ? 'bg-blue-500/5' : 'bg-blue-500/8'
-        }`} />
-      </div>
+  const onlineCount = projects.filter(p => p.status?.toLowerCase() === 'up').length;
 
+  return (
+    <section id="projects" className="relative py-20 md:py-32">
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section header */}
-        <div className="text-center mb-16">
+        {/* Section header: title left, live system readout right */}
+        <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6 }}
           >
-            <span className={`inline-block text-sm font-semibold tracking-widest uppercase mb-3 ${
-              theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'
-            }`}>
+            <span className="eyebrow mb-3">
+              <span className="status-dot status-dot--accent" />
               {t('subtitle')}
             </span>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-500 to-blue-500">
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-ink">
               {t('title')}
             </h2>
-            <div className={`mx-auto mt-4 h-1 w-16 rounded-full bg-gradient-to-r from-emerald-400 to-blue-500`} />
           </motion.div>
+
+          {projects.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="flex items-center gap-4 font-data text-xs uppercase tracking-[0.16em] text-ink-3 md:pb-2"
+            >
+              <span className="text-2xl font-semibold text-ink">{String(projects.length).padStart(2, '0')}</span>
+              {onlineCount > 0 && (
+                <span className="inline-flex items-center gap-2 rounded-md border border-line px-2.5 py-1.5">
+                  <span className="status-dot" />
+                  {t('onlineCount', { count: onlineCount })}
+                </span>
+              )}
+            </motion.div>
+          )}
         </div>
-        
+
         {currentUser?.is_admin && (
-          <div className="text-center mb-12">
+          <div className="mb-12">
             <motion.button
               onClick={handleAdd}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                theme === 'dark'
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-400/50'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300'
-              }`}
+              className="btn-ghost text-sm px-6 py-3"
             >
-              <PlusCircle size={18} />
+              <PlusCircle size={17} />
               {t('addProject')}
             </motion.button>
           </div>
@@ -262,11 +264,7 @@ const ProjectsGrid = () => {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`text-center mb-8 p-4 rounded-xl text-sm font-medium ${
-              theme === 'dark'
-                ? 'text-red-300 bg-red-500/10 border border-red-500/20'
-                : 'text-red-700 bg-red-50 border border-red-200'
-            }`}
+            className="text-center mb-8 p-4 rounded-xl text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/25"
           >
             {error}
           </motion.p>
@@ -278,12 +276,8 @@ const ProjectsGrid = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-20"
           >
-            <FolderOpen size={48} className={`mx-auto mb-4 ${
-              theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
-            }`} />
-            <p className={`text-lg ${
-              theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
-            }`}>
+            <FolderOpen size={44} className="mx-auto mb-4 text-ink-3 opacity-60" />
+            <p className="text-lg text-ink-3">
               {t('noProjects')}
             </p>
           </motion.div>
@@ -332,17 +326,13 @@ const ProjectsGrid = () => {
       {deletingProject && (
         <Modal title={t('deleteProject')} onClose={() => setDeletingProject(null)}>
           <div className="p-2 space-y-6">
-            <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+            <p className="text-sm text-ink-2">
               Are you sure you want to delete <strong>{deletingProject.title}</strong>? This action cannot be undone and will permanently remove all language variants and images associated with this project.
             </p>
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700/50">
+            <div className="flex justify-end gap-3 pt-4 border-t border-line">
               <button
                 onClick={() => setDeletingProject(null)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-gray-700/50 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className="px-4 py-2 rounded-xl text-sm font-medium transition-colors bg-raised text-ink-2 hover:text-ink border border-line hover:border-line-strong"
               >
                 Cancel
               </button>
