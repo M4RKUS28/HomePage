@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Remove-Item \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\nextfrontend\\\\scripts\\\\add-redesign-keys.js\" -Confirm:$false; if \\(\\(Get-ChildItem \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\nextfrontend\\\\scripts\" -Force | Measure-Object\\).Count -eq 0\\) { Remove-Item \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\nextfrontend\\\\scripts\" -Confirm:$false })",
+      "PowerShell(python --version)",
+      "PowerShell(python -c \"import playwright; print\\('playwright ok'\\)\")",
+      "PowerShell(Test-NetConnection -ComputerName 127.0.0.1 -Port 8000 -InformationLevel Quiet -WarningAction SilentlyContinue)",
+      "PowerShell(python \"C:\\\\Users\\\\marku\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\hp-redesign-shots.py\")",
+      "PowerShell(python \"C:\\\\Users\\\\marku\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\hp-redesign-mocked.py\")",
+      "PowerShell(python \"C:\\\\Users\\\\marku\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\hp-scroll-shots.py\")",
+      "PowerShell(Remove-Item \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\nextfrontend\\\\src\\\\components\\\\UI\\\\AnimatedTextCharacter.jsx\" -Confirm:$false)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:8457/\" -UseBasicParsing -MaximumRedirection 5 -TimeoutSec 15; \"Status: $\\($r.StatusCode\\)\"; $r.Content.Substring\\(0, [Math]::Min\\(300, $r.Content.Length\\)\\) } catch { \"FAILED: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(& \"C:\\\\Users\\\\marku\\\\AppData\\\\Local\\\\nvm\\\\v22.18.0\\\\npm.cmd\" install --prefix \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\nextfrontend\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\marku\\AppData\\Local\\Temp\\claude"
+    ]
+  }
+}
