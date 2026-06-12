@@ -277,7 +277,13 @@
       "saving": "Salvataggio…",
       "saved": "Modello di traduzione aggiornato.",
       "saveError": "Impossibile aggiornare il modello di traduzione.",
-      "loadError": "Impossibile caricare le impostazioni."
+      "loadError": "Impossibile caricare le impostazioni.",
+      "accentTitle": "Colore d'accento",
+      "accentHelp": "Colore di base per pulsanti, evidenziazioni e accenti in tutto il sito. Applicato subito dopo il salvataggio.",
+      "accentDefaultBadge": "Predefinito: {color}",
+      "accentSaved": "Colore d'accento aggiornato.",
+      "accentSaveError": "Impossibile aggiornare il colore d'accento.",
+      "accentReset": "Ripristina predefinito"
     }
   },
   "notFound": {

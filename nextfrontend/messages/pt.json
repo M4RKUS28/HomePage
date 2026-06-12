@@ -277,7 +277,13 @@
       "saving": "Salvando…",
       "saved": "Modelo de tradução atualizado.",
       "saveError": "Falha ao atualizar o modelo de tradução.",
-      "loadError": "Falha ao carregar as configurações."
+      "loadError": "Falha ao carregar as configurações.",
+      "accentTitle": "Cor de destaque",
+      "accentHelp": "Cor base para botões, realces e destaques em todo o site. Aplicada imediatamente após salvar.",
+      "accentDefaultBadge": "Padrão: {color}",
+      "accentSaved": "Cor de destaque atualizada.",
+      "accentSaveError": "Falha ao atualizar a cor de destaque.",
+      "accentReset": "Redefinir para o padrão"
     }
   },
   "notFound": {

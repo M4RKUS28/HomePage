@@ -277,7 +277,13 @@
       "saving": "Speichern…",
       "saved": "Übersetzungsmodell aktualisiert.",
       "saveError": "Aktualisierung des Übersetzungsmodells fehlgeschlagen.",
-      "loadError": "Einstellungen konnten nicht geladen werden."
+      "loadError": "Einstellungen konnten nicht geladen werden.",
+      "accentTitle": "Akzentfarbe",
+      "accentHelp": "Basisfarbe für Buttons, Hervorhebungen und Akzente auf der gesamten Seite. Wird nach dem Speichern sofort angewendet.",
+      "accentDefaultBadge": "Standard: {color}",
+      "accentSaved": "Akzentfarbe aktualisiert.",
+      "accentSaveError": "Akzentfarbe konnte nicht aktualisiert werden.",
+      "accentReset": "Auf Standard zurücksetzen"
     }
   },
   "notFound": {

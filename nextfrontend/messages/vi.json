@@ -277,7 +277,13 @@
       "saving": "Đang lưu…",
       "saved": "Đã cập nhật mô hình dịch.",
       "saveError": "Không thể cập nhật mô hình dịch.",
-      "loadError": "Không thể tải cài đặt."
+      "loadError": "Không thể tải cài đặt.",
+      "accentTitle": "Màu nhấn",
+      "accentHelp": "Màu cơ bản cho nút, điểm nhấn và highlight trên toàn trang. Được áp dụng ngay sau khi lưu.",
+      "accentDefaultBadge": "Mặc định: {color}",
+      "accentSaved": "Đã cập nhật màu nhấn.",
+      "accentSaveError": "Không thể cập nhật màu nhấn.",
+      "accentReset": "Đặt lại mặc định"
     }
   },
   "notFound": {

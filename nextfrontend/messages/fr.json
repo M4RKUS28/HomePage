@@ -277,7 +277,13 @@
       "saving": "Enregistrement…",
       "saved": "Modèle de traduction mis à jour.",
       "saveError": "Échec de la mise à jour du modèle de traduction.",
-      "loadError": "Échec du chargement des paramètres."
+      "loadError": "Échec du chargement des paramètres.",
+      "accentTitle": "Couleur d'accent",
+      "accentHelp": "Couleur de base des boutons, surlignages et accents sur tout le site. Appliquée immédiatement après l'enregistrement.",
+      "accentDefaultBadge": "Par défaut : {color}",
+      "accentSaved": "Couleur d'accent mise à jour.",
+      "accentSaveError": "Échec de la mise à jour de la couleur d'accent.",
+      "accentReset": "Réinitialiser"
     }
   },
   "notFound": {

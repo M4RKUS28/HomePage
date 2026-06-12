@@ -277,7 +277,13 @@
       "saving": "Saving…",
       "saved": "Translation model updated.",
       "saveError": "Failed to update the translation model.",
-      "loadError": "Failed to load settings."
+      "loadError": "Failed to load settings.",
+      "accentTitle": "Accent Color",
+      "accentHelp": "Base color for buttons, highlights and accents across the site. Applied immediately after saving.",
+      "accentDefaultBadge": "Default: {color}",
+      "accentSaved": "Accent color updated.",
+      "accentSaveError": "Failed to update the accent color.",
+      "accentReset": "Reset to default"
     }
   },
   "notFound": {

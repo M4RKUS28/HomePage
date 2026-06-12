@@ -277,7 +277,13 @@
       "saving": "保存中…",
       "saved": "翻译模型已更新。",
       "saveError": "更新翻译模型失败。",
-      "loadError": "加载设置失败。"
+      "loadError": "加载设置失败。",
+      "accentTitle": "强调色",
+      "accentHelp": "用于全站按钮、高亮和强调元素的基础颜色。保存后立即生效。",
+      "accentDefaultBadge": "默认：{color}",
+      "accentSaved": "强调色已更新。",
+      "accentSaveError": "强调色更新失败。",
+      "accentReset": "恢复默认"
     }
   },
   "notFound": {

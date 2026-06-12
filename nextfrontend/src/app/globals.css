@@ -150,7 +150,7 @@
   }
 
   ::selection {
-    background-color: rgba(255, 178, 36, 0.35);
+    background-color: color-mix(in srgb, var(--app-accent-fill) 35%, transparent);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -261,14 +261,14 @@
     cursor: pointer;
     background-color: var(--app-accent-fill);
     color: var(--app-on-accent-fill);
-    box-shadow: 0 8px 24px -10px rgba(255, 178, 36, 0.45);
+    box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--app-accent-fill) 45%, transparent);
     transition: transform 0.2s ease, box-shadow 0.3s ease, filter 0.2s ease;
   }
 
   .btn-cta:hover {
     transform: translateY(-2px);
     filter: brightness(1.05);
-    box-shadow: 0 14px 32px -12px rgba(255, 178, 36, 0.55);
+    box-shadow: 0 14px 32px -12px color-mix(in srgb, var(--app-accent-fill) 55%, transparent);
   }
 
   .btn-cta:active {
@@ -454,7 +454,7 @@
   .btn-primary {
     background-color: var(--app-accent-fill);
     color: var(--app-on-accent-fill);
-    box-shadow: 0 4px 14px -4px rgba(255, 178, 36, 0.4);
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--app-accent-fill) 40%, transparent);
   }
 
   .btn-primary:hover:not(:disabled) {
@@ -525,7 +525,7 @@
   .input-field:focus {
     outline: none;
     border-color: var(--app-accent-fill);
-    box-shadow: 0 0 0 3px rgba(255, 178, 36, 0.2);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-accent-fill) 20%, transparent);
   }
 
   /* Card styles */
@@ -831,7 +831,7 @@
   .light .nav-button.active {
     background-color: var(--app-accent-fill) !important;
     color: var(--app-on-accent-fill) !important;
-    box-shadow: 0 4px 14px -4px rgba(255, 178, 36, 0.45) !important;
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--app-accent-fill) 45%, transparent) !important;
     border: 1px solid transparent !important;
   }
 

@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono, Archivo } from "next/font/google";
 import "../globals.css";
-import { fetchCVDataSSR } from '../../lib/server-api';
+import { fetchCVDataSSR, fetchPublicSettingsSSR } from '../../lib/server-api';
+import { buildAccentCss } from '../../lib/accent';
 import Providers from "../../components/Providers";
 import MainLayout from "../../layouts/MainLayout";
 import ToastNotification from "../../components/UI/ToastNotification";
@@ -50,17 +51,27 @@ export default async function LocaleLayout({ children, params }) {
 
   setRequestLocale(locale);
 
-  // Fetch CV data for header text and footer data
-  const cvData = await fetchCVDataSSR(locale);
+  // Fetch CV data (header/footer) and public settings (accent color) in parallel
+  const [cvData, publicSettings] = await Promise.all([
+    fetchCVDataSSR(locale),
+    fetchPublicSettingsSSR(),
+  ]);
   const headerText = cvData?.personalInfo?.headerText || 'Portfolio';
   const socialLinks = cvData?.personalInfo?.socialLinks || [];
   const ownerName = cvData?.personalInfo?.name || 'Portfolio';
+
+  // Custom accent color → CSS var overrides, rendered inline so the very
+  // first paint already uses it. Null when unset/default/invalid.
+  const accentCss = buildAccentCss(publicSettings?.accent_color);
 
   const messages = await getMessages();
 
   return (
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} antialiased`}>
+        {accentCss && (
+          <style id="accent-theme" dangerouslySetInnerHTML={{ __html: accentCss }} />
+        )}
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <MainLayout 

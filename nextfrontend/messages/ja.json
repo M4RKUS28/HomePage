@@ -277,7 +277,13 @@
       "saving": "保存中…",
       "saved": "翻訳モデルを更新しました。",
       "saveError": "翻訳モデルの更新に失敗しました。",
-      "loadError": "設定の読み込みに失敗しました。"
+      "loadError": "設定の読み込みに失敗しました。",
+      "accentTitle": "アクセントカラー",
+      "accentHelp": "サイト全体のボタンやハイライト、アクセントに使われる基本色。保存後すぐに反映されます。",
+      "accentDefaultBadge": "デフォルト: {color}",
+      "accentSaved": "アクセントカラーを更新しました。",
+      "accentSaveError": "アクセントカラーの更新に失敗しました。",
+      "accentReset": "デフォルトに戻す"
     }
   },
   "notFound": {

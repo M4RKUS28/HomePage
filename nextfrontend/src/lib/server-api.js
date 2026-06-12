@@ -53,6 +53,29 @@ export const fetchCVDataSSR = async (language = 'en') => {
   }
 };
 
+/**
+ * Public site settings (theme accent color). No auth, no cookies — cached by
+ * the Next.js fetch cache for 60s and tagged so the admin dashboard can bust
+ * it instantly via revalidateTag('public-settings').
+ */
+export const fetchPublicSettingsSSR = async () => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/settings/public`, {
+      next: { revalidate: 60, tags: ['public-settings'] },
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch public settings:', response.status);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching public settings on server:', error);
+    return null;
+  }
+};
+
 export const fetchCurrentUserSSR = async () => {
   try {
     const authHeaders = await getSSRAuthHeaders();
