@@ -14,7 +14,16 @@
       "PowerShell(git -C \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\" status --short)",
       "PowerShell(& \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" -m py_compile \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\routers\\\\settings.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\schemas\\\\settings.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\db\\\\crud\\\\app_setting.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\router.py\")",
       "PowerShell(if \\($?\\) { \"backend syntax OK\" })",
-      "PowerShell(python -m py_compile \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\routers\\\\settings.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\schemas\\\\settings.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\db\\\\crud\\\\app_setting.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\router.py\")"
+      "PowerShell(python -m py_compile \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\routers\\\\settings.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\schemas\\\\settings.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\db\\\\crud\\\\app_setting.py\" \"c:\\\\Users\\\\marku\\\\Nextcloud\\\\Projekte\\\\Fullstack\\\\M4RKUS-HP\\\\backend\\\\src\\\\api\\\\router.py\")",
+      "Bash(ls backend/bmw_job_notifier.py backend/*.json)",
+      "Bash(sed -n '99,180p' backend/src/core/config.py)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git update-index *)",
+      "Bash(bash -n deploy/start.sh)",
+      "Bash(bash -n deploy/update.sh)",
+      "Bash(bash -n deploy/stop.sh)",
+      "Bash(python -m py_compile backend/src/core/config.py)"
     ],
     "additionalDirectories": [
       "C:\\Users\\marku\\AppData\\Local\\Temp\\claude"

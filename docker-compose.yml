@@ -90,7 +90,7 @@ services:
     expose:
       - "8000"
     env_file:
-      - ./backend/.env
+      - ./.env # single root .env (see .env.example)
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
@@ -98,7 +98,6 @@ services:
       # Mount source so --reload picks up changes without rebuild
       - ./backend/src:/home/app/web/src
       - ./backend/requirements.txt:/home/app/web/requirements.txt:ro
-      - ./backend/.env:/home/app/web/.env:ro
       - ./backend/alembic:/home/app/web/alembic
       - ./backend/alembic.ini:/home/app/web/alembic.ini:ro
       - ./backend/entrypoint.sh:/home/app/web/entrypoint.sh:ro
@@ -131,6 +130,7 @@ services:
       - BACKEND_URL=http://homepagebackend:8000
       - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET:-change-me-in-production}
       - SESSION_SECRET=${SESSION_SECRET:-iron-session-secret-at-least-32-chars-change-me}
+      - AUTH_URL=${AUTH_URL:-http://localhost:8457}
       - NEXT_TELEMETRY_DISABLED=1
       # Polling required on Windows/WSL (inotify doesn't cross volume boundary)
       - WATCHPACK_POLLING=true

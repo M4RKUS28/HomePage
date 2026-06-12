@@ -70,9 +70,9 @@ M4RKUS-HP/
 │   ├── Dockerfile        #   Production Build (PM2)
 │   └── Dockerfile.dev    #   Development Build (Hot Reload)
 ├── nginx/                # Reverse Proxy Konfiguration
+├── deploy/               # Produktion: compose + start/stop/update Scripts
 ├── docker-compose.yml    # Lokale Entwicklung
-├── docker-compose.prod.yml  # Produktion (DockerHub Images)
-└── run.sh                # Convenience-Script: docker compose up --build
+└── .env.example          # Vorlage für die EINE .env (Repo-Root)
 ```
 
 ---
@@ -93,18 +93,17 @@ cd M4RKUS-HP
 
 ### 2. Umgebungsvariablen konfigurieren
 
+Es gibt genau **eine** `.env` im Repo-Root — sie versorgt Compose, Backend
+und Frontend:
+
 ```bash
-cp backend/.env.example backend/.env
-# .env anpassen (DB, Redis, MinIO, Shared Secret, Admin-Credentials, E-Mail)
+cp .env.example .env
+# .env anpassen (DB, MinIO, Secrets, Admin-Credentials, E-Mail, …)
 ```
 
 ### 3. Starten
 
 ```bash
-# Alle Services mit einem Befehl
-./run.sh
-
-# Oder manuell:
 docker compose up --build
 ```
 
@@ -120,9 +119,12 @@ docker compose up --build
 
 ## Produktion
 
+Alles für den Server liegt in [`deploy/`](deploy/README.md):
+
 ```bash
-# docker-compose.prod.yml nutzt DockerHub-Images
-docker compose -f docker-compose.prod.yml up -d
+cp .env.example .env   # einmalig auf dem Server, Werte ausfüllen (AUTH_URL=https://…)
+deploy/start.sh        # pull + start, Autostart bei Reboot, stündliches Auto-Update
+deploy/stop.sh         # Stack stoppen (Daten bleiben erhalten)
 ```
 
 Images werden per CI/CD auf DockerHub gepusht:

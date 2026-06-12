@@ -162,7 +162,9 @@ class Settings(BaseSettings):
       3. Defaults below (lowest priority)
     """
     model_config = SettingsConfigDict(
-        env_file=".env",
+        # Repo-root .env first, a local .env (cwd) may override. In Docker both
+        # are absent — values come from the process env (compose env_file).
+        env_file=("../.env", ".env"),
         env_file_encoding="utf-8",
         extra="ignore",  # ignore unknown env vars
     )

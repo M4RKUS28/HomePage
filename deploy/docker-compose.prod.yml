@@ -1,15 +1,14 @@
 # =============================================================================
-# docker-compose.prod.yml  –  PRODUCTION
+# deploy/docker-compose.prod.yml  –  PRODUCTION
 #
-# Usage:
-#   docker compose -f docker-compose.prod.yml up -d
+# Usage (always via the scripts, they pass --env-file ../.env):
+#   deploy/start.sh    pull images, start stack, install hourly auto-update
+#   deploy/update.sh   pull + recreate changed containers (run by cron)
+#   deploy/stop.sh     stop stack, remove auto-update cron
 #
-# Requires:
-#   DOCKERHUB_USERNAME in root .env (or exported in shell)
-#   All other vars from root .env / environment
-#
-# Images are pulled from DockerHub – no local build.
-# Build & push is handled by the GitHub Actions workflow.
+# Configuration comes from ONE file: the repo-root .env (see .env.example).
+# Images are pulled from DockerHub – no local build. Build & push is handled
+# by the GitHub Actions workflow (.github/workflows/docker-build-push.yml).
 # =============================================================================
 
 services:
@@ -86,7 +85,7 @@ services:
     expose:
       - "8000"
     env_file:
-      - ./backend/.env
+      - ../.env # single root .env (see .env.example)
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
@@ -117,10 +116,12 @@ services:
       - BACKEND_URL=http://homepagebackend:8000
       - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET}
       - SESSION_SECRET=${SESSION_SECRET}
+      - AUTH_URL=${AUTH_URL:-https://www.m4rkus28.de}
+      - AUTH_TRUST_HOST=true
       - NEXT_TELEMETRY_DISABLED=1
       - PM2_INSTANCES=${PM2_INSTANCES:-2}
     volumes:
-      - ./nextfrontend/logs:/app/logs
+      - frontend_logs:/app/logs
     depends_on:
       homepagebackend:
         condition: service_healthy
@@ -164,3 +165,4 @@ volumes:
   postgres_data:
   redis_data:
   minio_data:
+  frontend_logs:
