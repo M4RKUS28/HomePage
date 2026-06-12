@@ -4,3 +4,4 @@ backend/bmw_job_notifier.py
 # Environment files (contain secrets - never commit)
 .env
 !.env.example
+backend/bmw_jobs.db
