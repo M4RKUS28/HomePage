@@ -254,7 +254,25 @@
       "personalInfo": "个人信息",
       "moveUp": "上移",
       "moveDown": "下移",
-      "saveSuccess": "简历保存成功！"
+      "saveSuccess": "简历保存成功！",
+      "import": {
+        "navLabel": "AI 导入",
+        "title": "AI 简历导入",
+        "description": "上传您的简历(PDF、图片或文本),让 AI 将数据提取到编辑器中。保存前请先检查结果。",
+        "fileLabel": "简历文件",
+        "chooseFile": "选择文件",
+        "noFileSelected": "未选择文件",
+        "modeLabel": "导入模式",
+        "modeMerge": "与现有数据合并",
+        "modeMergeHint": "将上传文件中的新信息添加到当前简历中,保留现有条目。",
+        "modeReplace": "替换所有数据",
+        "modeReplaceHint": "放弃当前简历,完全根据上传的文件重新生成所有内容。",
+        "generate": "使用 AI 生成",
+        "generating": "正在使用 AI 分析简历…这可能需要最多一分钟。",
+        "success": "简历数据已生成。请在「原始数据」标签中查看,然后点击保存。",
+        "error": "生成简历数据失败,请重试。",
+        "selectFileError": "请先选择一个文件。"
+      }
     },
     "access": {
       "title": "访问日志",

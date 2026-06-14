@@ -254,7 +254,25 @@
       "personalInfo": "Persönliche Daten",
       "moveUp": "Nach oben",
       "moveDown": "Nach unten",
-      "saveSuccess": "Lebenslauf erfolgreich gespeichert!"
+      "saveSuccess": "Lebenslauf erfolgreich gespeichert!",
+      "import": {
+        "navLabel": "KI-Import",
+        "title": "KI-Lebenslauf-Import",
+        "description": "Laden Sie Ihren Lebenslauf (PDF, Bild oder Text) hoch und lassen Sie die KI die Daten in den Editor übernehmen. Prüfen Sie das Ergebnis vor dem Speichern.",
+        "fileLabel": "Lebenslauf-Datei",
+        "chooseFile": "Datei auswählen",
+        "noFileSelected": "Keine Datei ausgewählt",
+        "modeLabel": "Import-Modus",
+        "modeMerge": "Mit vorhandenen Daten zusammenführen",
+        "modeMergeHint": "Fügt neue Informationen aus der hochgeladenen Datei zu Ihrem aktuellen Lebenslauf hinzu und behält bestehende Einträge.",
+        "modeReplace": "Alle Daten ersetzen",
+        "modeReplaceHint": "Verwirft den aktuellen Lebenslauf und erstellt alles neu aus der hochgeladenen Datei.",
+        "generate": "Mit KI generieren",
+        "generating": "Lebenslauf wird mit KI analysiert… dies kann bis zu einer Minute dauern.",
+        "success": "Lebenslaufdaten generiert. Überprüfen Sie das Ergebnis im Tab „Rohdaten“ und klicken Sie dann auf Speichern.",
+        "error": "Lebenslaufdaten konnten nicht generiert werden. Bitte versuchen Sie es erneut.",
+        "selectFileError": "Bitte wählen Sie zuerst eine Datei aus."
+      }
     },
     "access": {
       "title": "Zugriffsprotokoll",

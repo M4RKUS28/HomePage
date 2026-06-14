@@ -16,6 +16,7 @@ import {
   Users,
   Zap,
   Globe2,
+  Sparkles,
 } from 'lucide-react';
 import { getCVDataApi, updateCVDataApi } from '../../api/cv';
 import CVSectionNav from './CVEditorParts/CVSectionNav';
@@ -24,6 +25,7 @@ import SummarySection from './CVEditorParts/SummarySection';
 import ListSection from './CVEditorParts/ListSection';
 import SkillsSection from './CVEditorParts/SkillsSection';
 import RawDataSection from './CVEditorParts/RawDataSection';
+import CVImportSection from './CVEditorParts/CVImportSection';
 import EditItemModal from './CVEditorParts/EditItemModal';
 import ItemForms from './CVEditorParts/ItemForms';
 
@@ -38,6 +40,7 @@ const navItems = [
   { key: 'volunteering', label: 'Volunteering', icon: Users },
   { key: 'languages', label: 'Languages', icon: Globe2 },
   { key: 'rawData', label: 'Raw Data', icon: Code },
+  { key: 'import', label: 'AI Import', icon: Sparkles },
 ];
 
 const defaultCVData = {
@@ -418,6 +421,11 @@ const CVEditor = () => {
     }
   };
 
+  const handleImportGenerated = (generatedData) => {
+    setNormalizedData(generatedData);
+    setActiveSection('rawData');
+  };
+
   const downloadRawData = () => {
     const dataStr = JSON.stringify(cvData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -715,6 +723,8 @@ const CVEditor = () => {
             onDownload={downloadRawData}
           />
         );
+      case 'import':
+        return <CVImportSection onGenerated={handleImportGenerated} />;
       default:
         return <p>Select a section to edit</p>;
     }

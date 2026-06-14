@@ -254,7 +254,25 @@
       "personalInfo": "Información personal",
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",
-      "saveSuccess": "¡CV guardado con éxito!"
+      "saveSuccess": "¡CV guardado con éxito!",
+      "import": {
+        "navLabel": "Importación IA",
+        "title": "Importación de CV con IA",
+        "description": "Sube tu CV (PDF, imagen o texto) y deja que la IA extraiga los datos en el editor. Revisa el resultado antes de guardar.",
+        "fileLabel": "Archivo del CV",
+        "chooseFile": "Elegir archivo",
+        "noFileSelected": "Ningún archivo seleccionado",
+        "modeLabel": "Modo de importación",
+        "modeMerge": "Combinar con los datos existentes",
+        "modeMergeHint": "Añade nueva información del archivo subido a tu CV actual, conservando las entradas existentes.",
+        "modeReplace": "Reemplazar todos los datos",
+        "modeReplaceHint": "Descarta el CV actual y genera todo de nuevo a partir del archivo subido.",
+        "generate": "Generar con IA",
+        "generating": "Analizando el CV con IA… esto puede tardar hasta un minuto.",
+        "success": "Datos del CV generados. Revísalos en la pestaña «Datos sin procesar» y luego haz clic en Guardar.",
+        "error": "No se pudieron generar los datos del CV. Inténtalo de nuevo.",
+        "selectFileError": "Por favor, selecciona primero un archivo."
+      }
     },
     "access": {
       "title": "Registro de acceso",

@@ -254,7 +254,25 @@
       "personalInfo": "個人情報",
       "moveUp": "上へ移動",
       "moveDown": "下へ移動",
-      "saveSuccess": "履歴書が正常に保存されました！"
+      "saveSuccess": "履歴書が正常に保存されました！",
+      "import": {
+        "navLabel": "AI読み込み",
+        "title": "AIによるCV読み込み",
+        "description": "履歴書(PDF、画像、またはテキスト)をアップロードすると、AIがデータをエディタに抽出します。保存する前に結果を確認してください。",
+        "fileLabel": "CVファイル",
+        "chooseFile": "ファイルを選択",
+        "noFileSelected": "ファイルが選択されていません",
+        "modeLabel": "読み込みモード",
+        "modeMerge": "既存データと統合",
+        "modeMergeHint": "アップロードしたファイルの新しい情報を現在のCVに追加し、既存の項目はそのまま維持します。",
+        "modeReplace": "すべてのデータを置き換え",
+        "modeReplaceHint": "現在のCVを破棄し、アップロードしたファイルからすべてを新規に生成します。",
+        "generate": "AIで生成",
+        "generating": "AIがCVを解析しています…最大1分ほどかかる場合があります。",
+        "success": "CVデータが生成されました。「生データ」タブで確認し、保存をクリックしてください。",
+        "error": "CVデータの生成に失敗しました。再度お試しください。",
+        "selectFileError": "先にファイルを選択してください。"
+      }
     },
     "access": {
       "title": "アクセスログ",

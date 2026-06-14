@@ -254,7 +254,25 @@
       "personalInfo": "Thông tin cá nhân",
       "moveUp": "Di chuyển lên",
       "moveDown": "Di chuyển xuống",
-      "saveSuccess": "CV đã được lưu thành công!"
+      "saveSuccess": "CV đã được lưu thành công!",
+      "import": {
+        "navLabel": "Nhập bằng AI",
+        "title": "Nhập CV bằng AI",
+        "description": "Tải lên CV của bạn (PDF, hình ảnh hoặc văn bản) và để AI trích xuất dữ liệu vào trình chỉnh sửa. Hãy xem lại kết quả trước khi lưu.",
+        "fileLabel": "Tệp CV",
+        "chooseFile": "Chọn tệp",
+        "noFileSelected": "Chưa chọn tệp nào",
+        "modeLabel": "Chế độ nhập",
+        "modeMerge": "Hợp nhất với dữ liệu hiện có",
+        "modeMergeHint": "Thêm thông tin mới từ tệp đã tải lên vào CV hiện tại của bạn, giữ nguyên các mục hiện có.",
+        "modeReplace": "Thay thế toàn bộ dữ liệu",
+        "modeReplaceHint": "Loại bỏ CV hiện tại và tạo lại mọi thứ từ tệp đã tải lên.",
+        "generate": "Tạo bằng AI",
+        "generating": "Đang phân tích CV bằng AI… việc này có thể mất đến một phút.",
+        "success": "Đã tạo dữ liệu CV. Hãy xem lại trong tab \"Dữ liệu thô\", sau đó nhấp Lưu.",
+        "error": "Không thể tạo dữ liệu CV. Vui lòng thử lại.",
+        "selectFileError": "Vui lòng chọn một tệp trước."
+      }
     },
     "access": {
       "title": "Nhật ký truy cập",

@@ -254,7 +254,25 @@
       "personalInfo": "Informations personnelles",
       "moveUp": "Déplacer vers le haut",
       "moveDown": "Déplacer vers le bas",
-      "saveSuccess": "CV enregistré avec succès !"
+      "saveSuccess": "CV enregistré avec succès !",
+      "import": {
+        "navLabel": "Import IA",
+        "title": "Import de CV par IA",
+        "description": "Téléchargez votre CV (PDF, image ou texte) et laissez l'IA extraire les données dans l'éditeur. Vérifiez le résultat avant d'enregistrer.",
+        "fileLabel": "Fichier du CV",
+        "chooseFile": "Choisir un fichier",
+        "noFileSelected": "Aucun fichier sélectionné",
+        "modeLabel": "Mode d'import",
+        "modeMerge": "Fusionner avec les données existantes",
+        "modeMergeHint": "Ajoute les nouvelles informations du fichier téléchargé à votre CV actuel, en conservant les entrées existantes.",
+        "modeReplace": "Remplacer toutes les données",
+        "modeReplaceHint": "Supprime le CV actuel et génère tout à nouveau à partir du fichier téléchargé.",
+        "generate": "Générer avec l'IA",
+        "generating": "Analyse du CV par l'IA… cela peut prendre jusqu'à une minute.",
+        "success": "Données du CV générées. Vérifiez-les dans l'onglet « Données brutes », puis cliquez sur Enregistrer.",
+        "error": "Échec de la génération des données du CV. Veuillez réessayer.",
+        "selectFileError": "Veuillez d'abord sélectionner un fichier."
+      }
     },
     "access": {
       "title": "Journal d'accès",

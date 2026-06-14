@@ -50,7 +50,7 @@ _LANG_NAMES: Dict[str, str] = {
 # Gemini helpers
 # ---------------------------------------------------------------------------
 
-async def _get_active_model(db) -> str:
+async def get_active_model(db) -> str:
     """Resolve the translation model: admin DB override → env/config default."""
     stored = await app_setting_crud.get_setting(db, app_setting_crud.TRANSLATION_MODEL_KEY)
     return stored or settings.gemini.model
@@ -154,6 +154,133 @@ async def translate_cv_data(
 
 
 
+
+
+# ---------------------------------------------------------------------------
+# CV import – parse an uploaded CV/resume file into the CV JSON structure
+# ---------------------------------------------------------------------------
+
+_CV_JSON_SCHEMA = (
+    "{\n"
+    '  "summary": "string",\n'
+    '  "personalInfo": {"name": "string", "title": "string", "profileImage": "string", '
+    '"headerText": "string", "socialLinks": [{"platform": "string", "url": "string"}]},\n'
+    '  "experience": [{"id": number, "position": number, "role": "string", "company": "string", '
+    '"period": "string", "details": "string"}],\n'
+    '  "education": [{"id": number, "position": number, "degree": "string", "institution": "string", '
+    '"period": "string", "details": "string", "logo": "string"}],\n'
+    '  "projectsHighlight": [{"id": number, "position": number, "name": "string", "period": "string", '
+    '"description": "string", "logo": "string", "links": [{"text": "string", "url": "string"}]}],\n'
+    '  "awards": [{"id": number, "position": number, "name": "string", "date": "string", '
+    '"awardingBody": "string", "details": "string", "logo": "string", "links": [{"text": "string", "url": "string"}]}],\n'
+    '  "skills": [{"id": number, "position": number, "name": "string", "level": number}],\n'
+    '  "volunteering": [{"id": number, "position": number, "role": "string", "organization": "string", '
+    '"period": "string", "details": "string", "logo": "string"}],\n'
+    '  "languages": [{"id": number, "position": number, "name": "string", "level": "string"}]\n'
+    "}"
+)
+
+
+async def generate_cv_from_file(
+    file_bytes: bytes,
+    mime_type: str,
+    model: str,
+    existing_data: Optional[dict] = None,
+) -> dict:
+    """Parse an uploaded CV/resume file (PDF, image, text, …) into the CV JSON structure.
+
+    If ``existing_data`` is provided, the new document is merged into it
+    (extending existing entries, adding new ones). Otherwise a completely
+    fresh CV is generated from the document alone.
+    """
+    if existing_data:
+        mode_instructions = (
+            "You are given the CURRENT CV data (as JSON text) and an uploaded CV/resume document "
+            "(file) in the user message. Merge the information from the uploaded document INTO the "
+            "current data:\n"
+            "- Keep all existing entries that are not contradicted by the new document.\n"
+            "- Add new entries found in the document that are not yet present (avoid duplicates).\n"
+            "- Update an existing entry if the document provides more complete or more recent "
+            "information for the same company/institution/project/etc.\n"
+            "- Preserve the existing numeric 'id' and 'position' values for unchanged/updated items; "
+            "assign new unique integer ids (e.g. large timestamps) for newly added items and continue "
+            "the 'position' sequence.\n"
+        )
+    else:
+        mode_instructions = (
+            "Generate completely new CV data based solely on the uploaded document in the user "
+            "message. Ignore any prior data and start from scratch. Assign sequential integer "
+            "'position' values (starting at 0) and unique integer 'id' values (e.g. large "
+            "timestamps) for every list item.\n"
+        )
+
+    system_prompt = (
+        "You are an expert CV/resume parser. Read the attached document and extract all "
+        "professional information from it.\n\n"
+        f"{mode_instructions}\n"
+        "Return a valid JSON object matching EXACTLY this structure (use an empty string/array/0 "
+        f"for fields you cannot determine, keep all keys):\n{_CV_JSON_SCHEMA}\n\n"
+        "Rules:\n"
+        "- 'level' for skills is an integer 0-100 estimating proficiency.\n"
+        "- 'level' for languages is one of: 'Native', 'Fluent', 'Advanced', 'Intermediate', 'Basic'.\n"
+        "- Detect the document's language and write all extracted text in that language.\n"
+        "- 'logo' and 'profileImage' fields must always be left as empty strings.\n"
+        "- Do not invent information that is not present in the document or current data.\n"
+        "Please return a valid JSON object with exactly one key 'cv_data', containing the resulting "
+        "dictionary."
+    )
+
+    logger.info("[translation] [Gemini ADK] Initiating CV import run (merge=%s)", bool(existing_data))
+    agent = _get_agent(system_prompt, model)
+    try:
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+        from google.genai import types
+
+        session_service = InMemorySessionService()
+        try:
+            await session_service.create_session(app_name="transl", user_id="system", session_id="cv_import")
+        except Exception:
+            pass
+
+        runner = Runner(agent=agent, app_name="transl", session_service=session_service)
+
+        parts = []
+        if existing_data:
+            parts.append(types.Part(
+                text=f"CURRENT CV DATA:\n{json.dumps(existing_data, ensure_ascii=False)}"
+            ))
+        parts.append(types.Part.from_bytes(data=file_bytes, mime_type=mime_type))
+        parts.append(types.Part(text="Extract the CV data from the attached document as instructed."))
+
+        content = types.Content(role="user", parts=parts)
+
+        final_text = ""
+        async for event in runner.run_async(user_id="system", session_id="cv_import", new_message=content):
+            if event.is_final_response() and event.content and event.content.parts:
+                final_text = event.content.parts[0].text.strip()
+
+        if not final_text:
+            raise ValueError("No final response text received from ADK runner.")
+
+        logger.info("[translation] [Gemini ADK] CV import run succeeded")
+
+        stripped_text = final_text.strip()
+        if stripped_text.startswith("```json"):
+            stripped_text = stripped_text[7:]
+        if stripped_text.endswith("```"):
+            stripped_text = stripped_text[:-3]
+        parsed = json.loads(stripped_text.strip())
+        if isinstance(parsed, dict):
+            return parsed.get("cv_data", parsed)
+        return parsed
+
+    except Exception as e:
+        if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+            logger.error(f"[translation] Gemini API 429 Quota Exhausted: {e}")
+            raise
+        logger.error(f"[translation] Gemini API Error during CV import: {e}")
+        raise
 
 
 async def translate_projects_batch(
@@ -266,7 +393,7 @@ async def run_translation_sync() -> None:
     async with AsyncSessionLocal() as db:
         try:
             # Admin-configurable model (falls back to env/config default)
-            active_model = await _get_active_model(db)
+            active_model = await get_active_model(db)
             logger.info("[translation] Using Gemini model: %s", active_model)
 
             # Nach Lock: Nochmals prüfen, ob Übersetzungen ausstehen

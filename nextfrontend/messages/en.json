@@ -254,7 +254,25 @@
       "personalInfo": "Personal Info",
       "moveUp": "Move Up",
       "moveDown": "Move Down",
-      "saveSuccess": "CV saved successfully!"
+      "saveSuccess": "CV saved successfully!",
+      "import": {
+        "navLabel": "AI Import",
+        "title": "AI CV Import",
+        "description": "Upload your CV/resume (PDF, image, or text) and let AI extract the data into the editor. Review the result before saving.",
+        "fileLabel": "CV File",
+        "chooseFile": "Choose File",
+        "noFileSelected": "No file selected",
+        "modeLabel": "Import Mode",
+        "modeMerge": "Merge with existing data",
+        "modeMergeHint": "Adds new information from the uploaded file to your current CV, keeping existing entries.",
+        "modeReplace": "Replace all data",
+        "modeReplaceHint": "Discards the current CV and generates everything fresh from the uploaded file.",
+        "generate": "Generate with AI",
+        "generating": "Analyzing CV with AI… this can take up to a minute.",
+        "success": "CV data generated. Review it in the Raw Data tab, then click Save.",
+        "error": "Failed to generate CV data. Please try again.",
+        "selectFileError": "Please select a file first."
+      }
     },
     "access": {
       "title": "Access Log",
