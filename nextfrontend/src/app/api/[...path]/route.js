@@ -79,6 +79,13 @@ async function proxyRequest(request, { params }) {
     const accept = request.headers.get("accept");
     if (accept) headers.set("Accept", accept);
 
+    // Forward client IP / proto info from nginx so the backend's
+    // IPTrackingMiddleware sees the real visitor, not the proxy hop.
+    for (const name of ["x-forwarded-for", "x-real-ip", "x-forwarded-proto", "x-forwarded-host"]) {
+      const value = request.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+
     // --- Build fetch options ---
     const fetchOpts = {
       method: request.method,
