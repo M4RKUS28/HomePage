@@ -38,7 +38,13 @@
       "unknown": "Unknown",
       "checking": "Checking..."
     },
-    "onlineCount": "{count} online"
+    "onlineCount": "{count} online",
+    "importProjects": "Import Projects",
+    "exportProjects": "Export Projects",
+    "importSuccess": "{count} projects imported successfully",
+    "importPartial": "{success} imported, {failed} failed",
+    "importError": "Import failed. Please check the JSON file.",
+    "exportEmpty": "No projects to export."
   },
   "cv": {
     "loading": "Loading CV data...",

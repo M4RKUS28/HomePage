@@ -300,7 +300,7 @@ const CVEditor = () => {
     const nextData = normalizeCVData(producer(cvData));
     setNormalizedData(nextData);
     try {
-      await updateCVDataApi(nextData);
+      await updateCVDataApi(nextData, locale);
       showToast({ type: 'success', message: successMessage });
     } catch (err) {
       console.error('Error syncing CV data:', err);
@@ -399,7 +399,7 @@ const CVEditor = () => {
       // Save immediately so the user doesn't have to click "Save" separately
       setSaving(true);
       try {
-        await updateCVDataApi(normalized);
+        await updateCVDataApi(normalized, locale);
         showToast({ type: 'success', message: 'Raw data applied and saved successfully' });
       } catch (saveErr) {
         console.error('Error saving CV data:', saveErr);

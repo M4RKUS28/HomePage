@@ -38,7 +38,13 @@
       "unknown": "未知",
       "checking": "检查中..."
     },
-    "onlineCount": "{count} 个在线"
+    "onlineCount": "{count} 个在线",
+    "importProjects": "导入项目",
+    "exportProjects": "导出项目",
+    "importSuccess": "成功导入 {count} 个项目",
+    "importPartial": "已导入 {success} 个，{failed} 个失败",
+    "importError": "导入失败。请检查 JSON 文件。",
+    "exportEmpty": "没有可导出的项目。"
   },
   "cv": {
     "loading": "正在加载简历数据...",

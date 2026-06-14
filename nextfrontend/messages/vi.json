@@ -38,7 +38,13 @@
       "unknown": "Không xác định",
       "checking": "Đang kiểm tra..."
     },
-    "onlineCount": "{count} trực tuyến"
+    "onlineCount": "{count} trực tuyến",
+    "importProjects": "Nhập dự án",
+    "exportProjects": "Xuất dự án",
+    "importSuccess": "Đã nhập thành công {count} dự án",
+    "importPartial": "{success} đã nhập, {failed} thất bại",
+    "importError": "Nhập thất bại. Vui lòng kiểm tra tệp JSON.",
+    "exportEmpty": "Không có dự án nào để xuất."
   },
   "cv": {
     "loading": "Đang tải dữ liệu CV...",

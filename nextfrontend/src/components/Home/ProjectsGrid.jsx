@@ -2,16 +2,18 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import ProjectCard from './ProjectCard';
-import { getProjectsApi, getProjectApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
+import { getProjectsApi, getProjectApi, createProjectApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
 import { useAuth } from '../../hooks/useAuth';import { useLanguage } from '../../contexts/LanguageContext';import Spinner from '../UI/Spinner';
 import ProjectForm from '../Admin/ProjectForm';
 import Modal from '../UI/Modal';
-import { PlusCircle, FolderOpen } from 'lucide-react';
+import { useToast } from '../../contexts/ToastContext';
+import { PlusCircle, FolderOpen, Upload, Download } from 'lucide-react';
 
 
 const ProjectsGrid = () => {
   const t = useTranslations('projects');
   const { locale } = useLanguage();
+  const { showToast } = useToast();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,7 +22,9 @@ const ProjectsGrid = () => {
   const [editingProject, setEditingProject] = useState(null);
   const [projectImages, setProjectImages] = useState({});
   const [deletingProject, setDeletingProject] = useState(null);
+  const [importing, setImporting] = useState(false);
   const fetchedImageIds = useRef(new Set());
+  const fileInputRef = useRef(null);
 
   /**
    * Fetch the full project detail (GET /projects/{id}) which includes
@@ -105,7 +109,97 @@ const ProjectsGrid = () => {
     setShowModal(true);
   }
   const handleAdd = () => { setEditingProject(null); setShowModal(true); }
-  
+
+  /** Download the current language's projects as a JSON file (images excluded). */
+  const handleExport = () => {
+    if (projects.length === 0) {
+      showToast({ type: 'warning', message: t('exportEmpty') });
+      return;
+    }
+    const payload = {
+      version: 1,
+      exported_at: new Date().toISOString(),
+      language: locale,
+      projects: [...projects]
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        .map((p) => ({
+          title: p.title,
+          description: p.description ?? '',
+          link: p.link,
+          position: p.position ?? 0,
+          health_check_urls: p.health_check_urls ?? [],
+        })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `projects-${locale}-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  /**
+   * Read a JSON file containing a list of projects (a bare array or an object
+   * with a `projects` array) and create them in the current language. Each
+   * created project is flagged for automatic translation into the other languages.
+   */
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // reset so the same file can be picked again
+    if (!file) return;
+
+    let items;
+    try {
+      const parsed = JSON.parse(await file.text());
+      items = Array.isArray(parsed) ? parsed : parsed?.projects;
+    } catch {
+      showToast({ type: 'error', message: t('importError') });
+      return;
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      showToast({ type: 'error', message: t('importError') });
+      return;
+    }
+
+    setImporting(true);
+    let success = 0;
+    let failed = 0;
+    for (const item of items) {
+      if (!item?.title || !item?.link) { failed++; continue; }
+      try {
+        await createProjectApi({
+          title: item.title,
+          description: item.description ?? '',
+          link: item.link,
+          position: item.position,
+          health_check_urls: Array.isArray(item.health_check_urls) ? item.health_check_urls : [],
+          language: locale,
+        });
+        success++;
+      } catch (err) {
+        console.error('Project import failed:', err);
+        failed++;
+      }
+    }
+    setImporting(false);
+
+    if (failed === 0) {
+      showToast({ type: 'success', message: t('importSuccess', { count: success }) });
+    } else if (success > 0) {
+      showToast({ type: 'warning', message: t('importPartial', { success, failed }) });
+    } else {
+      showToast({ type: 'error', message: t('importError') });
+    }
+
+    if (success > 0) fetchProjectsData();
+  };
+
   const moveProjectUp = async (projectId) => {
     const sortedProjects = [...projects].sort((a, b) => {
       if (a.position !== undefined && b.position !== undefined) {
@@ -247,7 +341,7 @@ const ProjectsGrid = () => {
         </div>
 
         {currentUser?.is_admin && (
-          <div className="mb-12">
+          <div className="mb-12 flex flex-wrap gap-3">
             <motion.button
               onClick={handleAdd}
               whileHover={{ scale: 1.03 }}
@@ -257,6 +351,35 @@ const ProjectsGrid = () => {
               <PlusCircle size={17} />
               {t('addProject')}
             </motion.button>
+
+            <motion.button
+              onClick={handleImportClick}
+              disabled={importing}
+              whileHover={{ scale: importing ? 1 : 1.03 }}
+              whileTap={{ scale: importing ? 1 : 0.97 }}
+              className="btn-ghost text-sm px-6 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {importing ? <Spinner size="h-4 w-4" /> : <Upload size={17} />}
+              {t('importProjects')}
+            </motion.button>
+
+            <motion.button
+              onClick={handleExport}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="btn-ghost text-sm px-6 py-3"
+            >
+              <Download size={17} />
+              {t('exportProjects')}
+            </motion.button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
           </div>
         )}
 

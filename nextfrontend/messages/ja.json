@@ -38,7 +38,13 @@
       "unknown": "不明",
       "checking": "確認中..."
     },
-    "onlineCount": "{count}件稼働中"
+    "onlineCount": "{count}件稼働中",
+    "importProjects": "プロジェクトをインポート",
+    "exportProjects": "プロジェクトをエクスポート",
+    "importSuccess": "{count}件のプロジェクトをインポートしました",
+    "importPartial": "{success}件をインポート、{failed}件が失敗しました",
+    "importError": "インポートに失敗しました。JSONファイルを確認してください。",
+    "exportEmpty": "エクスポートするプロジェクトがありません。"
   },
   "cv": {
     "loading": "履歴書データを読み込み中...",
