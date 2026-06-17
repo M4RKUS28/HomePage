@@ -46,6 +46,7 @@ export const updateProjectApi = async (projectId, projectData) => {
     position: projectData.position,
     health_check_urls: projectData.health_check_urls ?? [],
     image_object_name: projectData.image_object_name,
+    image_external_url: projectData.image_external_url,
   };
 
   // Remove undefined values

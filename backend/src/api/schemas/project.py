@@ -31,6 +31,7 @@ class ProjectUpdate(BaseModel):
     language: Optional[str] = Field(default=None, max_length=10)
     health_check_urls: Optional[List[str]] = None
     image_object_name: Optional[str] = Field(default=None, max_length=512)
+    image_external_url: Optional[str] = Field(default=None, max_length=2048)
 
 
 # ---------------------------------------------------------------------------
@@ -44,6 +45,7 @@ class ProjectRead(BaseModel):
     description: Optional[str] = None
     link: str
     image_url: Optional[str] = None  # presigned download URL (resolved in service)
+    image_external_url: Optional[str] = None
     status: ProjectStatus
     last_checked: Optional[datetime] = None
     position: int = 0

@@ -103,12 +103,7 @@ const ProjectsGrid = () => {
 
   const handleGithubImported = (projectData) => {
     setShowGithubImport(false);
-    // Pre-fill the project form with the extracted data
-    setEditingProject({
-      ...projectData,
-      // Pass image_url as external ref so ProjectForm can display a hint
-      _github_image_url: projectData.image_url || null,
-    });
+    setEditingProject(projectData);
     setShowModal(true);
   };
 

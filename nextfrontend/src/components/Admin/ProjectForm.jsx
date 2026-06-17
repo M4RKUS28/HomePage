@@ -6,7 +6,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { parseApiError } from '../../lib/error-utils';
 import Spinner from '../UI/Spinner';
 import ImageUpload from '../UI/ImageUpload';
-import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Plus, Trash2, Upload, Link as LinkIcon } from 'lucide-react';
 
 const ProjectForm = ({ project, onFormSubmit }) => {
   const t = useTranslations('admin.projects');
@@ -18,8 +18,11 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     position: '',
   });
   const [healthCheckUrls, setHealthCheckUrls] = useState([]);
-  const [imageFile, setImageFile] = useState(null);       // File object for new upload
-  const [initialImageUrl, setInitialImageUrl] = useState(''); // presigned URL for display
+  // 'upload' = file via MinIO, 'url' = external image URL
+  const [imageMode, setImageMode] = useState('upload');
+  const [imageFile, setImageFile] = useState(null);
+  const [initialImageUrl, setInitialImageUrl] = useState('');
+  const [imageExternalUrl, setImageExternalUrl] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
@@ -34,13 +37,23 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         position: project.position !== undefined ? project.position : '',
       });
       setHealthCheckUrls(project.health_check_urls || []);
-      // image_url is a presigned download URL resolved by backend
-      setInitialImageUrl(project.image_url || '');
+
+      if (project.image_external_url) {
+        setImageMode('url');
+        setImageExternalUrl(project.image_external_url);
+        setInitialImageUrl('');
+      } else {
+        setImageMode('upload');
+        setImageExternalUrl('');
+        setInitialImageUrl(project.image_url || '');
+      }
       setImageFile(null);
     } else {
       setFormData({ title: '', description: '', link: '', position: '' });
       setHealthCheckUrls([]);
+      setImageMode('upload');
       setInitialImageUrl('');
+      setImageExternalUrl('');
       setImageFile(null);
     }
     setApiError(null);
@@ -95,14 +108,22 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         savedProject = await createProjectApi(submitData);
       }
 
-      // Step 2: Upload image if a new file was selected
-      if (imageFile) {
+      // Step 2: Handle image — either URL or file upload
+      if (imageMode === 'url') {
+        // Save external URL, clear any MinIO object
+        await updateProjectApi(savedProject.id, {
+          image_external_url: imageExternalUrl.trim() || null,
+          image_object_name: null,
+        });
+      } else if (imageFile) {
+        // Upload file to MinIO, clear external URL
         try {
           setUploadingImage(true);
           const { object_name } = await uploadProjectImageApi(savedProject.id, imageFile);
-
-          // Step 3: Persist the object_name reference on the project
-          await updateProjectApi(savedProject.id, { image_object_name: object_name });
+          await updateProjectApi(savedProject.id, {
+            image_object_name: object_name,
+            image_external_url: null,
+          });
         } catch (imgError) {
           console.error('Image upload error:', imgError);
           const msg = imgError.message || 'Image upload failed. Please try again.';
@@ -219,15 +240,57 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         </p>
       </div>
       
-      {/* Image Upload Component */}
-      <ImageUpload
-        initialImage={initialImageUrl}
-        onImageChange={handleImageChange}
-        label="Project Image"
-        aspectRatio="aspect-video"
-        placeholderText="Upload a project screenshot or logo"
-        maxSizeMB={2}
-      />
+      {/* Image — toggle between file upload and external URL */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-300">Project Image</label>
+          <div className="flex rounded-md overflow-hidden border border-gray-600 text-xs">
+            <button
+              type="button"
+              onClick={() => setImageMode('upload')}
+              className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${imageMode === 'upload' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+            >
+              <Upload size={12} /> Upload
+            </button>
+            <button
+              type="button"
+              onClick={() => setImageMode('url')}
+              className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${imageMode === 'url' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+            >
+              <LinkIcon size={12} /> URL
+            </button>
+          </div>
+        </div>
+
+        {imageMode === 'upload' ? (
+          <ImageUpload
+            initialImage={initialImageUrl}
+            onImageChange={handleImageChange}
+            aspectRatio="aspect-video"
+            placeholderText="Upload a project screenshot or logo"
+            maxSizeMB={2}
+          />
+        ) : (
+          <div className="space-y-2">
+            <input
+              type="url"
+              value={imageExternalUrl}
+              onChange={(e) => setImageExternalUrl(e.target.value)}
+              placeholder="https://example.com/image.png"
+              className="input-field w-full"
+            />
+            {imageExternalUrl && (
+              <img
+                src={imageExternalUrl}
+                alt="Preview"
+                className="w-full aspect-video object-cover rounded-md border border-gray-600"
+                onError={(e) => { e.target.style.display = 'none'; }}
+                onLoad={(e) => { e.target.style.display = ''; }}
+              />
+            )}
+          </div>
+        )}
+      </div>
       
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-300">{t('form.description')}</label>

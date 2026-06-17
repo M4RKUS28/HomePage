@@ -31,6 +31,7 @@ def _project_to_read(project) -> dict:
         "description": project.description,
         "link": project.link,
         "image_url": project_service.get_project_image_url(project),
+        "image_external_url": project.image_external_url or None,
         "status": project.status,
         "last_checked": project.last_checked,
         "position": project.position,

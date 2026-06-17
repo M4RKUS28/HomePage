@@ -567,6 +567,7 @@ async def run_translation_sync() -> None:
                                 )
                                 target_proj.link = source_proj_data["link"]
                                 target_proj.image_object_name = source_proj_data["image_object_name"]
+                                target_proj.image_external_url = source_proj_data["image_external_url"]
                                 target_proj.position = source_proj_data["position"]
                                 target_proj.health_check_urls = source_proj_data["health_check_urls"] or []
                                 target_proj.has_changes = False
@@ -579,6 +580,7 @@ async def run_translation_sync() -> None:
                                     ),
                                     link=source_proj_data["link"],
                                     image_object_name=source_proj_data["image_object_name"],
+                                    image_external_url=source_proj_data["image_external_url"],
                                     position=source_proj_data["position"],
                                     owner_id=source_proj_data["owner_id"],
                                     language=tgt,
@@ -603,6 +605,7 @@ async def run_translation_sync() -> None:
                             "translation_group_id": p.translation_group_id,
                             "link": p.link,
                             "image_object_name": p.image_object_name,
+                            "image_external_url": p.image_external_url,
                             "position": p.position,
                             "owner_id": p.owner_id,
                             "health_check_urls": p.health_check_urls

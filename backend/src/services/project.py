@@ -330,7 +330,7 @@ async def delete_project(db: AsyncSession, project_id: int) -> None:
 
 
 def get_project_image_url(project: Project) -> Optional[str]:
-    """Generate presigned download URL for the project image."""
-    if not project.image_object_name:
-        return None
-    return get_minio().presigned_get_url(project.image_object_name)
+    """Return the display URL for a project image: MinIO presigned URL if uploaded, else external URL."""
+    if project.image_object_name:
+        return get_minio().presigned_get_url(project.image_object_name)
+    return project.image_external_url or None

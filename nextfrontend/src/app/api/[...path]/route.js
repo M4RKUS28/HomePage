@@ -100,9 +100,13 @@ async function proxyRequest(request, { params }) {
     }
 
     // --- Forward to backend (intercept redirects so we can re-send body) ---
+    // AI endpoints (CV import, GitHub import) can take 60-90 s; use a 5 min
+    // timeout so undici's default headersTimeout doesn't kill them first.
+    const proxySignal = AbortSignal.timeout(5 * 60 * 1000);
     let backendRes = await fetch(backendUrl, {
       ...fetchOpts,
       redirect: "manual",
+      signal: proxySignal,
     });
 
     // FastAPI uses redirect_slashes=True → trailing-slash 307/308 redirects.
