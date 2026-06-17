@@ -220,7 +220,8 @@
       "markUnread": "Als ungelesen markieren",
       "delete": "Löschen",
       "unread": "Ungelesen",
-      "read": "Gelesen"
+      "read": "Gelesen",
+      "confirmDeleteMessage": "Sind Sie sicher, dass Sie diese Nachricht löschen möchten?"
     },
     "users": {
       "title": "Benutzerverwaltung",
@@ -250,6 +251,7 @@
       "addItem": "Eintrag hinzufügen",
       "editItem": "Eintrag bearbeiten",
       "deleteItem": "Eintrag löschen",
+      "confirmRemove": "Sind Sie sicher, dass Sie diesen Eintrag entfernen möchten? Dies kann nicht rückgängig gemacht werden.",
       "rawData": "Rohdaten",
       "personalInfo": "Persönliche Daten",
       "moveUp": "Nach oben",

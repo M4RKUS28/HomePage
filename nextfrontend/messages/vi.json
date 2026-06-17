@@ -220,7 +220,8 @@
       "markUnread": "Đánh dấu chưa đọc",
       "delete": "Xóa",
       "unread": "Chưa đọc",
-      "read": "Đã đọc"
+      "read": "Đã đọc",
+      "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tin nhắn này?"
     },
     "users": {
       "title": "Quản lý người dùng",
@@ -250,6 +251,7 @@
       "addItem": "Thêm mục",
       "editItem": "Chỉnh sửa mục",
       "deleteItem": "Xóa mục",
+      "confirmRemove": "Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.",
       "rawData": "Dữ liệu thô",
       "personalInfo": "Thông tin cá nhân",
       "moveUp": "Di chuyển lên",

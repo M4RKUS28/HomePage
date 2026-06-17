@@ -220,7 +220,8 @@
       "markUnread": "Marcar como não lido",
       "delete": "Excluir",
       "unread": "Não lido",
-      "read": "Lido"
+      "read": "Lido",
+      "confirmDeleteMessage": "Tem certeza de que deseja excluir esta mensagem?"
     },
     "users": {
       "title": "Gerenciamento de usuários",
@@ -250,6 +251,7 @@
       "addItem": "Adicionar item",
       "editItem": "Editar item",
       "deleteItem": "Excluir item",
+      "confirmRemove": "Tem certeza de que deseja remover este item? Esta ação não pode ser desfeita.",
       "rawData": "Dados brutos",
       "personalInfo": "Informações pessoais",
       "moveUp": "Mover para cima",

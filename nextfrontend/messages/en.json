@@ -220,7 +220,8 @@
       "markUnread": "Mark as Unread",
       "delete": "Delete",
       "unread": "Unread",
-      "read": "Read"
+      "read": "Read",
+      "confirmDeleteMessage": "Are you sure you want to delete this message?"
     },
     "users": {
       "title": "User Management",
@@ -250,6 +251,7 @@
       "addItem": "Add Item",
       "editItem": "Edit Item",
       "deleteItem": "Delete Item",
+      "confirmRemove": "Are you sure you want to remove this item? This cannot be undone.",
       "rawData": "Raw Data",
       "personalInfo": "Personal Info",
       "moveUp": "Move Up",

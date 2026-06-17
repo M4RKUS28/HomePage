@@ -2,7 +2,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../hooks/useAuth';
-import { useTheme } from '../../../hooks/useTheme';
 import ProtectedRoute from '../../../components/Auth/ProtectedRoute';
 import { createMessageApi } from '../../../api/messages';
 import { updateUserApi, uploadAvatarApi, deleteSelfApi, getAvatarUrl } from '../../../api/users';
@@ -31,24 +30,17 @@ const expandVariants = {
 };
 
 // ── Section card wrapper ──────────────────────────────────────────────────────
-const DashCard = ({ children, className = '' }) => {
-  const { theme } = useTheme();
-  return (
-    <motion.div
-      variants={itemVariants}
-      className={`rounded-2xl shadow-lg overflow-hidden ${
-        theme === 'dark'
-          ? 'bg-gray-800/80 border border-gray-700/60'
-          : 'bg-white border border-gray-200'
-      } ${className}`}
-    >
-      {children}
-    </motion.div>
-  );
-};
+const DashCard = ({ children, className = '' }) => (
+  <motion.div
+    variants={itemVariants}
+    className={`rounded-2xl shadow-lg overflow-hidden bg-surface border border-line ${className}`}
+  >
+    {children}
+  </motion.div>
+);
 
 // ── Inline feedback ───────────────────────────────────────────────────────────
-const InlineFeedback = ({ error, success, theme }) => (
+const InlineFeedback = ({ error, success }) => (
   <AnimatePresence>
     {(error || success) && (
       <motion.p
@@ -58,8 +50,8 @@ const InlineFeedback = ({ error, success, theme }) => (
         exit={{ opacity: 0 }}
         className={`text-xs px-3 py-2 rounded-lg mt-2 ${
           error
-            ? theme === 'dark' ? 'text-red-300 bg-red-900/30' : 'text-red-700 bg-red-50'
-            : theme === 'dark' ? 'text-green-300 bg-green-900/30' : 'text-green-700 bg-green-50'
+            ? 'text-[var(--app-red)] bg-[color-mix(in_srgb,var(--app-red)_10%,transparent)]'
+            : 'text-[var(--app-green)] bg-[color-mix(in_srgb,var(--app-green)_10%,transparent)]'
         }`}
       >
         {error || success}
@@ -69,7 +61,7 @@ const InlineFeedback = ({ error, success, theme }) => (
 );
 
 // ── Interactive Avatar (hero) ─────────────────────────────────────────────────
-const HeroAvatar = ({ currentUser, theme, onSuccess, t }) => {
+const HeroAvatar = ({ currentUser, onSuccess, t }) => {
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -106,7 +98,6 @@ const HeroAvatar = ({ currentUser, theme, onSuccess, t }) => {
 
   return (
     <div className="flex flex-col items-center sm:items-start gap-2">
-      {/* Avatar circle */}
       <div
         className="relative cursor-pointer"
         onMouseEnter={() => setHovered(true)}
@@ -117,11 +108,13 @@ const HeroAvatar = ({ currentUser, theme, onSuccess, t }) => {
         {avatarSrc ? (
           <img src={avatarSrc} alt={currentUser?.username} className="w-20 h-20 rounded-full object-cover shadow-lg" />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg select-none">
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center text-[var(--app-on-accent-fill)] text-2xl font-bold shadow-lg select-none"
+            style={{ background: 'linear-gradient(135deg, var(--app-accent-fill), var(--app-cyan))' }}
+          >
             {initials}
           </div>
         )}
-        {/* Hover overlay */}
         <AnimatePresence>
           {hovered && !loading && (
             <motion.div
@@ -148,12 +141,8 @@ const HeroAvatar = ({ currentUser, theme, onSuccess, t }) => {
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
       </div>
 
-      {/* Tooltip hint */}
-      <p className={`text-[10px] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-        {t('clickToChange')}
-      </p>
+      <p className="text-[10px] text-ink-3">{t('clickToChange')}</p>
 
-      {/* Preview confirm row */}
       <AnimatePresence>
         {file && (
           <motion.div
@@ -164,15 +153,13 @@ const HeroAvatar = ({ currentUser, theme, onSuccess, t }) => {
             <button
               onClick={handleUpload}
               disabled={loading}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-60 transition-colors"
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-[var(--app-accent-fill)] text-[var(--app-on-accent-fill)] font-semibold disabled:opacity-60 transition-all hover:brightness-105"
             >
               <Check size={12} /> {t('save')}
             </button>
             <button
               onClick={cancel}
-              className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-                theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors bg-raised border border-line text-ink-2 hover:border-line-strong"
             >
               <X size={12} /> {t('cancel')}
             </button>
@@ -180,13 +167,13 @@ const HeroAvatar = ({ currentUser, theme, onSuccess, t }) => {
         )}
       </AnimatePresence>
 
-      {error && <p className="text-xs text-red-400 max-w-[140px] text-center sm:text-left">{error}</p>}
+      {error && <p className="text-xs text-[var(--app-red)] max-w-[140px] text-center sm:text-left">{error}</p>}
     </div>
   );
 };
 
-// ── Inline-editable username row ────────────────────────────────────────────
-const UsernameRow = ({ currentUser, theme, onSuccess, t }) => {
+// ── Inline-editable username row ──────────────────────────────────────────────
+const UsernameRow = ({ currentUser, onSuccess, t }) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentUser?.username ?? '');
   const [loading, setLoading] = useState(false);
@@ -205,8 +192,7 @@ const UsernameRow = ({ currentUser, theme, onSuccess, t }) => {
       setEditing(false);
       await onSuccess();
     } catch (err) {
-      const d = err.response?.data?.detail;
-      setError(d || t('updateFailed'));
+      setError(err.response?.data?.detail || t('updateFailed'));
     } finally {
       setLoading(false);
       setTimeout(() => setSuccess(''), 3000);
@@ -217,18 +203,16 @@ const UsernameRow = ({ currentUser, theme, onSuccess, t }) => {
 
   return (
     <div
-      className={`py-3 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}
+      className="py-3 border-b border-line"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg shrink-0 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-          <User size={16} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
+        <div className="p-2 rounded-lg shrink-0 bg-raised">
+          <User size={16} className="text-accent" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            {t('username')}
-          </p>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">{t('username')}</p>
           {editing ? (
             <input
               type="text"
@@ -236,16 +220,10 @@ const UsernameRow = ({ currentUser, theme, onSuccess, t }) => {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
-              className={`mt-0.5 w-full text-sm font-semibold rounded-md px-2 py-1 outline-none border ${
-                theme === 'dark'
-                  ? 'bg-gray-700 border-emerald-500 text-gray-100'
-                  : 'bg-gray-50 border-emerald-400 text-gray-800'
-              }`}
+              className="mt-0.5 w-full text-sm font-semibold rounded-md px-2 py-1 outline-none border bg-raised border-[var(--app-accent-fill)] text-ink"
             />
           ) : (
-            <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
-              {currentUser?.username ?? '—'}
-            </p>
+            <p className="text-sm font-semibold truncate text-ink">{currentUser?.username ?? '—'}</p>
           )}
         </div>
         <AnimatePresence>
@@ -258,30 +236,30 @@ const UsernameRow = ({ currentUser, theme, onSuccess, t }) => {
             >
               {editing ? (
                 <>
-                  <button onClick={save} title={t('save')} className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                  <button onClick={save} title={t('save')} className="p-1.5 rounded-lg bg-[var(--app-accent-fill)] text-[var(--app-on-accent-fill)] transition-all hover:brightness-105">
                     <Check size={13} />
                   </button>
-                  <button onClick={cancel} title={t('cancel')} className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}>
+                  <button onClick={cancel} title={t('cancel')} className="p-1.5 rounded-lg transition-colors bg-raised border border-line text-ink-3 hover:text-ink hover:border-line-strong">
                     <X size={13} />
                   </button>
                 </>
               ) : (
-                <button onClick={() => setEditing(true)} title="Edit username" className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700'}`}>
+                <button onClick={() => setEditing(true)} title="Edit username" className="p-1.5 rounded-lg transition-colors bg-raised border border-line text-ink-3 hover:text-accent hover:border-[var(--app-accent)]">
                   <Pencil size={13} />
                 </button>
               )}
             </motion.div>
           )}
-          {loading && <Loader2 size={16} className="animate-spin text-emerald-500 shrink-0" />}
+          {loading && <Loader2 size={16} className="animate-spin text-accent shrink-0" />}
         </AnimatePresence>
       </div>
-      <InlineFeedback error={error} success={success} theme={theme} />
+      <InlineFeedback error={error} success={success} />
     </div>
   );
 };
 
-// ── Inline-editable email row ─────────────────────────────────────────────────
-const EmailRow = ({ currentUser, theme, onSuccess, t }) => {
+// ── Inline-editable email row ──────────────────────────────────────────────────
+const EmailRow = ({ currentUser, onSuccess, t }) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(currentUser?.email ?? '');
   const [loading, setLoading] = useState(false);
@@ -316,18 +294,16 @@ const EmailRow = ({ currentUser, theme, onSuccess, t }) => {
 
   return (
     <div
-      className={`py-3 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}
+      className="py-3 border-b border-line"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg shrink-0 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-          <Mail size={16} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
+        <div className="p-2 rounded-lg shrink-0 bg-raised">
+          <Mail size={16} className="text-accent" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            {t('email')}
-          </p>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">{t('email')}</p>
           {editing ? (
             <input
               type="email"
@@ -335,20 +311,12 @@ const EmailRow = ({ currentUser, theme, onSuccess, t }) => {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
-              className={`mt-0.5 w-full text-sm font-semibold rounded-md px-2 py-1 outline-none border ${
-                theme === 'dark'
-                  ? 'bg-gray-700 border-emerald-500 text-gray-100'
-                  : 'bg-gray-50 border-emerald-400 text-gray-800'
-              }`}
+              className="mt-0.5 w-full text-sm font-semibold rounded-md px-2 py-1 outline-none border bg-raised border-[var(--app-accent-fill)] text-ink"
             />
           ) : (
-            <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
-              {currentUser?.email ?? '—'}
-            </p>
+            <p className="text-sm font-semibold truncate text-ink">{currentUser?.email ?? '—'}</p>
           )}
         </div>
-
-        {/* Action buttons */}
         <AnimatePresence>
           {(hovered || editing) && !loading && (
             <motion.div
@@ -359,35 +327,35 @@ const EmailRow = ({ currentUser, theme, onSuccess, t }) => {
             >
               {editing ? (
                 <>
-                  <button onClick={save} title={t('save')} className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                  <button onClick={save} title={t('save')} className="p-1.5 rounded-lg bg-[var(--app-accent-fill)] text-[var(--app-on-accent-fill)] transition-all hover:brightness-105">
                     <Check size={13} />
                   </button>
-                  <button onClick={cancel} title={t('cancel')} className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}>
+                  <button onClick={cancel} title={t('cancel')} className="p-1.5 rounded-lg transition-colors bg-raised border border-line text-ink-3 hover:text-ink hover:border-line-strong">
                     <X size={13} />
                   </button>
                 </>
               ) : (
                 <>
-                  <button onClick={copy} title={copied ? t('copied') : t('copyEmail')} className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700'}`}>
-                    {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                  <button onClick={copy} title={copied ? t('copied') : t('copyEmail')} className="p-1.5 rounded-lg transition-colors bg-raised border border-line text-ink-3 hover:text-accent hover:border-[var(--app-accent)]">
+                    {copied ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
                   </button>
-                  <button onClick={() => setEditing(true)} title="Edit email" className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700'}`}>
+                  <button onClick={() => setEditing(true)} title="Edit email" className="p-1.5 rounded-lg transition-colors bg-raised border border-line text-ink-3 hover:text-accent hover:border-[var(--app-accent)]">
                     <Pencil size={13} />
                   </button>
                 </>
               )}
             </motion.div>
           )}
-          {loading && <Loader2 size={16} className="animate-spin text-emerald-500 shrink-0" />}
+          {loading && <Loader2 size={16} className="animate-spin text-accent shrink-0" />}
         </AnimatePresence>
       </div>
-      <InlineFeedback error={error} success={success} theme={theme} />
+      <InlineFeedback error={error} success={success} />
     </div>
   );
 };
 
 // ── Inline-editable password row ──────────────────────────────────────────────
-const PasswordRow = ({ currentUser, theme, t }) => {
+const PasswordRow = ({ currentUser, t }) => {
   const [editing, setEditing] = useState(false);
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -418,102 +386,95 @@ const PasswordRow = ({ currentUser, theme, t }) => {
 
   return (
     <div
-      className={`py-3 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}
+      className="py-3 border-b border-line"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg shrink-0 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-          <Lock size={16} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
+        <div className="p-2 rounded-lg shrink-0 bg-raised">
+          <Lock size={16} className="text-accent" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            {t('password')}
-          </p>
-          <p className={`text-sm font-semibold tracking-widest ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>
-            ••••••••
-          </p>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">{t('password')}</p>
+          <p className="text-sm font-semibold tracking-widest text-ink-3">••••••••</p>
         </div>
         <AnimatePresence>
           {(hovered || editing) && !loading && !editing && (
             <motion.div initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-              <button onClick={() => setEditing(true)} title="Change password" className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700'}`}>
+              <button onClick={() => setEditing(true)} title="Change password" className="p-1.5 rounded-lg transition-colors bg-raised border border-line text-ink-3 hover:text-accent hover:border-[var(--app-accent)]">
                 <Pencil size={13} />
               </button>
             </motion.div>
           )}
-          {loading && <Loader2 size={16} className="animate-spin text-emerald-500 shrink-0" />}
+          {loading && <Loader2 size={16} className="animate-spin text-accent shrink-0" />}
         </AnimatePresence>
       </div>
 
-      {/* Expand password form */}
       <AnimatePresence>
         {editing && (
           <motion.div variants={expandVariants} initial="initial" animate="in" exit="out" className="overflow-hidden">
             <div className="pt-3 space-y-2">
-              {/* New password */}
-              <div className={`flex items-center gap-2 rounded-md border px-2 py-1 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+              <div className="flex items-center gap-2 rounded-md border px-2 py-1 bg-raised border-line-strong">
                 <input
                   type={showNew ? 'text' : 'password'}
                   autoFocus
                   placeholder={t('newPassword')}
                   value={newPw}
                   onChange={(e) => setNewPw(e.target.value)}
-                  className={`flex-1 text-sm bg-transparent outline-none ${theme === 'dark' ? 'text-gray-100 placeholder-gray-500' : 'text-gray-800 placeholder-gray-400'}`}
+                  className="flex-1 text-sm bg-transparent outline-none text-ink placeholder:text-ink-3"
                   autoComplete="new-password"
                 />
-                <button type="button" onClick={() => setShowNew(!showNew)} className={`${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
+                <button type="button" onClick={() => setShowNew(!showNew)} className="text-ink-3 hover:text-ink transition-colors">
                   {showNew ? <EyeOff size={13} /> : <Eye size={13} />}
                 </button>
               </div>
-              {/* Confirm password */}
-              <div className={`flex items-center gap-2 rounded-md border px-2 py-1 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+              <div className="flex items-center gap-2 rounded-md border px-2 py-1 bg-raised border-line-strong">
                 <input
                   type={showConfirm ? 'text' : 'password'}
                   placeholder={t('confirmPassword')}
                   value={confirmPw}
                   onChange={(e) => setConfirmPw(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
-                  className={`flex-1 text-sm bg-transparent outline-none ${theme === 'dark' ? 'text-gray-100 placeholder-gray-500' : 'text-gray-800 placeholder-gray-400'}`}
+                  className="flex-1 text-sm bg-transparent outline-none text-ink placeholder:text-ink-3"
                   autoComplete="new-password"
                 />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className={`${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="text-ink-3 hover:text-ink transition-colors">
                   {showConfirm ? <EyeOff size={13} /> : <Eye size={13} />}
                 </button>
               </div>
               <div className="flex gap-2">
-                <button onClick={save} disabled={!newPw || !confirmPw} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-50 transition-colors">
+                <button onClick={save} disabled={!newPw || !confirmPw} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-[var(--app-accent-fill)] text-[var(--app-on-accent-fill)] font-semibold disabled:opacity-50 transition-all hover:brightness-105">
                   <Check size={12} /> {t('save')}
                 </button>
-                <button onClick={cancel} className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}>
+                <button onClick={cancel} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors bg-raised border border-line text-ink-2 hover:border-line-strong">
                   <X size={12} /> {t('cancel')}
                 </button>
               </div>
-              <InlineFeedback error={error} success={success} theme={theme} />
+              <InlineFeedback error={error} success={success} />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      {!editing && <InlineFeedback error="" success={success} theme={theme} />}
+      {!editing && <InlineFeedback error="" success={success} />}
     </div>
   );
 };
 
 // ── Static row ────────────────────────────────────────────────────────────────
-const InfoRow = ({ icon: Icon, label, value, theme, last = false, t }) => (
-  <div className={`flex items-center gap-3 py-3 ${!last ? `border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}` : ''}`}>
-    <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-      <Icon size={16} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
+const InfoRow = ({ icon: Icon, label, value, last = false }) => (
+  <div className={`flex items-center gap-3 py-3 ${!last ? 'border-b border-line' : ''}`}>
+    <div className="p-2 rounded-lg bg-raised">
+      <Icon size={16} className="text-accent" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{label}</p>
-      <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{value}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-3">{label}</p>
+      <p className="text-sm font-semibold truncate text-ink">{value}</p>
     </div>
   </div>
 );
 
-// ── Account type row (with inline delete for non-admins) ─────────────────────
-const AccountTypeRow = ({ currentUser, theme, onDelete, last = false, t }) => {
+// ── Account type row (with inline delete for non-admins) ──────────────────────
+const AccountTypeRow = ({ currentUser, onDelete, last = false, t }) => {
   const [open, setOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -536,17 +497,17 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false, t }) => {
 
   return (
     <div
-      className={`py-3 ${(!last || open) ? `border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}` : ''}`}
+      className={`py-3 ${(!last || open) ? 'border-b border-line' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg shrink-0 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-          <Shield size={16} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
+        <div className="p-2 rounded-lg shrink-0 bg-raised">
+          <Shield size={16} className="text-accent" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('accountType')}</p>
-          <p className={`text-sm font-semibold truncate ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">{t('accountType')}</p>
+          <p className="text-sm font-semibold truncate text-ink">
             {isAdmin ? t('roleAdmin') : t('roleUser')}
           </p>
         </div>
@@ -559,8 +520,8 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false, t }) => {
                   title={open ? t('cancel') : t('deleteAccount')}
                   className={`p-1.5 rounded-lg transition-colors ${
                     open
-                      ? theme === 'dark' ? 'bg-red-900/60 text-red-300' : 'bg-red-100 text-red-600'
-                      : theme === 'dark' ? 'bg-red-900/30 hover:bg-red-900/60 text-red-400' : 'bg-red-50 hover:bg-red-100 text-red-500'
+                      ? 'bg-[color-mix(in_srgb,var(--app-red)_20%,transparent)] text-[var(--app-red)]'
+                      : 'bg-[color-mix(in_srgb,var(--app-red)_10%,transparent)] text-[var(--app-red)] hover:bg-[color-mix(in_srgb,var(--app-red)_20%,transparent)]'
                   }`}
                 >
                   {open ? <X size={13} /> : <Trash2 size={13} />}
@@ -575,29 +536,29 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false, t }) => {
         <AnimatePresence>
           {open && (
             <motion.div variants={expandVariants} initial="initial" animate="in" exit="out" className="overflow-hidden">
-              <div className={`mt-3 rounded-xl border p-3 space-y-3 ${theme === 'dark' ? 'border-red-900/50 bg-red-950/20' : 'border-red-100 bg-red-50/50'}`}>
-                <div className={`flex gap-2 p-3 rounded-lg ${theme === 'dark' ? 'bg-red-900/20' : 'bg-red-50'}`}>
-                  <AlertTriangle size={15} className={`mt-0.5 shrink-0 ${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`} />
-                  <p className={`text-xs ${theme === 'dark' ? 'text-red-300' : 'text-red-700'}`}>
+              <div className="mt-3 rounded-xl border p-3 space-y-3 border-[color-mix(in_srgb,var(--app-red)_25%,transparent)] bg-[color-mix(in_srgb,var(--app-red)_5%,transparent)]">
+                <div className="flex gap-2 p-3 rounded-lg bg-[color-mix(in_srgb,var(--app-red)_8%,transparent)]">
+                  <AlertTriangle size={15} className="mt-0.5 shrink-0 text-[var(--app-red)]" />
+                  <p className="text-xs text-[var(--app-red)]">
                     <strong>{t('deleteWarningPermanent')}</strong> — {t('deleteWarningText')}
                   </p>
                 </div>
-                {error && <p className="text-xs text-red-400">{error}</p>}
+                {error && <p className="text-xs text-[var(--app-red)]">{error}</p>}
                 <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="accent-red-500 w-4 h-4" />
-                  <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t('deleteConfirmLabel')}</span>
+                  <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="accent-[var(--app-red)] w-4 h-4" />
+                  <span className="text-xs text-ink-2">{t('deleteConfirmLabel')}</span>
                 </label>
                 <div className="flex gap-2">
                   <button
                     onClick={handleDelete}
                     disabled={!confirmed || loading}
-                    className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg bg-[var(--app-red)] text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
                   >
                     {loading ? <><Loader2 size={14} className="animate-spin" /> {t('deleteAccountDeleting')}</> : <><Trash2 size={14} /> {t('deleteMyAccount')}</>}
                   </button>
                   <button
                     onClick={toggle}
-                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                    className="px-3 py-2 rounded-lg text-xs font-semibold transition-colors bg-raised border border-line text-ink-2 hover:border-line-strong"
                   >
                     <X size={13} />
                   </button>
@@ -612,7 +573,7 @@ const AccountTypeRow = ({ currentUser, theme, onDelete, last = false, t }) => {
 };
 
 // ── Message form ──────────────────────────────────────────────────────────────
-const DashMessageForm = ({ theme, t }) => {
+const DashMessageForm = ({ t }) => {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -637,19 +598,27 @@ const DashMessageForm = ({ theme, t }) => {
   return (
     <div className="p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className={`p-2.5 rounded-xl ${theme === 'dark' ? 'bg-emerald-900/40' : 'bg-emerald-50'}`}>
-          <MessageSquare size={20} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
+        <div className="p-2.5 rounded-xl bg-accent-soft">
+          <MessageSquare size={20} className="text-accent" />
         </div>
         <div>
-          <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('sendMessage')}</h3>
-          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t('messageSubtitle')}</p>
+          <h3 className="text-lg font-semibold text-ink">{t('sendMessage')}</h3>
+          <p className="text-xs text-ink-2">{t('messageSubtitle')}</p>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
-        {error && <p className={`text-sm p-3 rounded-lg ${theme === 'dark' ? 'text-red-300 bg-red-900/30' : 'text-red-700 bg-red-50'}`}>{error}</p>}
-        {success && <p className={`text-sm p-3 rounded-lg ${theme === 'dark' ? 'text-green-300 bg-green-900/30' : 'text-green-700 bg-green-50'}`}>{success}</p>}
+        {error && (
+          <p className="text-sm p-3 rounded-lg text-[var(--app-red)] bg-[color-mix(in_srgb,var(--app-red)_10%,transparent)]">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="text-sm p-3 rounded-lg text-[var(--app-green)] bg-[color-mix(in_srgb,var(--app-green)_10%,transparent)]">
+            {success}
+          </p>
+        )}
         <div>
-          <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{t('messageLabel')}</label>
+          <label className="block text-sm font-medium mb-1.5 text-ink-2">{t('messageLabel')}</label>
           <textarea rows="4" className="input-field w-full resize-none" value={content} onChange={(e) => setContent(e.target.value)} placeholder={t('messagePlaceholder')} required />
         </div>
         <button type="submit" disabled={isLoading} className="btn btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60">
@@ -663,7 +632,6 @@ const DashMessageForm = ({ theme, t }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function UserDashboardPage() {
   const { currentUser, refreshUser, logout } = useAuth();
-  const { theme } = useTheme();
   const router = useRouter();
   const t = useTranslations('dashboard');
 
@@ -671,90 +639,84 @@ export default function UserDashboardPage() {
     ? new Date(currentUser.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
     : null;
 
-  const handleDeleteSuccess = async () => { logout(); router.push('/'); };
+  const handleDeleteSuccess = async () => { await logout(); router.push('/'); };
 
   return (
     <ProtectedRoute>
       <motion.div variants={containerVariants} initial="initial" animate="in" className="max-w-5xl mx-auto px-4 py-10">
 
-        {/* ── Hero / Welcome banner ─────────────────────────────────────────── */}
+        {/* ── Hero / Welcome banner ──────────────────────────────────────────── */}
         <motion.div variants={itemVariants} className="mb-10">
-          <div className={`relative rounded-3xl overflow-hidden px-8 py-10 ${
-            theme === 'dark'
-              ? 'bg-gradient-to-br from-gray-800/90 via-gray-800 to-gray-900 border border-gray-700'
-              : 'bg-gradient-to-br from-emerald-50 via-white to-blue-50 border border-gray-200'
-          } shadow-xl`}>
-            <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gradient-to-br from-emerald-500/10 to-blue-600/10 -translate-y-16 translate-x-16 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-gradient-to-tr from-blue-500/10 to-emerald-400/10 translate-y-12 -translate-x-12 pointer-events-none" />
+          <div className="relative rounded-3xl overflow-hidden px-8 py-10 bg-surface border border-line shadow-xl">
+            {/* Ambient glows matching landing page */}
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full -translate-y-16 translate-x-16 pointer-events-none"
+                 style={{ background: 'radial-gradient(circle, var(--app-glow-a), transparent 70%)' }} />
+            <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full translate-y-12 -translate-x-12 pointer-events-none"
+                 style={{ background: 'radial-gradient(circle, var(--app-glow-b), transparent 70%)' }} />
 
             <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <HeroAvatar currentUser={currentUser} theme={theme} onSuccess={refreshUser} t={t} />
+              <HeroAvatar currentUser={currentUser} onSuccess={refreshUser} t={t} />
               <div className="text-center sm:text-left">
-                <p className={`text-sm font-medium uppercase tracking-widest mb-1 ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                  {t('welcome')}
-                </p>
-                <h1 className={`text-3xl md:text-4xl font-extrabold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                <p className="eyebrow mb-1">{t('welcome')}</p>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-ink">
                   {currentUser?.username}
                   {currentUser?.is_admin && (
-                    <span className="ml-3 inline-flex items-center gap-1 text-sm font-semibold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-blue-600 text-white align-middle">
+                    <span
+                      className="ml-3 inline-flex items-center gap-1 text-sm font-semibold px-2.5 py-0.5 rounded-full text-[var(--app-on-accent-fill)] align-middle"
+                      style={{ background: 'linear-gradient(90deg, var(--app-accent-fill), var(--app-cyan))' }}
+                    >
                       <Shield size={12} /> Admin
                     </span>
                   )}
                 </h1>
-                <p className={`mt-2 text-base ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {t('personalSpace')}
-                </p>
+                <p className="mt-2 text-base text-ink-2">{t('personalSpace')}</p>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* ── 2-column grid ────────────────────────────────────────────────── */}
+        {/* ── 2-column grid ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* Account Info + inline settings */}
           <DashCard>
-            <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-              <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('account')}</h2>
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-base font-semibold text-ink">{t('account')}</h2>
             </div>
             <div className="px-6 py-2">
-              <UsernameRow currentUser={currentUser} theme={theme} onSuccess={refreshUser} t={t} />
-              <EmailRow currentUser={currentUser} theme={theme} onSuccess={refreshUser} t={t} />
-              <PasswordRow currentUser={currentUser} theme={theme} t={t} />
-              <AccountTypeRow currentUser={currentUser} theme={theme} onDelete={handleDeleteSuccess} last={!joinedDate} t={t} />
-              {joinedDate && <InfoRow icon={User} label={t('memberSince')} value={joinedDate} theme={theme} last t={t} />}
+              <UsernameRow currentUser={currentUser} onSuccess={refreshUser} t={t} />
+              <EmailRow currentUser={currentUser} onSuccess={refreshUser} t={t} />
+              <PasswordRow currentUser={currentUser} t={t} />
+              <AccountTypeRow currentUser={currentUser} onDelete={handleDeleteSuccess} last={!joinedDate} t={t} />
+              {joinedDate && <InfoRow icon={User} label={t('memberSince')} value={joinedDate} last />}
             </div>
           </DashCard>
 
           {/* Quick Links */}
           <DashCard>
-            <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-              <h2 className={`text-base font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('quickLinks')}</h2>
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-base font-semibold text-ink">{t('quickLinks')}</h2>
             </div>
             <div className="p-6 flex flex-col gap-3">
               <Link
                 href="/"
-                className={`flex items-center gap-3 p-4 rounded-xl transition-all group border ${
-                  theme === 'dark'
-                    ? 'border-gray-700 hover:border-emerald-500/50 hover:bg-emerald-900/20'
-                    : 'border-gray-200 hover:border-emerald-400 hover:bg-emerald-50/60'
-                }`}
+                className="flex items-center gap-3 p-4 rounded-xl transition-all group border border-line hover:border-[var(--app-accent)] hover:bg-accent-soft"
               >
-                <div className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-gray-700 group-hover:bg-emerald-900/50' : 'bg-gray-100 group-hover:bg-emerald-100'}`}>
-                  <Home size={18} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
+                <div className="p-2 rounded-lg transition-colors bg-raised group-hover:bg-accent-soft">
+                  <Home size={18} className="text-accent" />
                 </div>
                 <div className="flex-1">
-                  <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{t('visitPortfolio')}</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('visitPortfolioDesc')}</p>
+                  <p className="text-sm font-semibold text-ink">{t('visitPortfolio')}</p>
+                  <p className="text-xs text-ink-3">{t('visitPortfolioDesc')}</p>
                 </div>
-                <ExternalLink size={14} className={theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} />
+                <ExternalLink size={14} className="text-ink-3" />
               </Link>
             </div>
           </DashCard>
 
           {/* Message Form - spans full width */}
           <DashCard className="md:col-span-2">
-            <DashMessageForm theme={theme} t={t} />
+            <DashMessageForm t={t} />
           </DashCard>
 
         </div>
@@ -762,4 +724,3 @@ export default function UserDashboardPage() {
     </ProtectedRoute>
   );
 }
-

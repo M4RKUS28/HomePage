@@ -12,7 +12,7 @@ import json
 import logging
 import asyncio
 import os
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
 from sqlalchemy import text
 

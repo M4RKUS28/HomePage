@@ -5,8 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { Link } from '../../i18n/navigation';
 import { motion } from 'framer-motion';
-import { LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme';
+import { LogIn, Eye, EyeOff, AlertCircle, X } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTranslations } from 'next-intl';
@@ -19,35 +18,32 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState('');
   const { login, loadingAuth, authError, clearAuthError } = useAuth();
-  const { theme } = useTheme();
   const { showToast } = useToast();
   const { changeLocale } = useLanguage();
   const t = useTranslations();
   const router = useRouter();
 
   useEffect(() => {
-    clearAuthError(); // Clear previous errors when component mounts
-    return () => clearAuthError(); // Clear on unmount
+    clearAuthError();
+    return () => clearAuthError();
   }, [clearAuthError]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError(''); // Clear local form errors
-    
-    // Simple client-side validation
+    setFormError('');
+
     if (!username.trim()) {
       setFormError(t('auth.errors.usernameRequired'));
       return;
     }
-    
+
     if (!password) {
       setFormError(t('auth.errors.loginFailed'));
       return;
     }
-    
+
     try {
       const userData = await login(username, password);
-      // Switch to user's preferred language if available
       if (userData?.language) {
         changeLocale(userData.language);
       }
@@ -58,106 +54,91 @@ const LoginForm = () => {
     }
   };
 
-  const toggleShowPassword = () => setShowPassword(!showPassword);
-
-  // This visible error message combines both sources of errors
   const visibleError = formError || authError;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
-      className={`w-full max-w-md p-8 space-y-6 rounded-xl shadow-2xl ${
-        theme === 'dark' 
-          ? 'bg-gray-800' 
-          : 'bg-white'
-      }`}
+      className="panel w-full max-w-md p-8 space-y-6 shadow-2xl"
     >
       <div className="text-center">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
           className="flex justify-center"
         >
-          <LogIn className={`h-12 w-auto ${theme === 'dark' ? 'text-primary' : 'text-secondary'}`} />
+          <LogIn className="h-12 w-auto text-accent" />
         </motion.div>
-        <motion.h2 
+        <motion.h2
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className={`mt-6 text-3xl font-extrabold ${
-            theme === 'dark' 
-              ? 'text-white' 
-              : 'text-gray-900'
-          }`}
+          className="mt-6 text-3xl font-display font-bold text-ink"
         >
           {t('auth.login.title')}
         </motion.h2>
       </div>
-      <motion.form 
+
+      <motion.form
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        className="mt-8 space-y-6" 
+        className="mt-8 space-y-6"
         onSubmit={handleSubmit}
       >
-        {/* IMPORTANT: Display error message prominently */}
         {visibleError && (
           <div className="error-text flex items-start">
-            <AlertCircle size={18} className="text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+            <AlertCircle size={18} className="text-[var(--app-red)] mr-2 flex-shrink-0 mt-0.5" />
             <div className="flex-1 mr-2 whitespace-pre-line">{visibleError}</div>
-            <button 
-              onClick={() => {
-                clearAuthError();
-                setFormError('');
-              }} 
-              className="flex-shrink-0 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            <button
+              onClick={() => { clearAuthError(); setFormError(''); }}
+              className="flex-shrink-0 p-1 rounded-full hover:bg-accent-soft transition-colors"
               aria-label={t('common.close')}
             >
-              <EyeOff size={16} />
+              <X size={16} />
             </button>
           </div>
         )}
-        
+
         <div>
-          <label htmlFor="username" className={`block text-sm font-medium ${
-            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>{t('auth.login.username')}</label>
+          <label htmlFor="username" className="block text-sm font-medium text-ink-2">
+            {t('auth.login.username')}
+          </label>
           <input
             id="username"
             name="username"
             type="text"
             autoComplete="username"
             required
-            className={`input-field mt-1 ${username.trim() === '' && visibleError ? 'border-red-500 dark:border-red-500' : ''}`}
+            className={`input-field mt-1 ${username.trim() === '' && visibleError ? 'border-[var(--app-red)]' : ''}`}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
         </div>
+
         <div>
-          <label htmlFor="password-login" className={`block text-sm font-medium ${
-            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-          }`}>{t('auth.login.password')}</label>
+          <label htmlFor="password-login" className="block text-sm font-medium text-ink-2">
+            {t('auth.login.password')}
+          </label>
           <div className="relative mt-1">
             <input
               id="password-login"
               name="password"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               required
-              className={`input-field pr-10 ${password === '' && visibleError ? 'border-red-500 dark:border-red-500' : ''}`}
+              className={`input-field pr-10 ${password === '' && visibleError ? 'border-[var(--app-red)]' : ''}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             <button
               type="button"
-              onClick={toggleShowPassword}
-              className={`absolute inset-y-0 right-0 pr-3 flex items-center ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              } hover:text-primary transition-colors`}
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-ink-3 hover:text-accent transition-colors"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -175,28 +156,18 @@ const LoginForm = () => {
           </LoadingButton>
         </div>
       </motion.form>
-      <p className={`mt-6 text-center text-sm ${
-        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-      }`}>
+
+      <p className="mt-6 text-center text-sm text-ink-2">
         {t('auth.login.noAccount')}{' '}
-        <Link href="/register" className={`font-medium ${
-          theme === 'dark' 
-            ? 'text-primary hover:text-emerald-400' 
-            : 'text-secondary hover:text-blue-700'
-        } transition-colors`}>
+        <Link href="/register" className="font-medium text-accent hover:brightness-110 transition-all">
           {t('auth.login.registerLink')}
         </Link>
       </p>
-      
-      {/* Add explanation about registration */}
-      <div className={`mt-4 p-4 rounded-lg text-sm ${
-        theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-600'
-      }`}>
-        <div className="flex items-start">
-          <AlertCircle size={16} className="text-primary mt-0.5 mr-2 flex-shrink-0" />
-          <p>
-            {t('registerCallout.description')}
-          </p>
+
+      <div className="mt-4 p-4 rounded-lg text-sm bg-raised border border-line text-ink-2">
+        <div className="flex items-start gap-2">
+          <AlertCircle size={16} className="text-accent mt-0.5 flex-shrink-0" />
+          <p>{t('registerCallout.description')}</p>
         </div>
       </div>
     </motion.div>

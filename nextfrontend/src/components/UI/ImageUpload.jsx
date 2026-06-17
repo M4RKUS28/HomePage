@@ -1,5 +1,5 @@
 // frontend/src/components/UI/ImageUpload.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Image as ImageIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../hooks/useTheme';
@@ -24,6 +24,14 @@ const ImageUpload = ({
   const { theme } = useTheme();
   const [previewUrl, setPreviewUrl] = useState(initialImage || '');
   const [isDragging, setIsDragging] = useState(false);
+
+  // Sync from parent when the presigned URL arrives after mount (or changes).
+  // Don't overwrite a local blob: URL the user has already selected.
+  useEffect(() => {
+    if (!previewUrl.startsWith('blob:')) {
+      setPreviewUrl(initialImage || '');
+    }
+  }, [initialImage]); // eslint-disable-line react-hooks/exhaustive-deps
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 

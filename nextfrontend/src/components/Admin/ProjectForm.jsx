@@ -105,7 +105,8 @@ const ProjectForm = ({ project, onFormSubmit }) => {
           await updateProjectApi(savedProject.id, { image_object_name: object_name });
         } catch (imgError) {
           console.error('Image upload error:', imgError);
-          setImageError('Image upload failed, but project was saved. Please try again.');
+          const msg = imgError.message || 'Image upload failed. Please try again.';
+          setImageError(`${msg} (Project was saved.)`);
           setIsLoading(false);
           setUploadingImage(false);
           onFormSubmit(true);
