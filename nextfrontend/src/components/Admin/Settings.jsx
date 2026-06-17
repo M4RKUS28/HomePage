@@ -11,7 +11,6 @@ import {
 import { buildAccentCss, isValidHex, DEFAULT_ACCENT } from '../../lib/accent';
 import Spinner from '../UI/Spinner';
 
-/** Apply the accent live in the current document (same CSS as SSR injects). */
 const applyAccentToDocument = (color) => {
   const css = buildAccentCss(color) || '';
   let el = document.getElementById('accent-theme');
@@ -29,7 +28,7 @@ const Feedback = ({ feedback }) =>
   feedback ? (
     <span
       className={`inline-flex items-center gap-1.5 text-sm ${
-        feedback.type === 'success' ? 'text-green-400' : 'text-red-400'
+        feedback.type === 'success' ? 'text-[var(--app-green)]' : 'text-[var(--app-red)]'
       }`}
     >
       {feedback.type === 'success' ? <Check size={15} /> : <AlertTriangle size={15} />}
@@ -48,7 +47,7 @@ const TranslationModelCard = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', text }
+  const [feedback, setFeedback] = useState(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -66,9 +65,7 @@ const TranslationModelCard = () => {
     }
   }, [t]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -91,14 +88,14 @@ const TranslationModelCard = () => {
   if (isLoading) return <div className="flex justify-center py-10"><Spinner /></div>;
 
   return (
-    <div className="bg-gray-800/60 rounded-lg p-6 space-y-5">
+    <div className="panel p-6 space-y-5">
       <div className="flex items-center gap-3">
-        <Languages size={22} className="text-primary shrink-0" />
-        <h2 className="text-lg font-semibold text-white">{t('title')}</h2>
+        <Languages size={22} className="text-accent shrink-0" />
+        <h2 className="text-lg font-semibold text-ink">{t('title')}</h2>
       </div>
 
       <form onSubmit={handleSave} className="space-y-3">
-        <label htmlFor="translation-model" className="block text-sm font-medium text-gray-200">
+        <label htmlFor="translation-model" className="block text-sm font-medium text-ink-2">
           {t('modelLabel')}
         </label>
 
@@ -111,17 +108,15 @@ const TranslationModelCard = () => {
           placeholder={defaultModel}
           autoComplete="off"
           spellCheck={false}
-          className="w-full bg-gray-900 text-gray-100 text-sm rounded-md px-3 py-2 border border-gray-700 focus:border-primary outline-none font-mono"
+          className="input-field font-mono"
         />
         <datalist id="translation-model-suggestions">
-          {suggestions.map((s) => (
-            <option key={s} value={s} />
-          ))}
+          {suggestions.map((s) => <option key={s} value={s} />)}
         </datalist>
 
-        <p className="text-xs text-gray-400">{t('modelHelp')}</p>
+        <p className="text-xs text-ink-2">{t('modelHelp')}</p>
         {defaultModel && (
-          <p className="text-xs text-gray-500">{t('defaultBadge', { model: defaultModel })}</p>
+          <p className="text-xs text-ink-3">{t('defaultBadge', { model: defaultModel })}</p>
         )}
 
         <div className="flex items-center gap-3 pt-1">
@@ -148,7 +143,7 @@ const AccentColorCard = () => {
 
   const [color, setColor] = useState(DEFAULT_ACCENT);
   const [defaultColor, setDefaultColor] = useState(DEFAULT_ACCENT);
-  const [storedColor, setStoredColor] = useState(null); // null = default active
+  const [storedColor, setStoredColor] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
@@ -169,12 +164,9 @@ const AccentColorCard = () => {
     }
   }, [t]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const persist = async (value) => {
-    // value: hex string to store, or null to reset to default
     setIsSaving(true);
     setFeedback(null);
     try {
@@ -182,7 +174,7 @@ const AccentColorCard = () => {
       setStoredColor(data.accent_color || null);
       setColor(data.accent_color || data.default_accent_color);
       applyAccentToDocument(data.accent_color);
-      revalidateThemeApi().catch(() => {}); // cache bust is best-effort
+      revalidateThemeApi().catch(() => {});
       setFeedback({ type: 'success', text: t('accentSaved') });
     } catch (err) {
       const detail = err?.response?.data?.detail;
@@ -203,10 +195,10 @@ const AccentColorCard = () => {
   if (isLoading) return <div className="flex justify-center py-10"><Spinner /></div>;
 
   return (
-    <div className="bg-gray-800/60 rounded-lg p-6 space-y-5">
+    <div className="panel p-6 space-y-5">
       <div className="flex items-center gap-3">
-        <Palette size={22} className="text-primary shrink-0" />
-        <h2 className="text-lg font-semibold text-white">{t('accentTitle')}</h2>
+        <Palette size={22} className="text-accent shrink-0" />
+        <h2 className="text-lg font-semibold text-ink">{t('accentTitle')}</h2>
       </div>
 
       <form onSubmit={handleSave} className="space-y-4">
@@ -216,7 +208,7 @@ const AccentColorCard = () => {
             value={isValidHex(color) ? color : defaultColor}
             onChange={(e) => setColor(e.target.value.toUpperCase())}
             aria-label={t('accentTitle')}
-            className="h-10 w-14 cursor-pointer rounded-md border border-gray-700 bg-gray-900 p-1"
+            className="h-10 w-14 cursor-pointer rounded-md border border-line-strong bg-raised p-1"
           />
           <input
             type="text"
@@ -226,9 +218,8 @@ const AccentColorCard = () => {
             placeholder={defaultColor}
             autoComplete="off"
             spellCheck={false}
-            className="w-32 bg-gray-900 text-gray-100 text-sm rounded-md px-3 py-2 border border-gray-700 focus:border-primary outline-none font-mono uppercase"
+            className="input-field w-32 font-mono uppercase"
           />
-          {/* Live sample chip */}
           {isValidHex(color) && (
             <span
               className="inline-flex items-center rounded-md px-3 py-2 text-xs font-semibold"
@@ -248,15 +239,15 @@ const AccentColorCard = () => {
               aria-label={preset}
               title={preset}
               className={`h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 ${
-                color.toUpperCase() === preset ? 'border-white' : 'border-transparent'
+                color.toUpperCase() === preset ? 'border-[var(--app-ink)]' : 'border-transparent'
               }`}
               style={{ backgroundColor: preset }}
             />
           ))}
         </div>
 
-        <p className="text-xs text-gray-400">{t('accentHelp')}</p>
-        <p className="text-xs text-gray-500">{t('accentDefaultBadge', { color: defaultColor })}</p>
+        <p className="text-xs text-ink-2">{t('accentHelp')}</p>
+        <p className="text-xs text-ink-3">{t('accentDefaultBadge', { color: defaultColor })}</p>
 
         <div className="flex items-center gap-3 pt-1">
           <button
@@ -273,7 +264,7 @@ const AccentColorCard = () => {
               type="button"
               onClick={() => persist(null)}
               disabled={isSaving}
-              className="btn btn-sm inline-flex items-center gap-1.5 bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-50"
+              className="btn btn-outline btn-sm inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <RotateCcw size={15} />
               {t('accentReset')}
