@@ -7,7 +7,8 @@ import { useAuth } from '../../hooks/useAuth';import { useLanguage } from '../..
 import ProjectForm from '../Admin/ProjectForm';
 import Modal from '../UI/Modal';
 import { useToast } from '../../contexts/ToastContext';
-import { PlusCircle, FolderOpen, Upload, Download } from 'lucide-react';
+import { PlusCircle, FolderOpen, Upload, Download, Github } from 'lucide-react';
+import GithubImportModal from '../Admin/GithubImportModal';
 
 
 const ProjectsGrid = () => {
@@ -23,6 +24,7 @@ const ProjectsGrid = () => {
   const [projectImages, setProjectImages] = useState({});
   const [deletingProject, setDeletingProject] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [showGithubImport, setShowGithubImport] = useState(false);
   const fetchedImageIds = useRef(new Set());
   const fileInputRef = useRef(null);
 
@@ -97,6 +99,17 @@ const ProjectsGrid = () => {
       alert("Failed to trigger status check: " + (err.response?.data?.detail || err.message));
       fetchProjectsData();
     }
+  };
+
+  const handleGithubImported = (projectData) => {
+    setShowGithubImport(false);
+    // Pre-fill the project form with the extracted data
+    setEditingProject({
+      ...projectData,
+      // Pass image_url as external ref so ProjectForm can display a hint
+      _github_image_url: projectData.image_url || null,
+    });
+    setShowModal(true);
   };
 
   const handleEdit = async (project) => {
@@ -364,6 +377,16 @@ const ProjectsGrid = () => {
             </motion.button>
 
             <motion.button
+              onClick={() => setShowGithubImport(true)}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="btn-ghost text-sm px-6 py-3"
+            >
+              <Github size={17} />
+              {t('importFromGithub')}
+            </motion.button>
+
+            <motion.button
               onClick={handleExport}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
@@ -439,6 +462,15 @@ const ProjectsGrid = () => {
           }
         </motion.div>
       </div>
+
+      {showGithubImport && (
+        <Modal title={t('importFromGithub')} onClose={() => setShowGithubImport(false)}>
+          <GithubImportModal
+            onImported={handleGithubImported}
+            onClose={() => setShowGithubImport(false)}
+          />
+        </Modal>
+      )}
 
       {showModal && (
         <Modal title={editingProject ? t('editProject') : t('addProject')} onClose={() => handleModalClose(false)}>

@@ -44,7 +44,8 @@
     "importSuccess": "成功导入 {count} 个项目",
     "importPartial": "已导入 {success} 个，{failed} 个失败",
     "importError": "导入失败。请检查 JSON 文件。",
-    "exportEmpty": "没有可导出的项目。"
+    "exportEmpty": "没有可导出的项目。",
+    "importFromGithub": "从GitHub导入"
   },
   "cv": {
     "loading": "正在加载简历数据...",
@@ -210,6 +211,19 @@
         "imageUpload": "项目图片",
         "create": "创建项目",
         "update": "更新项目"
+      },
+      "githubImport": {
+        "description": "粘贴任意GitHub仓库或README链接。AI将获取README并提取项目标题、描述、链接和图片。",
+        "urlLabel": "GitHub链接",
+        "generate": "生成",
+        "generating": "正在获取README并用AI分析…可能需要片刻。",
+        "urlRequired": "请输入GitHub链接。",
+        "urlInvalid": "请输入有效的GitHub链接。",
+        "error": "无法提取项目数据，请重试。",
+        "noTitle": "未命名项目",
+        "reviewHint": "查看下方提取的数据，然后点击"使用项目"打开表单进行最终编辑。",
+        "useProject": "使用项目",
+        "cancel": "取消"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "删除条目",
       "confirmRemove": "您确定要删除此项目吗？此操作无法撤销。",
       "rawData": "原始数据",
+      "personal": {
+        "homepageName": "主页名称",
+        "homepageNameHint": "显示在网站左上角（当前为"M4RKUS28"）",
+        "titleHeadline": "落地页标题/头条",
+        "titleHeadlineHint": "显示在英雄区域您姓名的下方"
+      },
       "personalInfo": "个人信息",
       "moveUp": "上移",
       "moveDown": "下移",

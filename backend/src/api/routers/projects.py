@@ -1,14 +1,21 @@
 """Project management endpoints."""
 
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.dependencies import get_current_admin_user, get_db
 from ...db.models.user import User
 from ...services import project as project_service
-from ..schemas.project import ProjectCreate, ProjectListItem, ProjectRead, ProjectUpdate
+from ..schemas.project import (
+    ProjectCreate,
+    ProjectGithubImportResponse,
+    ProjectListItem,
+    ProjectRead,
+    ProjectUpdate,
+)
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -110,3 +117,31 @@ async def trigger_health_check(
     project = await project_service.get_project(db, project_id)
     background_tasks.add_task(project_service.check_project_health, db, project)
     return _project_to_read(project)
+
+
+# ---------------------------------------------------------------------------
+# AI-assisted GitHub import
+# ---------------------------------------------------------------------------
+
+class _GithubImportRequest(BaseModel):
+    github_url: str
+    language: str = "en"
+
+
+@router.post("/import-github", response_model=ProjectGithubImportResponse)
+async def import_project_from_github(
+    body: _GithubImportRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user),
+):
+    """AI-assisted GitHub project import (admin only).
+
+    Fetches the README at ``github_url``, passes it to Gemini, and returns
+    extracted project metadata for review.  The result is NOT persisted —
+    use ``POST /projects/`` to save it after reviewing.
+    """
+    return await project_service.import_project_from_github(
+        db,
+        github_url=body.github_url,
+        language=body.language,
+    )

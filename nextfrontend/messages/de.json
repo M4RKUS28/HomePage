@@ -44,7 +44,8 @@
     "importSuccess": "{count} Projekte erfolgreich importiert",
     "importPartial": "{success} importiert, {failed} fehlgeschlagen",
     "importError": "Import fehlgeschlagen. Bitte überprüfe die JSON-Datei.",
-    "exportEmpty": "Keine Projekte zum Exportieren."
+    "exportEmpty": "Keine Projekte zum Exportieren.",
+    "importFromGithub": "Von GitHub importieren"
   },
   "cv": {
     "loading": "Lebenslauf wird geladen...",
@@ -210,6 +211,19 @@
         "imageUpload": "Projektbild",
         "create": "Projekt erstellen",
         "update": "Projekt aktualisieren"
+      },
+      "githubImport": {
+        "description": "Füge einen GitHub-Repository- oder README-Link ein. KI ruft das README ab und extrahiert Titel, Beschreibung, Links und Bild.",
+        "urlLabel": "GitHub-URL",
+        "generate": "Generieren",
+        "generating": "README wird abgerufen und mit KI analysiert… das kann einen Moment dauern.",
+        "urlRequired": "Bitte gib eine GitHub-URL ein.",
+        "urlInvalid": "Bitte gib eine gültige GitHub-URL ein.",
+        "error": "Projektdaten konnten nicht extrahiert werden. Bitte versuche es erneut.",
+        "noTitle": "Unbenanntes Projekt",
+        "reviewHint": "Überprüfe die extrahierten Daten und klicke auf 'Projekt verwenden', um das Formular für finale Bearbeitungen zu öffnen.",
+        "useProject": "Projekt verwenden",
+        "cancel": "Abbrechen"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "Eintrag löschen",
       "confirmRemove": "Sind Sie sicher, dass Sie diesen Eintrag entfernen möchten? Dies kann nicht rückgängig gemacht werden.",
       "rawData": "Rohdaten",
+      "personal": {
+        "homepageName": "Seitenname",
+        "homepageNameHint": "Erscheint in der oberen linken Ecke der Website (aktuell \"M4RKUS28\")",
+        "titleHeadline": "Titel/Überschrift der Startseite",
+        "titleHeadlineHint": "Erscheint unter Ihrem Namen im Hero-Bereich"
+      },
       "personalInfo": "Persönliche Daten",
       "moveUp": "Nach oben",
       "moveDown": "Nach unten",

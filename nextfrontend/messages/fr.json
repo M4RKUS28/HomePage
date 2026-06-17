@@ -44,7 +44,8 @@
     "importSuccess": "{count} projets importés avec succès",
     "importPartial": "{success} importés, {failed} échoués",
     "importError": "Échec de l'importation. Veuillez vérifier le fichier JSON.",
-    "exportEmpty": "Aucun projet à exporter."
+    "exportEmpty": "Aucun projet à exporter.",
+    "importFromGithub": "Importer depuis GitHub"
   },
   "cv": {
     "loading": "Chargement du CV...",
@@ -210,6 +211,19 @@
         "imageUpload": "Image du projet",
         "create": "Créer le projet",
         "update": "Mettre à jour le projet"
+      },
+      "githubImport": {
+        "description": "Collez n'importe quel lien de dépôt ou README GitHub. L'IA récupérera le README et extraira le titre, la description, les liens et l'image du projet.",
+        "urlLabel": "URL GitHub",
+        "generate": "Générer",
+        "generating": "Récupération du README et analyse par IA… cela peut prendre un moment.",
+        "urlRequired": "Veuillez entrer une URL GitHub.",
+        "urlInvalid": "Veuillez entrer une URL GitHub valide.",
+        "error": "Impossible d'extraire les données du projet. Veuillez réessayer.",
+        "noTitle": "Projet sans titre",
+        "reviewHint": "Vérifiez les données extraites ci-dessous, puis cliquez sur 'Utiliser le projet' pour ouvrir le formulaire.",
+        "useProject": "Utiliser le projet",
+        "cancel": "Annuler"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "Supprimer l'élément",
       "confirmRemove": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
       "rawData": "Données brutes",
+      "personal": {
+        "homepageName": "Nom de la page d'accueil",
+        "homepageNameHint": "Apparaît dans le coin supérieur gauche du site (actuellement \"M4RKUS28\")",
+        "titleHeadline": "Titre/Accroche de la page d'accueil",
+        "titleHeadlineHint": "Apparaît sous votre nom dans la section hero"
+      },
       "personalInfo": "Informations personnelles",
       "moveUp": "Déplacer vers le haut",
       "moveDown": "Déplacer vers le bas",

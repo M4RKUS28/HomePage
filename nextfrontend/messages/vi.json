@@ -44,7 +44,8 @@
     "importSuccess": "Đã nhập thành công {count} dự án",
     "importPartial": "{success} đã nhập, {failed} thất bại",
     "importError": "Nhập thất bại. Vui lòng kiểm tra tệp JSON.",
-    "exportEmpty": "Không có dự án nào để xuất."
+    "exportEmpty": "Không có dự án nào để xuất.",
+    "importFromGithub": "Nhập từ GitHub"
   },
   "cv": {
     "loading": "Đang tải dữ liệu CV...",
@@ -210,6 +211,19 @@
         "imageUpload": "Hình ảnh dự án",
         "create": "Tạo dự án",
         "update": "Cập nhật dự án"
+      },
+      "githubImport": {
+        "description": "Dán bất kỳ liên kết kho lưu trữ hoặc README GitHub nào. AI sẽ tải README và trích xuất tiêu đề, mô tả, liên kết và hình ảnh dự án.",
+        "urlLabel": "URL GitHub",
+        "generate": "Tạo",
+        "generating": "Đang tải README và phân tích bằng AI… có thể mất một lúc.",
+        "urlRequired": "Vui lòng nhập URL GitHub.",
+        "urlInvalid": "Vui lòng nhập URL GitHub hợp lệ.",
+        "error": "Không thể trích xuất dữ liệu dự án. Vui lòng thử lại.",
+        "noTitle": "Dự án chưa đặt tên",
+        "reviewHint": "Xem lại dữ liệu được trích xuất và nhấp vào 'Sử dụng dự án' để mở biểu mẫu.",
+        "useProject": "Sử dụng dự án",
+        "cancel": "Hủy"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "Xóa mục",
       "confirmRemove": "Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.",
       "rawData": "Dữ liệu thô",
+      "personal": {
+        "homepageName": "Tên trang chủ",
+        "homepageNameHint": "Hiển thị ở góc trên bên trái của trang web (hiện tại là \"M4RKUS28\")",
+        "titleHeadline": "Tiêu đề/Headline của trang đích",
+        "titleHeadlineHint": "Hiển thị dưới tên của bạn trong phần hero"
+      },
       "personalInfo": "Thông tin cá nhân",
       "moveUp": "Di chuyển lên",
       "moveDown": "Di chuyển xuống",

@@ -6,6 +6,7 @@ Orchestrates: CRUD, health-checking, MinIO image handling.
 
 import asyncio
 import logging
+import re
 from typing import Optional, Sequence
 
 import httpx
@@ -13,11 +14,146 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.schemas.project import ProjectCreate, ProjectUpdate
+from ..core.config import get_settings
 from ..db.crud import project as project_crud
 from ..db.minio import get_minio
 from ..db.models.project import Project, ProjectStatus
+from . import translation as translation_service
 
 logger = logging.getLogger(__name__)
+settings = get_settings()
+
+# Max README size to pass to Gemini (100 KB)
+_MAX_README_SIZE = 100 * 1024
+
+# ---------------------------------------------------------------------------
+# GitHub README import
+# ---------------------------------------------------------------------------
+
+def _to_raw_github_url(url: str) -> str:
+    """Convert any GitHub URL variant to a raw content URL for fetching."""
+    # Already a raw URL
+    if "raw.githubusercontent.com" in url:
+        return url
+    # Blob URL: github.com/user/repo/blob/branch/path
+    blob_match = re.match(
+        r"https?://github\.com/([^/]+/[^/]+)/blob/(.+)", url
+    )
+    if blob_match:
+        return f"https://raw.githubusercontent.com/{blob_match.group(1)}/{blob_match.group(2)}"
+    # Repo root URL: try to fetch the default README
+    repo_match = re.match(r"https?://github\.com/([^/]+/[^/?#]+)", url)
+    if repo_match:
+        repo = repo_match.group(1).rstrip("/")
+        # Return sentinel; caller will try several branch/filename combos
+        return f"__repo__{repo}"
+    return url
+
+
+async def _fetch_readme(github_url: str) -> tuple[str, str]:
+    """Fetch README content from a GitHub URL.
+
+    Returns (readme_text, canonical_repo_url).
+    Raises HTTPException on failure.
+    """
+    raw_url = _to_raw_github_url(github_url.strip())
+
+    async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+        if raw_url.startswith("__repo__"):
+            repo = raw_url[len("__repo__"):]
+            canonical_url = f"https://github.com/{repo}"
+            for branch in ("main", "master"):
+                for filename in ("README.md", "readme.md", "README.rst", "README.txt"):
+                    try_url = f"https://raw.githubusercontent.com/{repo}/{branch}/{filename}"
+                    try:
+                        resp = await client.get(try_url)
+                        if resp.status_code == 200:
+                            content = resp.text
+                            if len(content.encode()) > _MAX_README_SIZE:
+                                content = content[: _MAX_README_SIZE]
+                            return content, canonical_url
+                    except httpx.RequestError:
+                        continue
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Could not find a README for this repository. Try pasting the direct README link.",
+            )
+        else:
+            # Determine canonical repo URL from raw URL
+            raw_repo_match = re.match(
+                r"https?://raw\.githubusercontent\.com/([^/]+/[^/]+)/", raw_url
+            )
+            canonical_url = (
+                f"https://github.com/{raw_repo_match.group(1)}"
+                if raw_repo_match
+                else github_url
+            )
+            try:
+                resp = await client.get(raw_url)
+            except httpx.RequestError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"Failed to fetch README: {exc}",
+                )
+            if resp.status_code == 404:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="README not found at that URL. Check the link and try again.",
+                )
+            if resp.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"GitHub returned HTTP {resp.status_code} when fetching the README.",
+                )
+            content = resp.text
+            if len(content.encode()) > _MAX_README_SIZE:
+                content = content[: _MAX_README_SIZE]
+            return content, canonical_url
+
+
+async def import_project_from_github(
+    db,
+    *,
+    github_url: str,
+    language: str = "en",
+) -> dict:
+    """Fetch a GitHub README and extract project metadata via Gemini.
+
+    Returns a dict with: title, description, github_link, image_url, website_url.
+    The result is NOT persisted - the caller (admin UI) reviews it before saving.
+    """
+    if not settings.gemini.api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI project import is not configured (missing Gemini API key).",
+        )
+
+    readme_content, canonical_url = await _fetch_readme(github_url)
+
+    model = await translation_service.get_active_model(db)
+
+    try:
+        extracted = await translation_service.generate_project_from_readme(
+            readme_content=readme_content,
+            github_url=canonical_url,
+            model=model,
+            language=language,
+        )
+    except Exception as exc:
+        logger.error("[project] GitHub README AI import failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to process the README with AI. Please try again.",
+        )
+
+    # Ensure required keys exist with safe defaults
+    return {
+        "title": extracted.get("title", ""),
+        "description": extracted.get("description", ""),
+        "github_link": extracted.get("github_link", canonical_url),
+        "image_url": extracted.get("image_url", "") or "",
+        "website_url": extracted.get("website_url", "") or "",
+    }
 
 
 # ---------------------------------------------------------------------------

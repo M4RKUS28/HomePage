@@ -56,6 +56,15 @@ class ProjectRead(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ProjectGithubImportResponse(BaseModel):
+    """Result of AI-assisted GitHub README import (not yet persisted)."""
+    title: str
+    description: str
+    github_link: str
+    image_url: str = ""
+    website_url: str = ""
+
+
 class ProjectListItem(BaseModel):
     """Lightweight list representation (no image)."""
     id: int

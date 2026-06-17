@@ -44,7 +44,8 @@
     "importSuccess": "{count} projetos importados com sucesso",
     "importPartial": "{success} importados, {failed} com falha",
     "importError": "Falha na importação. Verifique o arquivo JSON.",
-    "exportEmpty": "Nenhum projeto para exportar."
+    "exportEmpty": "Nenhum projeto para exportar.",
+    "importFromGithub": "Importar do GitHub"
   },
   "cv": {
     "loading": "Carregando dados do CV...",
@@ -210,6 +211,19 @@
         "imageUpload": "Imagem do projeto",
         "create": "Criar projeto",
         "update": "Atualizar projeto"
+      },
+      "githubImport": {
+        "description": "Cole qualquer link de repositório ou README do GitHub. A IA buscará o README e extrairá o título, descrição, links e imagem do projeto.",
+        "urlLabel": "URL do GitHub",
+        "generate": "Gerar",
+        "generating": "Buscando README e analisando com IA… isso pode levar um momento.",
+        "urlRequired": "Por favor, insira uma URL do GitHub.",
+        "urlInvalid": "Por favor, insira uma URL do GitHub válida.",
+        "error": "Não foi possível extrair os dados do projeto. Por favor, tente novamente.",
+        "noTitle": "Projeto sem título",
+        "reviewHint": "Revise os dados extraídos e clique em 'Usar projeto' para abrir o formulário.",
+        "useProject": "Usar projeto",
+        "cancel": "Cancelar"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "Excluir item",
       "confirmRemove": "Tem certeza de que deseja remover este item? Esta ação não pode ser desfeita.",
       "rawData": "Dados brutos",
+      "personal": {
+        "homepageName": "Nome da página inicial",
+        "homepageNameHint": "Aparece no canto superior esquerdo do site (atualmente \"M4RKUS28\")",
+        "titleHeadline": "Título/Manchete da página inicial",
+        "titleHeadlineHint": "Aparece abaixo do seu nome na seção hero"
+      },
       "personalInfo": "Informações pessoais",
       "moveUp": "Mover para cima",
       "moveDown": "Mover para baixo",

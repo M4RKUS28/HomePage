@@ -44,7 +44,8 @@
     "importSuccess": "{count} progetti importati con successo",
     "importPartial": "{success} importati, {failed} non riusciti",
     "importError": "Importazione non riuscita. Controlla il file JSON.",
-    "exportEmpty": "Nessun progetto da esportare."
+    "exportEmpty": "Nessun progetto da esportare.",
+    "importFromGithub": "Importa da GitHub"
   },
   "cv": {
     "loading": "Caricamento dati CV...",
@@ -210,6 +211,19 @@
         "imageUpload": "Immagine del progetto",
         "create": "Crea progetto",
         "update": "Aggiorna progetto"
+      },
+      "githubImport": {
+        "description": "Incolla qualsiasi link a un repository o README di GitHub. L'IA recupererà il README ed estrarrà titolo, descrizione, link e immagine del progetto.",
+        "urlLabel": "URL GitHub",
+        "generate": "Genera",
+        "generating": "Recupero del README e analisi con IA… potrebbe richiedere un momento.",
+        "urlRequired": "Inserisci un URL GitHub.",
+        "urlInvalid": "Inserisci un URL GitHub valido.",
+        "error": "Impossibile estrarre i dati del progetto. Riprova.",
+        "noTitle": "Progetto senza titolo",
+        "reviewHint": "Controlla i dati estratti e clicca su 'Usa progetto' per aprire il modulo.",
+        "useProject": "Usa progetto",
+        "cancel": "Annulla"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "Elimina elemento",
       "confirmRemove": "Sei sicuro di voler rimuovere questo elemento? Questa azione non può essere annullata.",
       "rawData": "Dati grezzi",
+      "personal": {
+        "homepageName": "Nome della homepage",
+        "homepageNameHint": "Appare nell'angolo in alto a sinistra del sito (attualmente \"M4RKUS28\")",
+        "titleHeadline": "Titolo/Intestazione della landing page",
+        "titleHeadlineHint": "Appare sotto il tuo nome nella sezione hero"
+      },
       "personalInfo": "Informazioni personali",
       "moveUp": "Sposta su",
       "moveDown": "Sposta giù",

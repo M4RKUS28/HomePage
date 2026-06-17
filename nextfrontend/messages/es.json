@@ -44,7 +44,8 @@
     "importSuccess": "{count} proyectos importados correctamente",
     "importPartial": "{success} importados, {failed} fallidos",
     "importError": "Error al importar. Comprueba el archivo JSON.",
-    "exportEmpty": "No hay proyectos para exportar."
+    "exportEmpty": "No hay proyectos para exportar.",
+    "importFromGithub": "Importar desde GitHub"
   },
   "cv": {
     "loading": "Cargando datos del CV...",
@@ -210,6 +211,19 @@
         "imageUpload": "Imagen del proyecto",
         "create": "Crear proyecto",
         "update": "Actualizar proyecto"
+      },
+      "githubImport": {
+        "description": "Pega cualquier enlace de repositorio o README de GitHub. La IA obtendrá el README y extraerá el título, descripción, enlaces e imagen del proyecto.",
+        "urlLabel": "URL de GitHub",
+        "generate": "Generar",
+        "generating": "Obteniendo README y analizando con IA… esto puede tardar un momento.",
+        "urlRequired": "Por favor, introduce una URL de GitHub.",
+        "urlInvalid": "Por favor, introduce una URL de GitHub válida.",
+        "error": "No se pudieron extraer los datos del proyecto. Por favor, inténtalo de nuevo.",
+        "noTitle": "Proyecto sin título",
+        "reviewHint": "Revisa los datos extraídos a continuación y haz clic en 'Usar proyecto' para abrir el formulario con ediciones finales.",
+        "useProject": "Usar proyecto",
+        "cancel": "Cancelar"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "Eliminar elemento",
       "confirmRemove": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
       "rawData": "Datos sin procesar",
+      "personal": {
+        "homepageName": "Nombre de la página de inicio",
+        "homepageNameHint": "Aparece en la esquina superior izquierda del sitio (actualmente \"M4RKUS28\")",
+        "titleHeadline": "Título/Titular de la página de inicio",
+        "titleHeadlineHint": "Aparece debajo de tu nombre en la sección hero"
+      },
       "personalInfo": "Información personal",
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",

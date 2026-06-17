@@ -44,7 +44,8 @@
     "importSuccess": "{count} projects imported successfully",
     "importPartial": "{success} imported, {failed} failed",
     "importError": "Import failed. Please check the JSON file.",
-    "exportEmpty": "No projects to export."
+    "exportEmpty": "No projects to export.",
+    "importFromGithub": "Import from GitHub"
   },
   "cv": {
     "loading": "Loading CV data...",
@@ -210,6 +211,19 @@
         "imageUpload": "Project Image",
         "create": "Create Project",
         "update": "Update Project"
+      },
+      "githubImport": {
+        "description": "Paste any GitHub repository or README link. AI will fetch the README and extract the project title, description, links, and image.",
+        "urlLabel": "GitHub URL",
+        "generate": "Generate",
+        "generating": "Fetching README and analyzing with AI… this may take a moment.",
+        "urlRequired": "Please enter a GitHub URL.",
+        "urlInvalid": "Please enter a valid GitHub URL.",
+        "error": "Failed to extract project data. Please try again.",
+        "noTitle": "Untitled Project",
+        "reviewHint": "Review the extracted data below, then click 'Use Project' to open the form for final edits.",
+        "useProject": "Use Project",
+        "cancel": "Cancel"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "Delete Item",
       "confirmRemove": "Are you sure you want to remove this item? This cannot be undone.",
       "rawData": "Raw Data",
+      "personal": {
+        "homepageName": "Homepage Name",
+        "homepageNameHint": "This appears in the top-left corner of the site (currently \"M4RKUS28\")",
+        "titleHeadline": "Landing Page Title/Headline",
+        "titleHeadlineHint": "This appears under your name in the hero section"
+      },
       "personalInfo": "Personal Info",
       "moveUp": "Move Up",
       "moveDown": "Move Down",

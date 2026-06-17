@@ -9,22 +9,22 @@ const RawDataSection = ({ rawDataText, onChange, onApply, onDownload }) => (
         <button
           type="button"
           onClick={onApply}
-          className="btn btn-sm bg-blue-900/50 text-blue-300 hover:bg-blue-900/70 flex items-center"
+          className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
         >
-          <Save size={14} className="mr-1" /> Apply & Save
+          <Save size={14} /> Apply & Save
         </button>
         <button
           type="button"
           onClick={onDownload}
-          className="btn btn-sm bg-green-900/50 text-green-300 hover:bg-green-900/70 flex items-center"
+          className="btn btn-outline btn-sm inline-flex items-center gap-1.5"
         >
-          <Download size={14} className="mr-1" /> Download JSON
+          <Download size={14} /> Download JSON
         </button>
       </div>
     </div>
 
     <div className="space-y-4">
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-ink-2">
         Edit the raw JSON data directly. Be careful with the syntax - invalid JSON will be rejected.
       </p>
 
@@ -37,7 +37,7 @@ const RawDataSection = ({ rawDataText, onChange, onApply, onDownload }) => (
         style={{ height: '800px' }}
       />
 
-      <div className="flex justify-between text-xs text-gray-500">
+      <div className="flex justify-between text-xs text-ink-3">
         <span>Use Ctrl+A to select all, Ctrl+C to copy</span>
         <span>Lines: {rawDataText.split('\n').length} | Characters: {rawDataText.length}</span>
       </div>

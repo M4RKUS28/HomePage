@@ -44,7 +44,8 @@
     "importSuccess": "{count}件のプロジェクトをインポートしました",
     "importPartial": "{success}件をインポート、{failed}件が失敗しました",
     "importError": "インポートに失敗しました。JSONファイルを確認してください。",
-    "exportEmpty": "エクスポートするプロジェクトがありません。"
+    "exportEmpty": "エクスポートするプロジェクトがありません。",
+    "importFromGithub": "GitHubからインポート"
   },
   "cv": {
     "loading": "履歴書データを読み込み中...",
@@ -210,6 +211,19 @@
         "imageUpload": "プロジェクト画像",
         "create": "プロジェクトを作成",
         "update": "プロジェクトを更新"
+      },
+      "githubImport": {
+        "description": "GitHubリポジトリまたはREADMEのリンクを貼り付けてください。AIがREADMEを取得してプロジェクトのタイトル・説明・リンク・画像を抽出します。",
+        "urlLabel": "GitHub URL",
+        "generate": "生成",
+        "generating": "READMEを取得してAIで解析中…しばらくお待ちください。",
+        "urlRequired": "GitHub URLを入力してください。",
+        "urlInvalid": "有効なGitHub URLを入力してください。",
+        "error": "プロジェクトデータの抽出に失敗しました。もう一度お試しください。",
+        "noTitle": "無題のプロジェクト",
+        "reviewHint": "下の抽出データを確認し、「プロジェクトを使用」をクリックしてフォームを開いてください。",
+        "useProject": "プロジェクトを使用",
+        "cancel": "キャンセル"
       }
     },
     "messages": {
@@ -253,6 +267,12 @@
       "deleteItem": "項目を削除",
       "confirmRemove": "このアイテムを削除してもよろしいですか？この操作は元に戻せません。",
       "rawData": "生データ",
+      "personal": {
+        "homepageName": "ホームページ名",
+        "homepageNameHint": "サイトの左上に表示されます（現在：\"M4RKUS28\"）",
+        "titleHeadline": "ランディングページのタイトル/見出し",
+        "titleHeadlineHint": "ヒーローセクションであなたの名前の下に表示されます"
+      },
       "personalInfo": "個人情報",
       "moveUp": "上へ移動",
       "moveDown": "下へ移動",

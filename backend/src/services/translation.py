@@ -283,6 +283,82 @@ async def generate_cv_from_file(
         raise
 
 
+async def generate_project_from_readme(
+    readme_content: str,
+    github_url: str,
+    model: str,
+    language: str = "en",
+) -> dict:
+    """Extract project metadata from a GitHub README via Gemini.
+
+    Returns a dict with keys: title, description, github_link, image_url, website_url.
+    Written in the requested language.
+    """
+    lang_name = _LANG_NAMES.get(language, language)
+
+    system_prompt = (
+        "You are an expert at extracting structured project information from GitHub README files.\n\n"
+        "Given a README and the repository URL, extract the following as JSON:\n"
+        "- title: The project name (short, clear title)\n"
+        "- description: A concise description of what the project does (2-4 sentences max). "
+        "Do NOT include installation instructions or technical setup details, just what the project is.\n"
+        f"- github_link: The GitHub repository URL (use the provided URL if not found in the README)\n"
+        "- image_url: The absolute URL of the first screenshot, banner, or logo image in the README "
+        "(must be a full http/https URL; empty string if none found)\n"
+        "- website_url: The URL of the project's live website or demo (empty string if none found)\n\n"
+        f"Write the title and description in {lang_name}.\n"
+        "Please return a valid JSON object with exactly one key 'project', containing these five fields."
+    )
+
+    user_message = (
+        f"GitHub repository URL: {github_url}\n\n"
+        f"README content:\n{readme_content}"
+    )
+
+    logger.info("[translation] [Gemini ADK] Initiating GitHub README import run (language=%s)", language)
+    agent = _get_agent(system_prompt, model)
+    try:
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+        from google.genai import types
+
+        session_service = InMemorySessionService()
+        try:
+            await session_service.create_session(app_name="transl", user_id="system", session_id="github_import")
+        except Exception:
+            pass
+
+        runner = Runner(agent=agent, app_name="transl", session_service=session_service)
+        content = types.Content(role="user", parts=[types.Part(text=user_message)])
+
+        final_text = ""
+        async for event in runner.run_async(user_id="system", session_id="github_import", new_message=content):
+            if event.is_final_response() and event.content and event.content.parts:
+                final_text = event.content.parts[0].text.strip()
+
+        if not final_text:
+            raise ValueError("No final response text received from ADK runner.")
+
+        logger.info("[translation] [Gemini ADK] GitHub README import run succeeded")
+
+        stripped_text = final_text.strip()
+        if stripped_text.startswith("```json"):
+            stripped_text = stripped_text[7:]
+        if stripped_text.endswith("```"):
+            stripped_text = stripped_text[:-3]
+        parsed = json.loads(stripped_text.strip())
+        if isinstance(parsed, dict):
+            return parsed.get("project", parsed)
+        return parsed
+
+    except Exception as e:
+        if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+            logger.error("[translation] Gemini API 429 Quota Exhausted: %s", e)
+            raise
+        logger.error("[translation] Gemini API Error during GitHub README import: %s", e)
+        raise
+
+
 async def translate_projects_batch(
     projects: List[dict],
     source_lang: str,
