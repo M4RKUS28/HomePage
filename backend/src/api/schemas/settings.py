@@ -30,3 +30,13 @@ class AccentColorUpdate(BaseModel):
     """``color: null`` resets to the built-in default."""
 
     color: Optional[str] = Field(None, pattern=HEX_COLOR_PATTERN)
+
+
+class AutoTranslationRead(BaseModel):
+    """Whether edits are automatically translated into the other languages."""
+
+    enabled: bool
+
+
+class AutoTranslationUpdate(BaseModel):
+    enabled: bool

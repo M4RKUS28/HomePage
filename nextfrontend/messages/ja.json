@@ -332,7 +332,14 @@
       "accentDefaultBadge": "デフォルト: {color}",
       "accentSaved": "アクセントカラーを更新しました。",
       "accentSaveError": "アクセントカラーの更新に失敗しました。",
-      "accentReset": "デフォルトに戻す"
+      "accentReset": "デフォルトに戻す",
+      "autoTranslationTitle": "自動翻訳",
+      "autoTranslationHelp": "有効にすると、CV とプロジェクトの編集が次回の同期時にすべての他の言語へ翻訳されます。無効にすると、変更は編集した言語のみに保持されます。",
+      "autoTranslationEnabled": "自動翻訳は有効です",
+      "autoTranslationDisabled": "自動翻訳は無効です",
+      "autoTranslationSaved": "自動翻訳の設定を更新しました。",
+      "autoTranslationSaveError": "自動翻訳の設定を更新できませんでした。",
+      "autoTranslationNote": "再び有効にしても、無効だった間の変更は翻訳されず、新しい変更のみが翻訳されます。"
     }
   },
   "notFound": {

@@ -6,8 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...core.config import get_settings
 from ...core.dependencies import get_current_admin_user, get_db
 from ...db.crud import app_setting as settings_crud
+from ...db.crud import cv as cv_crud
+from ...db.crud import project as project_crud
 from ..schemas.settings import (
     AccentColorUpdate,
+    AutoTranslationRead,
+    AutoTranslationUpdate,
     PublicSettingsRead,
     TranslationModelRead,
     TranslationModelUpdate,
@@ -68,6 +72,40 @@ async def update_translation_model(
         )
     await settings_crud.set_setting(db, settings_crud.TRANSLATION_MODEL_KEY, model)
     return _read(model)
+
+
+# ---------------------------------------------------------------------------
+# Automatic translation toggle
+# ---------------------------------------------------------------------------
+
+
+@router.get("/auto-translation", response_model=AutoTranslationRead)
+async def get_auto_translation(db: AsyncSession = Depends(get_db)):
+    """Return whether edits are automatically translated into other languages."""
+    enabled = await settings_crud.is_auto_translation_enabled(db)
+    return AutoTranslationRead(enabled=enabled)
+
+
+@router.put("/auto-translation", response_model=AutoTranslationRead)
+async def update_auto_translation(
+    payload: AutoTranslationUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Enable or disable automatic translation of CV & project edits. Admin only.
+
+    Re-enabling deliberately does NOT build a queue: any changes flagged while
+    the feature was off are cleared so that only edits made *after* re-enabling
+    get translated.
+    """
+    await settings_crud.set_setting(
+        db,
+        settings_crud.AUTO_TRANSLATION_ENABLED_KEY,
+        "true" if payload.enabled else "false",
+    )
+    if payload.enabled:
+        await project_crud.clear_all_changes(db)
+        await cv_crud.clear_all_changes(db)
+    return AutoTranslationRead(enabled=payload.enabled)
 
 
 # ---------------------------------------------------------------------------

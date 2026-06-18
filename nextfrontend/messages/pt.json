@@ -332,7 +332,14 @@
       "accentDefaultBadge": "Padrão: {color}",
       "accentSaved": "Cor de destaque atualizada.",
       "accentSaveError": "Falha ao atualizar a cor de destaque.",
-      "accentReset": "Redefinir para o padrão"
+      "accentReset": "Redefinir para o padrão",
+      "autoTranslationTitle": "Tradução automática",
+      "autoTranslationHelp": "Quando ativada, as alterações no seu CV e projetos são traduzidas para todos os outros idiomas na próxima sincronização. Quando desativada, as alterações permanecem apenas no idioma editado.",
+      "autoTranslationEnabled": "A tradução automática está ativada",
+      "autoTranslationDisabled": "A tradução automática está desativada",
+      "autoTranslationSaved": "Configuração de tradução automática atualizada.",
+      "autoTranslationSaveError": "Falha ao atualizar a configuração de tradução automática.",
+      "autoTranslationNote": "Reativá-la não traduz as alterações feitas enquanto estava desativada, apenas as novas alterações."
     }
   },
   "notFound": {

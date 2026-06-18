@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.schemas.project import ProjectCreate, ProjectUpdate
 from ..core.config import get_settings
+from ..db.crud import app_setting as app_setting_crud
 from ..db.crud import project as project_crud
 from ..db.minio import get_minio
 from ..db.models.project import Project, ProjectStatus
@@ -238,6 +239,7 @@ async def create_project(
     owner_id: int,
 ) -> Project:
     position = data.position or await project_crud.get_next_position(db)
+    auto_translate = await app_setting_crud.is_auto_translation_enabled(db)
     project = await project_crud.create_project(
         db,
         title=data.title,
@@ -248,6 +250,7 @@ async def create_project(
         owner_id=owner_id,
         language=data.language,
         health_check_urls=data.health_check_urls or [],
+        has_changes=auto_translate,
     )
     # Fire-and-forget health check (handled in router via BackgroundTasks)
     return project
@@ -266,21 +269,26 @@ async def update_project(
     """
     project = await get_project(db, project_id)
 
-    # Conflict check: reject if another language of THIS PROJECT has pending changes
-    has_conflict = await project_crud.check_pending_changes_other_language(
-        db,
-        translation_group_id=project.translation_group_id,
-        exclude_language=project.language,
-    )
-    if has_conflict:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                f"Cannot update project for '{project.language}': another language version "
-                "of this project has pending changes that must be translated first. "
-                "Please wait for the automatic translation to complete."
-            ),
+    auto_translate = await app_setting_crud.is_auto_translation_enabled(db)
+
+    # Conflict check: reject if another language of THIS PROJECT has pending
+    # changes. Only relevant while auto-translation is on — when it is off, edits
+    # never get flagged so there is nothing to conflict with.
+    if auto_translate:
+        has_conflict = await project_crud.check_pending_changes_other_language(
+            db,
+            translation_group_id=project.translation_group_id,
+            exclude_language=project.language,
         )
+        if has_conflict:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    f"Cannot update project for '{project.language}': another language version "
+                    "of this project has pending changes that must be translated first. "
+                    "Please wait for the automatic translation to complete."
+                ),
+            )
 
     changes = data.model_dump(exclude_unset=True)
     link_changed = False
@@ -294,8 +302,9 @@ async def update_project(
     if "health_check_urls" in changes:
         changes["health_check_urls"] = changes["health_check_urls"] or []
 
-    # Mark as changed for translation
-    changes["has_changes"] = True
+    # Flag for translation only when auto-translation is enabled. While it is
+    # off the edit stays in its own language and is never queued.
+    changes["has_changes"] = auto_translate
 
     updated = await project_crud.update_project(db, project, **changes)
     return updated, link_changed

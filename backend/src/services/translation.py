@@ -449,6 +449,13 @@ async def run_translation_sync() -> None:
         logger.warning("[translation] Gemini API key not configured, skipping translation sync.")
         return
 
+    # Respect the admin toggle. When auto-translation is off, skip the whole run
+    # so nothing flagged just before disabling gets propagated to other languages.
+    async with AsyncSessionLocal() as db:
+        if not await app_setting_crud.is_auto_translation_enabled(db):
+            logger.info("[translation] Auto-translation disabled in settings, skipping run.")
+            return
+
     supported = settings.translation.supported_languages
     logger.info("[translation] Starting translation sync …")
 

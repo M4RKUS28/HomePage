@@ -4,7 +4,7 @@ CRUD operations for the Project model.
 
 from typing import Optional, Sequence
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.project import Project, ProjectStatus
@@ -129,6 +129,21 @@ async def create_project(
 # ---------------------------------------------------------------------------
 # Update
 # ---------------------------------------------------------------------------
+
+async def clear_all_changes(db: AsyncSession) -> int:
+    """Reset has_changes on every project. Returns the number of rows cleared.
+
+    Used when auto-translation is re-enabled so that edits made while it was
+    off are not retroactively queued for translation.
+    """
+    result = await db.execute(
+        update(Project)
+        .where(Project.has_changes == True)  # noqa: E712
+        .values(has_changes=False)
+    )
+    await db.commit()
+    return result.rowcount or 0
+
 
 async def update_project(
     db: AsyncSession,

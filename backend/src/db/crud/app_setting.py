@@ -10,6 +10,7 @@ from ..models.app_setting import AppSetting
 # Known setting keys
 TRANSLATION_MODEL_KEY = "translation_gemini_model"
 ACCENT_COLOR_KEY = "theme_accent_color"
+AUTO_TRANSLATION_ENABLED_KEY = "auto_translation_enabled"
 
 
 async def get_setting(db: AsyncSession, key: str) -> Optional[str]:
@@ -42,3 +43,11 @@ async def delete_setting(db: AsyncSession, key: str) -> bool:
     await db.delete(row)
     await db.commit()
     return True
+
+
+async def is_auto_translation_enabled(db: AsyncSession) -> bool:
+    """Whether edits are automatically translated. Defaults to True when unset."""
+    value = await get_setting(db, AUTO_TRANSLATION_ENABLED_KEY)
+    if value is None:
+        return True
+    return value.lower() == "true"

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { Languages, Save, Check, AlertTriangle, Palette, RotateCcw } from 'lucide-react';
+import { Languages, Save, Check, AlertTriangle, Palette, RotateCcw, RefreshCw } from 'lucide-react';
 import {
   getTranslationModelApi,
   updateTranslationModelApi,
+  getAutoTranslationApi,
+  updateAutoTranslationApi,
   getPublicSettingsApi,
   updateAccentColorApi,
   revalidateThemeApi,
@@ -131,6 +133,92 @@ const TranslationModelCard = () => {
           <Feedback feedback={feedback} />
         </div>
       </form>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/*  Automatic translation toggle card                                  */
+/* ------------------------------------------------------------------ */
+const AutoTranslationCard = () => {
+  const t = useTranslations('admin.settings');
+
+  const [enabled, setEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getAutoTranslationApi();
+      setEnabled(Boolean(data.enabled));
+    } catch (err) {
+      console.error(err);
+      setFeedback({ type: 'error', text: t('loadError') });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleToggle = async () => {
+    const next = !enabled;
+    setIsSaving(true);
+    setFeedback(null);
+    // Optimistic flip so the switch feels instant; reverted on error.
+    setEnabled(next);
+    try {
+      const data = await updateAutoTranslationApi(next);
+      setEnabled(Boolean(data.enabled));
+      setFeedback({ type: 'success', text: t('autoTranslationSaved') });
+    } catch (err) {
+      setEnabled(!next);
+      const detail = err?.response?.data?.detail;
+      setFeedback({ type: 'error', text: detail || t('autoTranslationSaveError') });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) return <div className="flex justify-center py-10"><Spinner /></div>;
+
+  return (
+    <div className="panel p-6 space-y-5">
+      <div className="flex items-center gap-3">
+        <RefreshCw size={22} className="text-accent shrink-0" />
+        <h2 className="text-lg font-semibold text-ink">{t('autoTranslationTitle')}</h2>
+      </div>
+
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-ink-2">
+            {enabled ? t('autoTranslationEnabled') : t('autoTranslationDisabled')}
+          </p>
+          <p className="text-xs text-ink-2">{t('autoTranslationHelp')}</p>
+          <p className="text-xs text-ink-3">{t('autoTranslationNote')}</p>
+        </div>
+
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label={t('autoTranslationTitle')}
+          onClick={handleToggle}
+          disabled={isSaving}
+          style={{ backgroundColor: enabled ? 'var(--app-accent)' : 'var(--app-line-strong)' }}
+          className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors disabled:opacity-50"
+        >
+          <span
+            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+              enabled ? 'translate-x-5' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
+      </div>
+
+      <Feedback feedback={feedback} />
     </div>
   );
 };
@@ -281,6 +369,7 @@ const AccentColorCard = () => {
 const AdminSettings = () => (
   <div className="max-w-xl mx-auto space-y-6">
     <AccentColorCard />
+    <AutoTranslationCard />
     <TranslationModelCard />
   </div>
 );

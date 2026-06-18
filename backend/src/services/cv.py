@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.schemas.cv import CVData
 from ..core.config import get_settings
+from ..db.crud import app_setting as app_setting_crud
 from ..db.crud import cv as cv_crud
 from . import translation as translation_service
 
@@ -48,23 +49,30 @@ async def update_cv_data(
 
     Raises HTTP 409 if another language has pending (untranslated) changes.
     """
-    # Conflict check: reject if another language has pending changes
-    has_conflict = await cv_crud.check_pending_changes_other_language(
-        db, exclude_language=language
-    )
-    if has_conflict:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                f"Cannot save CV for '{language}': another language has pending "
-                "changes that must be translated first. Please wait for the "
-                "automatic translation to complete."
-            ),
-        )
+    auto_translate = await app_setting_crud.is_auto_translation_enabled(db)
 
+    # Conflict check: reject if another language has pending changes. Only
+    # relevant while auto-translation is on — when it is off, edits never get
+    # flagged so there is nothing to conflict with.
+    if auto_translate:
+        has_conflict = await cv_crud.check_pending_changes_other_language(
+            db, exclude_language=language
+        )
+        if has_conflict:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    f"Cannot save CV for '{language}': another language has pending "
+                    "changes that must be translated first. Please wait for the "
+                    "automatic translation to complete."
+                ),
+            )
+
+    # Flag for translation only when auto-translation is enabled. While it is
+    # off the edit stays in its own language and is never queued.
     cv = await cv_crud.upsert_cv(
         db, data=data.model_dump(), owner_id=owner_id,
-        language=language, has_changes=True,
+        language=language, has_changes=auto_translate,
     )
     return CVData.model_validate(cv.data)
 
