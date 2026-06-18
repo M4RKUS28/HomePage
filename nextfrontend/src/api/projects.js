@@ -26,6 +26,7 @@ export const createProjectApi = async (projectData) => {
     title: projectData.title,
     description: projectData.description,
     link: projectData.link,
+    github_link: projectData.github_link || null,
     health_check_urls: projectData.health_check_urls || [],
     language: projectData.language || "en",
   };
@@ -43,6 +44,7 @@ export const updateProjectApi = async (projectId, projectData) => {
     title: projectData.title,
     description: projectData.description,
     link: projectData.link,
+    github_link: projectData.github_link,
     position: projectData.position,
     health_check_urls: projectData.health_check_urls,
     image_object_name: projectData.image_object_name,

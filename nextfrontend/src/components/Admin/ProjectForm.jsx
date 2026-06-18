@@ -15,6 +15,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
     title: '',
     description: '',
     link: '',
+    github_link: '',
     position: '',
   });
   const [healthCheckUrls, setHealthCheckUrls] = useState([]);
@@ -34,6 +35,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         title: project.title || '',
         description: project.description || '',
         link: project.link || '',
+        github_link: project.github_link || '',
         position: project.position !== undefined ? project.position : '',
       });
       setHealthCheckUrls(project.health_check_urls || []);
@@ -49,7 +51,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       }
       setImageFile(null);
     } else {
-      setFormData({ title: '', description: '', link: '', position: '' });
+      setFormData({ title: '', description: '', link: '', github_link: '', position: '' });
       setHealthCheckUrls([]);
       setImageMode('upload');
       setInitialImageUrl('');
@@ -97,6 +99,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       // Step 1: Create or update the project metadata
       const submitData = {
         ...formData,
+        github_link: formData.github_link.trim() || null,
         health_check_urls: healthCheckUrls.filter(u => u && u.trim() !== ''),
         language: locale,
       };
@@ -183,6 +186,19 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       <div>
         <label htmlFor="link" className="block text-sm font-medium text-gray-300">Project Link (URL) <span className="text-red-400">*</span></label>
         <input type="url" name="link" id="link" value={formData.link} onChange={handleChange} required className="input-field mt-1" placeholder="https://example.com" />
+      </div>
+
+      <div>
+        <label htmlFor="github_link" className="block text-sm font-medium text-gray-300">{t('form.githubLink')}</label>
+        <input
+          type="url"
+          name="github_link"
+          id="github_link"
+          value={formData.github_link}
+          onChange={handleChange}
+          className="input-field mt-1"
+          placeholder={t('form.githubLinkPlaceholder')}
+        />
       </div>
 
       {/* Health Check URLs */}

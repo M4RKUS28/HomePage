@@ -134,6 +134,7 @@ const ProjectsGrid = () => {
           title: p.title,
           description: p.description ?? '',
           link: p.link,
+          github_link: p.github_link ?? '',
           position: p.position ?? 0,
           health_check_urls: p.health_check_urls ?? [],
         })),
@@ -185,6 +186,7 @@ const ProjectsGrid = () => {
           title: item.title,
           description: item.description ?? '',
           link: item.link,
+          github_link: item.github_link ?? '',
           position: item.position,
           health_check_urls: Array.isArray(item.health_check_urls) ? item.health_check_urls : [],
           language: locale,
@@ -312,14 +314,6 @@ const ProjectsGrid = () => {
     <div className="flex justify-center items-center py-20"><Spinner size="h-12 w-12" /></div>
   );
   
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.12, delayChildren: 0.15 },
-    },
-  };
-
   const onlineCount = projects.filter(p => p.status?.toLowerCase() === 'up').length;
 
   return (
@@ -437,13 +431,7 @@ const ProjectsGrid = () => {
           </motion.div>
         )}
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {projects
             .sort((a, b) => {
               if (a.position !== undefined && b.position !== undefined) {
@@ -452,9 +440,10 @@ const ProjectsGrid = () => {
               return (a.id || 0) - (b.id || 0);
             })
             .map((project, index, sortedArray) => (
-              <ProjectCard 
-                key={project.id} 
-                project={project} 
+              <ProjectCard
+                key={project.id}
+                project={project}
+                index={index}
                 isAdmin={currentUser?.is_admin}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
@@ -468,7 +457,7 @@ const ProjectsGrid = () => {
               />
             ))
           }
-        </motion.div>
+        </div>
       </div>
 
       {showGithubImport && (

@@ -53,6 +53,7 @@ const GithubImportModal = ({ onImported, onClose }) => {
       title: preview.title,
       description: preview.description,
       link: preview.website_url || preview.github_link,
+      github_link: preview.github_link || '',
       image_external_url: preview.image_url || '',
     });
   };

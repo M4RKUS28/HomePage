@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   ExternalLink,
@@ -9,6 +9,7 @@ import {
   ArrowUp,
   ArrowDown,
   Globe,
+  Github,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
@@ -51,18 +52,27 @@ const ProjectCard = ({
   isLast,
   imageUrl,
   imageLoading,
+  index = 0,
 }) => {
   const t = useTranslations('projects');
   const [imageError, setImageError] = useState(false);
 
-  /* --- animation variants --- */
+  /* --- animation variants ---
+   * Each card drives its own entrance via `whileInView`, so cards added
+   * after the initial reveal (e.g. just-created or GitHub-imported projects)
+   * animate in on their own instead of staying stuck at the hidden state.
+   * A capped, index-based delay preserves the staggered cascade on first load. */
   const cardVariants = {
     hidden: { opacity: 0, y: 40 },
-    visible: {
+    visible: (i = 0) => ({
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
-    },
+      transition: {
+        duration: 0.5,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        delay: Math.min(i * 0.08, 0.4),
+      },
+    }),
   };
 
   const iconBtn =
@@ -76,6 +86,13 @@ const ProjectCard = ({
 
   const handleImageError = () => setImageError(true);
 
+  /* Clear the error flag whenever the source URL changes, so swapping a
+   * project's image (e.g. a new external URL) reflects immediately instead
+   * of staying stuck on the placeholder until a manual reload. */
+  useEffect(() => {
+    setImageError(false);
+  }, [resolvedImage]);
+
   /* --- heading logic --- */
   const trimmedName  = project?.name?.trim();
   const trimmedTitle = project?.title?.trim();
@@ -88,6 +105,10 @@ const ProjectCard = ({
   return (
     <motion.div
       variants={cardVariants}
+      custom={index}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.15 }}
       whileHover={{ y: -6 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface border border-line hover:border-line-strong transition-colors duration-300"
@@ -141,17 +162,32 @@ const ProjectCard = ({
 
         {/* Footer: CTA + Admin */}
         <div className="flex items-center justify-between pt-4 border-t border-line">
-          {/* Visit button */}
-          <a
-            href={project.link ? String(project.link) : '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group/link inline-flex items-center gap-2 font-data text-xs font-semibold uppercase tracking-[0.14em] text-accent transition-colors hover:brightness-110"
-          >
-            <Globe size={14} />
-            {t('visitProject')}
-            <ExternalLink size={12} className="opacity-60 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-          </a>
+          {/* Visit button + optional GitHub source link */}
+          <div className="flex items-center gap-3">
+            <a
+              href={project.link ? String(project.link) : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group/link inline-flex items-center gap-2 font-data text-xs font-semibold uppercase tracking-[0.14em] text-accent transition-colors hover:brightness-110"
+            >
+              <Globe size={14} />
+              {t('visitProject')}
+              <ExternalLink size={12} className="opacity-60 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+            </a>
+
+            {project.github_link && (
+              <a
+                href={String(project.github_link)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t('viewSource')}
+                aria-label={t('viewSource')}
+                className="text-ink-3 transition-colors hover:text-ink"
+              >
+                <Github size={16} />
+              </a>
+            )}
+          </div>
 
           {/* Admin controls */}
           {isAdmin && (

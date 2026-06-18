@@ -45,7 +45,8 @@
     "importPartial": "{success} importados, {failed} com falha",
     "importError": "Falha na importação. Verifique o arquivo JSON.",
     "exportEmpty": "Nenhum projeto para exportar.",
-    "importFromGithub": "Importar do GitHub"
+    "importFromGithub": "Importar do GitHub",
+    "viewSource": "Ver código-fonte no GitHub"
   },
   "cv": {
     "loading": "Carregando dados do CV...",
@@ -210,7 +211,9 @@
         "cancel": "Cancelar",
         "imageUpload": "Imagem do projeto",
         "create": "Criar projeto",
-        "update": "Atualizar projeto"
+        "update": "Atualizar projeto",
+        "githubLink": "Repositório do GitHub (opcional)",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
       },
       "githubImport": {
         "description": "Cole qualquer link de repositório ou README do GitHub. A IA buscará o README e extrairá o título, descrição, links e imagem do projeto.",

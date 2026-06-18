@@ -45,7 +45,8 @@
     "importPartial": "{success}件をインポート、{failed}件が失敗しました",
     "importError": "インポートに失敗しました。JSONファイルを確認してください。",
     "exportEmpty": "エクスポートするプロジェクトがありません。",
-    "importFromGithub": "GitHubからインポート"
+    "importFromGithub": "GitHubからインポート",
+    "viewSource": "GitHub でソースを見る"
   },
   "cv": {
     "loading": "履歴書データを読み込み中...",
@@ -210,7 +211,9 @@
         "cancel": "キャンセル",
         "imageUpload": "プロジェクト画像",
         "create": "プロジェクトを作成",
-        "update": "プロジェクトを更新"
+        "update": "プロジェクトを更新",
+        "githubLink": "GitHub リポジトリ（任意）",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
       },
       "githubImport": {
         "description": "GitHubリポジトリまたはREADMEのリンクを貼り付けてください。AIがREADMEを取得してプロジェクトのタイトル・説明・リンク・画像を抽出します。",

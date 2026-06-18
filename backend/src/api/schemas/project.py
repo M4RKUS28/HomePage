@@ -16,6 +16,7 @@ class ProjectCreate(BaseModel):
     title: str = Field(..., max_length=200)
     description: Optional[str] = None
     link: HttpUrl
+    github_link: Optional[str] = Field(default=None, max_length=512)
     position: Optional[int] = 0
     language: str = Field(default="en", max_length=10)
     health_check_urls: Optional[List[str]] = []
@@ -26,6 +27,7 @@ class ProjectUpdate(BaseModel):
     title: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = None
     link: Optional[HttpUrl] = None
+    github_link: Optional[str] = Field(default=None, max_length=512)
     position: Optional[int] = None
     status: Optional[ProjectStatus] = None
     language: Optional[str] = Field(default=None, max_length=10)
@@ -44,6 +46,7 @@ class ProjectRead(BaseModel):
     title: str
     description: Optional[str] = None
     link: str
+    github_link: Optional[str] = None
     image_url: Optional[str] = None  # presigned download URL (resolved in service)
     image_external_url: Optional[str] = None
     status: ProjectStatus
@@ -73,6 +76,7 @@ class ProjectListItem(BaseModel):
     title: str
     description: Optional[str] = None
     link: str
+    github_link: Optional[str] = None
     status: ProjectStatus
     last_checked: Optional[datetime] = None
     position: int = 0

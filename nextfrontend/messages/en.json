@@ -45,7 +45,8 @@
     "importPartial": "{success} imported, {failed} failed",
     "importError": "Import failed. Please check the JSON file.",
     "exportEmpty": "No projects to export.",
-    "importFromGithub": "Import from GitHub"
+    "importFromGithub": "Import from GitHub",
+    "viewSource": "View source on GitHub"
   },
   "cv": {
     "loading": "Loading CV data...",
@@ -210,7 +211,9 @@
         "cancel": "Cancel",
         "imageUpload": "Project Image",
         "create": "Create Project",
-        "update": "Update Project"
+        "update": "Update Project",
+        "githubLink": "GitHub Repository (optional)",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
       },
       "githubImport": {
         "description": "Paste any GitHub repository or README link. AI will fetch the README and extract the project title, description, links, and image.",

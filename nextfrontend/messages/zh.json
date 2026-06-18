@@ -45,7 +45,8 @@
     "importPartial": "已导入 {success} 个，{failed} 个失败",
     "importError": "导入失败。请检查 JSON 文件。",
     "exportEmpty": "没有可导出的项目。",
-    "importFromGithub": "从GitHub导入"
+    "importFromGithub": "从GitHub导入",
+    "viewSource": "在 GitHub 上查看源代码"
   },
   "cv": {
     "loading": "正在加载简历数据...",
@@ -210,7 +211,9 @@
         "cancel": "取消",
         "imageUpload": "项目图片",
         "create": "创建项目",
-        "update": "更新项目"
+        "update": "更新项目",
+        "githubLink": "GitHub 仓库（可选）",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
       },
       "githubImport": {
         "description": "粘贴任意GitHub仓库或README链接。AI将获取README并提取项目标题、描述、链接和图片。",

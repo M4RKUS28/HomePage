@@ -45,7 +45,8 @@
     "importPartial": "{success} đã nhập, {failed} thất bại",
     "importError": "Nhập thất bại. Vui lòng kiểm tra tệp JSON.",
     "exportEmpty": "Không có dự án nào để xuất.",
-    "importFromGithub": "Nhập từ GitHub"
+    "importFromGithub": "Nhập từ GitHub",
+    "viewSource": "Xem mã nguồn trên GitHub"
   },
   "cv": {
     "loading": "Đang tải dữ liệu CV...",
@@ -210,7 +211,9 @@
         "cancel": "Hủy",
         "imageUpload": "Hình ảnh dự án",
         "create": "Tạo dự án",
-        "update": "Cập nhật dự án"
+        "update": "Cập nhật dự án",
+        "githubLink": "Kho GitHub (tùy chọn)",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
       },
       "githubImport": {
         "description": "Dán bất kỳ liên kết kho lưu trữ hoặc README GitHub nào. AI sẽ tải README và trích xuất tiêu đề, mô tả, liên kết và hình ảnh dự án.",

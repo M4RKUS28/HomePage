@@ -243,6 +243,7 @@ async def create_project(
         title=data.title,
         description=data.description,
         link=str(data.link),
+        github_link=data.github_link or None,
         position=position,
         owner_id=owner_id,
         language=data.language,

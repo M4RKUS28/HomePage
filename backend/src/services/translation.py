@@ -566,6 +566,7 @@ async def run_translation_sync() -> None:
                                     "description", source_proj_data["description"]
                                 )
                                 target_proj.link = source_proj_data["link"]
+                                target_proj.github_link = source_proj_data["github_link"]
                                 target_proj.image_object_name = source_proj_data["image_object_name"]
                                 target_proj.image_external_url = source_proj_data["image_external_url"]
                                 target_proj.position = source_proj_data["position"]
@@ -579,6 +580,7 @@ async def run_translation_sync() -> None:
                                         "description", source_proj_data["description"]
                                     ),
                                     link=source_proj_data["link"],
+                                    github_link=source_proj_data["github_link"],
                                     image_object_name=source_proj_data["image_object_name"],
                                     image_external_url=source_proj_data["image_external_url"],
                                     position=source_proj_data["position"],
@@ -604,6 +606,7 @@ async def run_translation_sync() -> None:
                             "description": p.description,
                             "translation_group_id": p.translation_group_id,
                             "link": p.link,
+                            "github_link": p.github_link,
                             "image_object_name": p.image_object_name,
                             "image_external_url": p.image_external_url,
                             "position": p.position,
