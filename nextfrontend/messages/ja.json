@@ -333,6 +333,8 @@
       "accentSaved": "アクセントカラーを更新しました。",
       "accentSaveError": "アクセントカラーの更新に失敗しました。",
       "accentReset": "デフォルトに戻す",
+      "accentRandom": "ランダム",
+      "accentRandomHelp": "ページを読み込むたびに新しい色になります。",
       "autoTranslationTitle": "自動翻訳",
       "autoTranslationHelp": "有効にすると、CV とプロジェクトの編集が次回の同期時にすべての他の言語へ翻訳されます。無効にすると、変更は編集した言語のみに保持されます。",
       "autoTranslationEnabled": "自動翻訳は有効です",

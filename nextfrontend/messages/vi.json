@@ -333,6 +333,8 @@
       "accentSaved": "Đã cập nhật màu nhấn.",
       "accentSaveError": "Không thể cập nhật màu nhấn.",
       "accentReset": "Đặt lại mặc định",
+      "accentRandom": "Ngẫu nhiên",
+      "accentRandomHelp": "Một màu mới mỗi khi tải lại trang.",
       "autoTranslationTitle": "Dịch tự động",
       "autoTranslationHelp": "Khi bật, các thay đổi đối với CV và dự án của bạn sẽ được dịch sang tất cả các ngôn ngữ khác trong lần đồng bộ tiếp theo. Khi tắt, các thay đổi chỉ được giữ trong ngôn ngữ bạn đã chỉnh sửa.",
       "autoTranslationEnabled": "Dịch tự động đang bật",

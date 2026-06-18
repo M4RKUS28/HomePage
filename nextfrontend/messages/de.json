@@ -333,6 +333,8 @@
       "accentSaved": "Akzentfarbe aktualisiert.",
       "accentSaveError": "Akzentfarbe konnte nicht aktualisiert werden.",
       "accentReset": "Auf Standard zurücksetzen",
+      "accentRandom": "Zufällig",
+      "accentRandomHelp": "Bei jedem Seitenaufruf eine neue Farbe.",
       "autoTranslationTitle": "Automatische Übersetzung",
       "autoTranslationHelp": "Wenn aktiviert, werden Änderungen an Lebenslauf und Projekten beim nächsten Abgleich in alle anderen Sprachen übersetzt. Wenn deaktiviert, bleiben Änderungen nur in der bearbeiteten Sprache.",
       "autoTranslationEnabled": "Automatische Übersetzung ist aktiviert",

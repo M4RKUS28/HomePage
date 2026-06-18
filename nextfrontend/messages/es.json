@@ -333,6 +333,8 @@
       "accentSaved": "Color de acento actualizado.",
       "accentSaveError": "No se pudo actualizar el color de acento.",
       "accentReset": "Restablecer al predeterminado",
+      "accentRandom": "Aleatorio",
+      "accentRandomHelp": "Un color nuevo en cada carga de la página.",
       "autoTranslationTitle": "Traducción automática",
       "autoTranslationHelp": "Cuando está activada, los cambios en tu CV y proyectos se traducen a todos los demás idiomas en la próxima sincronización. Cuando está desactivada, los cambios permanecen solo en el idioma editado.",
       "autoTranslationEnabled": "La traducción automática está activada",

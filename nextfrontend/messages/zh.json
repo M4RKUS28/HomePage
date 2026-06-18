@@ -333,6 +333,8 @@
       "accentSaved": "强调色已更新。",
       "accentSaveError": "强调色更新失败。",
       "accentReset": "恢复默认",
+      "accentRandom": "随机",
+      "accentRandomHelp": "每次加载页面都会换一种颜色。",
       "autoTranslationTitle": "自动翻译",
       "autoTranslationHelp": "启用后，对简历和项目的修改将在下次同步时翻译为所有其他语言。停用后，修改仅保留在所编辑的语言中。",
       "autoTranslationEnabled": "自动翻译已启用",

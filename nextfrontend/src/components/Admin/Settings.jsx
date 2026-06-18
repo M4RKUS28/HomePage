@@ -10,7 +10,14 @@ import {
   updateAccentColorApi,
   revalidateThemeApi,
 } from '../../api/settings';
-import { buildAccentCss, isValidHex, DEFAULT_ACCENT } from '../../lib/accent';
+import {
+  buildAccentCss,
+  isValidHex,
+  isRandomAccent,
+  randomAccentHex,
+  DEFAULT_ACCENT,
+  RANDOM_ACCENT,
+} from '../../lib/accent';
 import Spinner from '../UI/Spinner';
 
 const applyAccentToDocument = (color) => {
@@ -232,6 +239,7 @@ const AccentColorCard = () => {
   const [color, setColor] = useState(DEFAULT_ACCENT);
   const [defaultColor, setDefaultColor] = useState(DEFAULT_ACCENT);
   const [storedColor, setStoredColor] = useState(null);
+  const [isRandom, setIsRandom] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
@@ -241,9 +249,11 @@ const AccentColorCard = () => {
     try {
       const data = await getPublicSettingsApi();
       const fallback = data.default_accent_color || DEFAULT_ACCENT;
+      const stored = data.accent_color || null;
       setDefaultColor(fallback);
-      setStoredColor(data.accent_color || null);
-      setColor(data.accent_color || fallback);
+      setStoredColor(stored);
+      setIsRandom(isRandomAccent(stored));
+      setColor(isRandomAccent(stored) ? fallback : stored || fallback);
     } catch (err) {
       console.error(err);
       setFeedback({ type: 'error', text: t('loadError') });
@@ -259,9 +269,16 @@ const AccentColorCard = () => {
     setFeedback(null);
     try {
       const data = await updateAccentColorApi(value);
-      setStoredColor(data.accent_color || null);
-      setColor(data.accent_color || data.default_accent_color);
-      applyAccentToDocument(data.accent_color);
+      const saved = data.accent_color || null;
+      setStoredColor(saved);
+      setIsRandom(isRandomAccent(saved));
+      if (isRandomAccent(saved)) {
+        // Show one of the random colors right away as a live preview.
+        applyAccentToDocument(randomAccentHex());
+      } else {
+        setColor(saved || data.default_accent_color);
+        applyAccentToDocument(saved);
+      }
       revalidateThemeApi().catch(() => {});
       setFeedback({ type: 'success', text: t('accentSaved') });
     } catch (err) {
@@ -274,11 +291,20 @@ const AccentColorCard = () => {
 
   const handleSave = (e) => {
     e.preventDefault();
+    if (isRandom) {
+      persist(RANDOM_ACCENT);
+      return;
+    }
     if (!isValidHex(color)) return;
     persist(color.toUpperCase() === defaultColor.toUpperCase() ? null : color.toUpperCase());
   };
 
-  const isDirty = color.toUpperCase() !== (storedColor || defaultColor).toUpperCase();
+  // Normalize current selection and saved selection to one comparable token.
+  const selection = isRandom ? RANDOM_ACCENT : color.toUpperCase();
+  const savedSelection = storedColor
+    ? (isRandomAccent(storedColor) ? RANDOM_ACCENT : storedColor.toUpperCase())
+    : defaultColor.toUpperCase();
+  const isDirty = selection !== savedSelection;
 
   if (isLoading) return <div className="flex justify-center py-10"><Spinner /></div>;
 
@@ -294,21 +320,21 @@ const AccentColorCard = () => {
           <input
             type="color"
             value={isValidHex(color) ? color : defaultColor}
-            onChange={(e) => setColor(e.target.value.toUpperCase())}
+            onChange={(e) => { setColor(e.target.value.toUpperCase()); setIsRandom(false); }}
             aria-label={t('accentTitle')}
             className="h-10 w-14 cursor-pointer rounded-md border border-line-strong bg-raised p-1"
           />
           <input
             type="text"
             value={color}
-            onChange={(e) => setColor(e.target.value.trim())}
+            onChange={(e) => { setColor(e.target.value.trim()); setIsRandom(false); }}
             maxLength={7}
             placeholder={defaultColor}
             autoComplete="off"
             spellCheck={false}
             className="input-field w-32 font-mono uppercase"
           />
-          {isValidHex(color) && (
+          {!isRandom && isValidHex(color) && (
             <span
               className="inline-flex items-center rounded-md px-3 py-2 text-xs font-semibold"
               style={{ backgroundColor: color, color: '#1A1206' }}
@@ -323,24 +349,37 @@ const AccentColorCard = () => {
             <button
               key={preset}
               type="button"
-              onClick={() => setColor(preset)}
+              onClick={() => { setColor(preset); setIsRandom(false); }}
               aria-label={preset}
               title={preset}
               className={`h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 ${
-                color.toUpperCase() === preset ? 'border-[var(--app-ink)]' : 'border-transparent'
+                !isRandom && color.toUpperCase() === preset ? 'border-[var(--app-ink)]' : 'border-transparent'
               }`}
               style={{ backgroundColor: preset }}
             />
           ))}
+          <button
+            type="button"
+            onClick={() => setIsRandom(true)}
+            aria-label={t('accentRandom')}
+            title={t('accentRandom')}
+            className={`h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 ${
+              isRandom ? 'border-[var(--app-ink)]' : 'border-transparent'
+            }`}
+            style={{
+              background:
+                'conic-gradient(from 0deg, #F43F5E, #F97316, #FFB224, #10B981, #38BDF8, #8B5CF6, #F43F5E)',
+            }}
+          />
         </div>
 
-        <p className="text-xs text-ink-2">{t('accentHelp')}</p>
+        <p className="text-xs text-ink-2">{isRandom ? t('accentRandomHelp') : t('accentHelp')}</p>
         <p className="text-xs text-ink-3">{t('accentDefaultBadge', { color: defaultColor })}</p>
 
         <div className="flex items-center gap-3 pt-1">
           <button
             type="submit"
-            disabled={isSaving || !isValidHex(color) || !isDirty}
+            disabled={isSaving || (!isRandom && !isValidHex(color)) || !isDirty}
             className="btn btn-primary btn-sm inline-flex items-center gap-1.5 disabled:opacity-50"
           >
             <Save size={15} />

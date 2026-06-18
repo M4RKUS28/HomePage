@@ -131,11 +131,13 @@ async def update_accent_color(
     payload: AccentColorUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    """Set the site accent color. ``color: null`` resets to the default. Admin only."""
+    """Set the site accent color. ``color: null`` resets to the default,
+    ``"random"`` re-rolls a color on each page load. Admin only."""
     if payload.color is None:
         await settings_crud.delete_setting(db, settings_crud.ACCENT_COLOR_KEY)
     else:
+        # Already normalized by the schema (hex upper-cased, "random" lower-cased).
         await settings_crud.set_setting(
-            db, settings_crud.ACCENT_COLOR_KEY, payload.color.upper()
+            db, settings_crud.ACCENT_COLOR_KEY, payload.color
         )
     return await _public_settings(db)
