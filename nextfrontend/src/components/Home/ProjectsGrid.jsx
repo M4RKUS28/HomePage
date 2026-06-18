@@ -286,13 +286,26 @@ const ProjectsGrid = () => {
     }
   };
   
-  const handleModalClose = (refresh = false) => { 
+  const handleModalClose = (savedProject = null) => {
     setShowModal(false);
-    if (editingProject && refresh) {
-      fetchedImageIds.current.delete(editingProject.id);
-    }
     setEditingProject(null);
-    if (refresh) fetchProjectsData();
+    if (savedProject && typeof savedProject === 'object' && savedProject.id) {
+      // Optimistically add/update the project in local state immediately
+      setProjects(prev => {
+        const exists = prev.some(p => p.id === savedProject.id);
+        if (exists) return prev.map(p => p.id === savedProject.id ? { ...p, ...savedProject } : p);
+        return [...prev, savedProject];
+      });
+      // Set the image URL directly from the API response so it shows without a round-trip
+      const imageUrl = savedProject.image_url || savedProject.image_external_url || null;
+      fetchedImageIds.current.add(savedProject.id);
+      setProjectImages(prev => ({
+        ...prev,
+        [savedProject.id]: { loading: false, url: imageUrl },
+      }));
+      // Background re-sync from server
+      fetchProjectsData();
+    }
   }
 
   if (loading && projects.length === 0) return (
@@ -468,8 +481,8 @@ const ProjectsGrid = () => {
       )}
 
       {showModal && (
-        <Modal title={editingProject ? t('editProject') : t('addProject')} onClose={() => handleModalClose(false)}>
-          <ProjectForm project={editingProject} onFormSubmit={() => handleModalClose(true)} />
+        <Modal title={editingProject ? t('editProject') : t('addProject')} onClose={() => handleModalClose()}>
+          <ProjectForm project={editingProject} onFormSubmit={handleModalClose} />
         </Modal>
       )}
 

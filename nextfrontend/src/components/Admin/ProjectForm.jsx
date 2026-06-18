@@ -109,9 +109,10 @@ const ProjectForm = ({ project, onFormSubmit }) => {
       }
 
       // Step 2: Handle image — either URL or file upload
+      let finalProject = savedProject;
       if (imageMode === 'url') {
         // Save external URL, clear any MinIO object
-        await updateProjectApi(savedProject.id, {
+        finalProject = await updateProjectApi(savedProject.id, {
           image_external_url: imageExternalUrl.trim() || null,
           image_object_name: null,
         });
@@ -120,7 +121,7 @@ const ProjectForm = ({ project, onFormSubmit }) => {
         try {
           setUploadingImage(true);
           const { object_name } = await uploadProjectImageApi(savedProject.id, imageFile);
-          await updateProjectApi(savedProject.id, {
+          finalProject = await updateProjectApi(savedProject.id, {
             image_object_name: object_name,
             image_external_url: null,
           });
@@ -130,14 +131,14 @@ const ProjectForm = ({ project, onFormSubmit }) => {
           setImageError(`${msg} (Project was saved.)`);
           setIsLoading(false);
           setUploadingImage(false);
-          onFormSubmit(true);
+          onFormSubmit(savedProject);
           return;
         } finally {
           setUploadingImage(false);
         }
       }
 
-      onFormSubmit(true);
+      onFormSubmit(finalProject);
     } catch (err) {
       console.error('ProjectForm Error:', err);
       // Show specific conflict error from 409
