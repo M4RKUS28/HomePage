@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ExternalLink,
   Loader2,
   Edit,
   Trash2,
@@ -168,11 +167,10 @@ const ProjectCard = ({
               href={project.link ? String(project.link) : '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="group/link inline-flex items-center gap-2 font-data text-xs font-semibold uppercase tracking-[0.14em] text-accent transition-colors hover:brightness-110"
+              className="inline-flex items-center gap-2 font-data text-xs font-semibold uppercase tracking-[0.14em] text-accent transition-colors hover:brightness-110"
             >
               <Globe size={14} />
               {t('visitProject')}
-              <ExternalLink size={12} className="opacity-60 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
             </a>
 
             {project.github_link && (
@@ -181,10 +179,10 @@ const ProjectCard = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 title={t('viewSource')}
-                aria-label={t('viewSource')}
-                className="text-ink-3 transition-colors hover:text-ink"
+                className="inline-flex items-center gap-2 font-data text-xs font-semibold uppercase tracking-[0.14em] text-ink-3 transition-colors hover:text-ink"
               >
-                <Github size={16} />
+                <Github size={14} />
+                GitHub
               </a>
             )}
           </div>
