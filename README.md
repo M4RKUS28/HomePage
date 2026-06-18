@@ -31,6 +31,9 @@ Der Browser sieht niemals ein FastAPI-JWT. Next.js verwaltet die Session über v
 |---|---|---|
 | **Frontend** | Next.js 16, React 19 | Tailwind CSS 4, Framer Motion, Auth.js v5, Turbopack (Dev) |
 | **Backend** | FastAPI, Python 3.12 | Async SQLAlchemy + asyncpg, Alembic Migrationen, APScheduler |
+| **i18n** | next-intl | 9 Sprachen, automatische KI-Übersetzung |
+| **KI-Übersetzung** | Google Gemini (ADK) | Auto-Übersetzung von Projekten & CV im Hintergrund |
+| **Geolokalisierung** | IPinfo | Besucher-Zugriffs-Log, Weltkarte via Leaflet |
 | **Datenbank** | PostgreSQL 16 | Health-checked, persistentes Volume |
 | **Cache** | Redis 7 | LRU-Eviction, async Client |
 | **Objektspeicher** | MinIO | S3-kompatibel, Presigned URLs für Uploads |
@@ -42,12 +45,14 @@ Der Browser sieht niemals ein FastAPI-JWT. Next.js verwaltet die Session über v
 
 ## Features
 
-- **🎨 Modernes UI/UX** – Responsives Design mit Dark/Light Mode, Partikel-Hintergrund
+- **🎨 Modernes UI/UX** – Responsives Design mit Dark/Light Mode, Partikel-Hintergrund, anpassbare Akzentfarbe
+- **🌍 Mehrsprachigkeit** – 9 Sprachen (next-intl) mit automatischer KI-Übersetzung via Google Gemini
 - **🔐 Authentifizierung** – Sicheres Login & Registrierung via Auth.js v5 (Credentials Provider)
-- **📂 Projekt-Showcase** – Projekte mit Status-Monitoring und Detailansichten
-- **📝 Interaktiver CV** – Skills, Erfahrung und Ausbildung als editierbare Sektion
+- **📂 Projekt-Showcase** – Projekte mit Status-Monitoring, Detailansichten und Import/Export (inkl. GitHub-Repo-Import)
+- **📝 Interaktiver CV** – Skills, Erfahrung und Ausbildung als editierbare Sektion mit Datei-Import
 - **📫 Kontaktformular** – Nachrichten mit E-Mail-Benachrichtigung (aiosmtplib)
-- **📊 Admin-Dashboard** – Projekte, Nachrichten, User und CV verwalten
+- **📊 Admin-Dashboard** – Projekte, Nachrichten, User, CV und Einstellungen verwalten
+- **📈 Besucher-Analytics** – Zugriffs-Log mit IP-Geolokalisierung und Weltkarte (Leaflet)
 - **🖼️ Datei-Upload** – Avatar- und Bild-Upload über MinIO mit Presigned URLs
 - **⚡ Animationen** – Flüssige Übergänge und Interaktionen mit Framer Motion
 - **🛡️ Sicherheit** – Rate Limiting, Security Headers, verschlüsselte Sessions, CORS
@@ -64,9 +69,10 @@ M4RKUS-HP/
 │   └── Dockerfile        #   Multi-stage Build
 ├── nextfrontend/         # Next.js 16 Frontend
 │   ├── src/              #   App Router, Komponenten, API-Client
-│   │   ├── app/          #   Pages & API Routes
+│   │   ├── app/          #   Pages (locale-basiert) & API Routes
 │   │   ├── components/   #   React-Komponenten (Admin, Auth, Home, UI, User)
 │   │   └── api/          #   Backend API Client (axios)
+│   ├── messages/         #   i18n-Übersetzungen (9 Sprachen, *.json)
 │   ├── Dockerfile        #   Production Build (PM2)
 │   └── Dockerfile.dev    #   Development Build (Hot Reload)
 ├── nginx/                # Reverse Proxy Konfiguration
@@ -144,6 +150,8 @@ Images werden per CI/CD auf DockerHub gepusht:
 | `AUTH_INTERNAL_SHARED_SECRET` | Shared Secret zwischen Next.js und FastAPI |
 | `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Initialer Admin-User (Seed) |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASSWORD` | SMTP für ausgehende E-Mails |
+| `GOOGLE_API_KEY`, `TRANSLATION_ENABLED` | Google Gemini KI-Übersetzung (Projekte & CV) |
+| `IPINFO_TOKEN` | IPinfo-Token für Besucher-Geolokalisierung (optional) |
 | `BACKEND_URL` | Interne Backend-URL für Next.js (z.B. `http://homepagebackend:8000`) |
 | `PM2_INSTANCES` | Anzahl PM2-Instanzen in Produktion |
 
