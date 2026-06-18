@@ -4,6 +4,9 @@ Vollständige Fullstack-Webanwendung für eine persönliche Portfolio-Homepage m
 
 🔗 **Live:** [https://www.m4rkus28.de](https://www.m4rkus28.de/)
 
+
+![](https://github.com/M4RKUS28/HomePage/blob/6d82e993ba50b545d5d162764a03cff111b77d6c/docs/Screenshot.png?raw=true)
+
 ---
 
 ## Architektur
