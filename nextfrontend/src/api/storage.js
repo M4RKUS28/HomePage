@@ -35,11 +35,21 @@ export const getPresignedUploadUrl = async ({ filename, contentType, category, r
  * @param {File}   file        - Browser File object
  */
 export const uploadFileToPresignedUrl = async (uploadUrl, file) => {
-  await fetch(uploadUrl, {
+  const response = await fetch(uploadUrl, {
     method: 'PUT',
     headers: { 'Content-Type': file.type || 'application/octet-stream' },
     body: file,
   });
+
+  if (!response.ok) {
+    let message;
+    if (response.status === 413) {
+      message = 'File too large. Please use a smaller image.';
+    } else {
+      message = `Upload failed: ${response.status} ${response.statusText}`.trim();
+    }
+    throw new Error(message);
+  }
 };
 
 /**

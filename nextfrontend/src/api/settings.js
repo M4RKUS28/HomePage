@@ -13,6 +13,16 @@ export const updateTranslationModelApi = async (model) => {
   return data;
 };
 
+export const getAutoTranslationApi = async () => {
+  const { data } = await apiClient.get('/settings/auto-translation');
+  return data; // { enabled }
+};
+
+export const updateAutoTranslationApi = async (enabled) => {
+  const { data } = await apiClient.put('/settings/auto-translation', { enabled });
+  return data; // { enabled }
+};
+
 export const getPublicSettingsApi = async () => {
   const { data } = await apiClient.get('/settings/public');
   return data; // { accent_color, default_accent_color }

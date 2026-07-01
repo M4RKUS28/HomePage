@@ -39,6 +39,13 @@ async def track_ip(ip: str) -> bool:
     Returns True if this is a **new** access (not seen in the last 10 min).
     Uses SET NX + EX for atomic dedup.
     """
+    # Ignore internal infrastructure traffic (Docker network, health checks,
+    # localhost): these reach the backend without a forwarded client IP and are
+    # not real visitors, so they should never appear in the access log.
+    if _is_private_ip(ip):
+        logger.debug("[access] Ignoring internal/private IP %s", ip)
+        return False
+
     pool = redis_mod.redis_pool
     if pool is None:
         logger.warning("[access] Redis pool not initialised, skipping IP tracking")
@@ -148,17 +155,10 @@ async def resolve_pending_ips() -> None:
 
                 logger.debug("[access] Resolving pending IP entry: %s", ip)
 
-                # Skip private/local IPs
+                # Skip private/local IPs entirely — internal infrastructure
+                # traffic is not a real visitor and must not pollute the log.
                 if _is_private_ip(ip):
-                    logger.debug("[access] IP %s is private, skipping geolocation.", ip)
-                    await access_crud.create_access_log(
-                        db,
-                        ip_address=ip,
-                        city="Local",
-                        region="Local",
-                        country="--",
-                        timestamp=ts,
-                    )
+                    logger.debug("[access] IP %s is private/internal, skipping.", ip)
                     continue
 
                 logger.debug("[access] Performing geo lookup for %s", ip)

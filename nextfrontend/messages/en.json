@@ -38,7 +38,15 @@
       "unknown": "Unknown",
       "checking": "Checking..."
     },
-    "onlineCount": "{count} online"
+    "onlineCount": "{count} online",
+    "importProjects": "Import Projects",
+    "exportProjects": "Export Projects",
+    "importSuccess": "{count} projects imported successfully",
+    "importPartial": "{success} imported, {failed} failed",
+    "importError": "Import failed. Please check the JSON file.",
+    "exportEmpty": "No projects to export.",
+    "importFromGithub": "Import from GitHub",
+    "viewSource": "View source on GitHub"
   },
   "cv": {
     "loading": "Loading CV data...",
@@ -203,7 +211,22 @@
         "cancel": "Cancel",
         "imageUpload": "Project Image",
         "create": "Create Project",
-        "update": "Update Project"
+        "update": "Update Project",
+        "githubLink": "GitHub Repository (optional)",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
+      },
+      "githubImport": {
+        "description": "Paste any GitHub repository or README link. AI will fetch the README and extract the project title, description, links, and image.",
+        "urlLabel": "GitHub URL",
+        "generate": "Generate",
+        "generating": "Fetching README and analyzing with AI… this may take a moment.",
+        "urlRequired": "Please enter a GitHub URL.",
+        "urlInvalid": "Please enter a valid GitHub URL.",
+        "error": "Failed to extract project data. Please try again.",
+        "noTitle": "Untitled Project",
+        "reviewHint": "Review the extracted data below, then click 'Use Project' to open the form for final edits.",
+        "useProject": "Use Project",
+        "cancel": "Cancel"
       }
     },
     "messages": {
@@ -214,7 +237,8 @@
       "markUnread": "Mark as Unread",
       "delete": "Delete",
       "unread": "Unread",
-      "read": "Read"
+      "read": "Read",
+      "confirmDeleteMessage": "Are you sure you want to delete this message?"
     },
     "users": {
       "title": "User Management",
@@ -244,11 +268,36 @@
       "addItem": "Add Item",
       "editItem": "Edit Item",
       "deleteItem": "Delete Item",
+      "confirmRemove": "Are you sure you want to remove this item? This cannot be undone.",
       "rawData": "Raw Data",
+      "personal": {
+        "homepageName": "Homepage Name",
+        "homepageNameHint": "This appears in the top-left corner of the site (currently \"M4RKUS28\")",
+        "titleHeadline": "Landing Page Title/Headline",
+        "titleHeadlineHint": "This appears under your name in the hero section"
+      },
       "personalInfo": "Personal Info",
       "moveUp": "Move Up",
       "moveDown": "Move Down",
-      "saveSuccess": "CV saved successfully!"
+      "saveSuccess": "CV saved successfully!",
+      "import": {
+        "navLabel": "AI Import",
+        "title": "AI CV Import",
+        "description": "Upload your CV/resume (PDF, image, or text) and let AI extract the data into the editor. Review the result before saving.",
+        "fileLabel": "CV File",
+        "chooseFile": "Choose File",
+        "noFileSelected": "No file selected",
+        "modeLabel": "Import Mode",
+        "modeMerge": "Merge with existing data",
+        "modeMergeHint": "Adds new information from the uploaded file to your current CV, keeping existing entries.",
+        "modeReplace": "Replace all data",
+        "modeReplaceHint": "Discards the current CV and generates everything fresh from the uploaded file.",
+        "generate": "Generate with AI",
+        "generating": "Analyzing CV with AI… this can take up to a minute.",
+        "success": "CV data generated. Review it in the Raw Data tab, then click Save.",
+        "error": "Failed to generate CV data. Please try again.",
+        "selectFileError": "Please select a file first."
+      }
     },
     "access": {
       "title": "Access Log",
@@ -283,7 +332,16 @@
       "accentDefaultBadge": "Default: {color}",
       "accentSaved": "Accent color updated.",
       "accentSaveError": "Failed to update the accent color.",
-      "accentReset": "Reset to default"
+      "accentReset": "Reset to default",
+      "accentRandom": "Random",
+      "accentRandomHelp": "A fresh color on every page load.",
+      "autoTranslationTitle": "Automatic Translation",
+      "autoTranslationHelp": "When on, edits to your CV and projects are translated into all other languages on the next sync. When off, changes stay only in the language you edited.",
+      "autoTranslationEnabled": "Automatic translation is on",
+      "autoTranslationDisabled": "Automatic translation is off",
+      "autoTranslationSaved": "Auto-translation setting updated.",
+      "autoTranslationSaveError": "Failed to update the auto-translation setting.",
+      "autoTranslationNote": "Turning it back on does not translate changes made while it was off — only new edits are translated."
     }
   },
   "notFound": {

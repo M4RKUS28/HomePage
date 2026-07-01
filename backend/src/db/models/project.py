@@ -24,8 +24,12 @@ class Project(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     link: Mapped[str] = mapped_column(String(512), nullable=False)
+    # Optional GitHub repository URL
+    github_link: Mapped[str | None] = mapped_column(String(512), nullable=True)
     # MinIO object name (e.g. "projects/7/cover.webp") - NO base64 blobs
     image_object_name: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    # External image URL (used instead of MinIO when user pastes a URL)
+    image_external_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     status: Mapped[ProjectStatus] = mapped_column(
         SQLEnum(ProjectStatus, name="project_status", values_callable=lambda e: [x.value for x in e]),
         default=ProjectStatus.UNKNOWN,

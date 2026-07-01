@@ -10,24 +10,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Map a timestamp to an HSL hue:
- *   – Recent (now)  → red (0°)
- *   – Older (24h+)  → blue (240°)
- * Intermediate values are interpolated.
- */
 function ageToColor(timestamp, oldestTs, newestTs) {
   const ts = new Date(timestamp).getTime();
   const range = newestTs - oldestTs || 1;
-  // 0 = oldest, 1 = newest
   const ratio = (ts - oldestTs) / range;
-  // newest → red (0), oldest → blue (240)
   const hue = Math.round(240 - ratio * 240);
   return `hsl(${hue}, 85%, 55%)`;
 }
 
 function buildMarkerSvg(color) {
-  // URL-encoded SVG marker pin
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
     <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.268 21.732 0 14 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
     <circle cx="14" cy="14" r="6" fill="#fff" opacity="0.9"/>
@@ -40,11 +31,11 @@ function buildMarkerSvg(color) {
 // ---------------------------------------------------------------------------
 
 const StatCard = ({ icon: Icon, label, value }) => (
-  <div className="flex items-center gap-3 bg-gray-800/60 rounded-lg p-4 min-w-[160px]">
-    <Icon size={22} className="text-primary shrink-0" />
+  <div className="flex items-center gap-3 panel p-4 min-w-[160px]">
+    <Icon size={22} className="text-accent shrink-0" />
     <div>
-      <p className="text-xs text-gray-400 uppercase tracking-wide">{label}</p>
-      <p className="text-xl font-bold text-white">{value}</p>
+      <p className="text-xs text-ink-3 uppercase tracking-wide">{label}</p>
+      <p className="text-xl font-bold text-ink">{value}</p>
     </div>
   </div>
 );
@@ -53,7 +44,7 @@ const TimeFilter = ({ value, onChange, t }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
-    className="bg-gray-800 text-gray-200 text-sm rounded-md px-3 py-1.5 border border-gray-700 focus:border-primary outline-none"
+    className="input-field w-auto"
   >
     <option value="">{t('allTime')}</option>
     <option value="1">{t('lastHour')}</option>
@@ -76,7 +67,6 @@ function AccessMap({ logs }) {
   const [L, setL] = useState(null);
 
   useEffect(() => {
-    // Dynamically import leaflet and react-leaflet on client side only
     Promise.all([
       import('leaflet'),
       import('react-leaflet'),
@@ -89,7 +79,6 @@ function AccessMap({ logs }) {
     });
   }, []);
 
-  // Compute time range for colour coding
   const { oldestTs, newestTs } = useMemo(() => {
     const geoLogs = logs.filter((l) => l.latitude && l.longitude);
     if (geoLogs.length === 0) return { oldestTs: 0, newestTs: 1 };
@@ -97,26 +86,20 @@ function AccessMap({ logs }) {
     return { oldestTs: Math.min(...timestamps), newestTs: Math.max(...timestamps) };
   }, [logs]);
 
-  const geoLogs = useMemo(
-    () => logs.filter((l) => l.latitude && l.longitude),
-    [logs],
-  );
+  const geoLogs = useMemo(() => logs.filter((l) => l.latitude && l.longitude), [logs]);
 
   if (!MapContainer || !L) {
     return (
-      <div className="flex items-center justify-center h-[500px] bg-gray-900/50 rounded-lg">
+      <div className="flex items-center justify-center h-[500px] bg-raised rounded-lg border border-line">
         <Spinner />
       </div>
     );
   }
 
-  // Centre on first marker or world view
-  const centre = geoLogs.length > 0
-    ? [geoLogs[0].latitude, geoLogs[0].longitude]
-    : [30, 0];
+  const centre = geoLogs.length > 0 ? [geoLogs[0].latitude, geoLogs[0].longitude] : [30, 0];
 
   return (
-    <div className="rounded-lg overflow-hidden border border-gray-700" style={{ height: 500 }}>
+    <div className="rounded-lg overflow-hidden border border-line" style={{ height: 500 }}>
       <MapContainer center={centre} zoom={geoLogs.length > 0 ? 4 : 2} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
@@ -130,19 +113,14 @@ function AccessMap({ logs }) {
             iconAnchor: [14, 40],
             popupAnchor: [0, -40],
           });
-
           return (
             <MarkerComp key={log.id} position={[log.latitude, log.longitude]} icon={icon}>
               <PopupComp>
                 <div className="text-sm min-w-[180px]" style={{ color: '#222' }}>
                   <p className="font-bold">{log.city}{log.region ? `, ${log.region}` : ''}</p>
                   <p>{log.country} {log.org ? `· ${log.org}` : ''}</p>
-                  <p className="text-xs mt-1 opacity-70">
-                    IP: {log.ip_address}
-                  </p>
-                  <p className="text-xs opacity-70">
-                    {format(new Date(log.timestamp), 'MMM d, yyyy – HH:mm')}
-                  </p>
+                  <p className="text-xs mt-1 opacity-70">IP: {log.ip_address}</p>
+                  <p className="text-xs opacity-70">{format(new Date(log.timestamp), 'MMM d, yyyy – HH:mm')}</p>
                 </div>
               </PopupComp>
             </MarkerComp>
@@ -151,12 +129,10 @@ function AccessMap({ logs }) {
       </MapContainer>
 
       {/* Colour legend */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-gray-900/90 text-xs text-gray-300 border-t border-gray-700">
+      <div className="flex items-center gap-2 px-4 py-2 bg-surface border-t border-line text-xs text-ink-2">
         <span>Older</span>
         <div className="flex-1 h-2 rounded"
-          style={{
-            background: 'linear-gradient(to right, hsl(240,85%,55%), hsl(180,85%,55%), hsl(120,85%,55%), hsl(60,85%,55%), hsl(0,85%,55%))',
-          }}
+          style={{ background: 'linear-gradient(to right, hsl(240,85%,55%), hsl(180,85%,55%), hsl(120,85%,55%), hsl(60,85%,55%), hsl(0,85%,55%))' }}
         />
         <span>Newest</span>
       </div>
@@ -172,22 +148,22 @@ const AccessListItem = ({ log }) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className="flex items-center justify-between gap-4 px-4 py-3 bg-gray-800/40 rounded-lg hover:bg-gray-800/60 transition-colors"
+    className="flex items-center justify-between gap-4 px-4 py-3 bg-raised border border-line rounded-lg hover:border-[var(--app-accent)] hover:bg-accent-soft transition-colors"
   >
     <div className="flex items-center gap-3 min-w-0">
-      <MapPin size={18} className="text-primary shrink-0" />
+      <MapPin size={18} className="text-accent shrink-0" />
       <div className="min-w-0">
-        <p className="text-sm font-medium text-white truncate">
+        <p className="text-sm font-medium text-ink truncate">
           {log.city || 'Unknown'}{log.region ? `, ${log.region}` : ''}{log.country ? ` (${log.country})` : ''}
         </p>
-        <p className="text-xs text-gray-400 truncate">
+        <p className="text-xs text-ink-2 truncate">
           {log.ip_address} {log.org ? `· ${log.org}` : ''}
         </p>
       </div>
     </div>
     <div className="text-right shrink-0">
-      <p className="text-xs text-gray-300">{format(new Date(log.timestamp), 'MMM d, HH:mm')}</p>
-      <p className="text-xs text-gray-500">{formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}</p>
+      <p className="text-xs text-ink-2">{format(new Date(log.timestamp), 'MMM d, HH:mm')}</p>
+      <p className="text-xs text-ink-3">{formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}</p>
     </div>
   </motion.div>
 );
@@ -202,7 +178,7 @@ const AccessLog = () => {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [viewMode, setViewMode] = useState('map'); // 'map' | 'list'
+  const [viewMode, setViewMode] = useState('map');
   const [hoursFilter, setHoursFilter] = useState(null);
 
   const fetchData = useCallback(async () => {
@@ -223,16 +199,13 @@ const AccessLog = () => {
     }
   }, [hoursFilter, t]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   if (isLoading) return <div className="flex justify-center py-10"><Spinner /></div>;
-  if (error) return <p className="text-red-400 text-center py-10">{error}</p>;
+  if (error) return <p className="text-[var(--app-red)] text-center py-10">{error}</p>;
 
   return (
     <div className="space-y-6">
-      {/* Stats bar */}
       {stats && (
         <div className="flex flex-wrap gap-3">
           <StatCard icon={Globe} label={t('totalAccesses')} value={stats.total} />
@@ -242,7 +215,6 @@ const AccessLog = () => {
         </div>
       )}
 
-      {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
@@ -261,13 +233,12 @@ const AccessLog = () => {
 
         <div className="flex items-center gap-2">
           <TimeFilter value={hoursFilter ?? ''} onChange={setHoursFilter} t={t} />
-          <button onClick={fetchData} className="btn btn-secondary btn-sm !py-1.5 !px-2" title={t('refresh')}>
+          <button onClick={fetchData} className="btn btn-outline btn-sm !py-1.5 !px-2" title={t('refresh')}>
             <RefreshCw size={16} />
           </button>
         </div>
       </div>
 
-      {/* Content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={viewMode}
@@ -281,7 +252,7 @@ const AccessLog = () => {
           ) : (
             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
               {logs.length === 0 ? (
-                <p className="text-mode-secondary text-center py-6">{t('noLogs')}</p>
+                <p className="text-ink-2 text-center py-6">{t('noLogs')}</p>
               ) : (
                 logs.map((log) => <AccessListItem key={log.id} log={log} />)
               )}

@@ -16,6 +16,7 @@ import {
   Users,
   Zap,
   Globe2,
+  Sparkles,
 } from 'lucide-react';
 import { getCVDataApi, updateCVDataApi } from '../../api/cv';
 import CVSectionNav from './CVEditorParts/CVSectionNav';
@@ -24,8 +25,10 @@ import SummarySection from './CVEditorParts/SummarySection';
 import ListSection from './CVEditorParts/ListSection';
 import SkillsSection from './CVEditorParts/SkillsSection';
 import RawDataSection from './CVEditorParts/RawDataSection';
+import CVImportSection from './CVEditorParts/CVImportSection';
 import EditItemModal from './CVEditorParts/EditItemModal';
 import ItemForms from './CVEditorParts/ItemForms';
+import ConfirmModal from '../UI/ConfirmModal';
 
 const navItems = [
   { key: 'personalInfo', label: 'Personal', icon: User },
@@ -38,6 +41,7 @@ const navItems = [
   { key: 'volunteering', label: 'Volunteering', icon: Users },
   { key: 'languages', label: 'Languages', icon: Globe2 },
   { key: 'rawData', label: 'Raw Data', icon: Code },
+  { key: 'import', label: 'AI Import', icon: Sparkles },
 ];
 
 const defaultCVData = {
@@ -192,6 +196,7 @@ const CVEditor = () => {
   const [rawDataText, setRawDataText] = useState('');
   const [modalState, setModalState] = useState({ open: false, sectionKey: null });
   const [currentItem, setCurrentItem] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, sectionKey: null, itemId: null });
 
   const setNormalizedData = (data) => {
     const normalized = normalizeCVData(data);
@@ -300,7 +305,7 @@ const CVEditor = () => {
     const nextData = normalizeCVData(producer(cvData));
     setNormalizedData(nextData);
     try {
-      await updateCVDataApi(nextData);
+      await updateCVDataApi(nextData, locale);
       showToast({ type: 'success', message: successMessage });
     } catch (err) {
       console.error('Error syncing CV data:', err);
@@ -331,9 +336,13 @@ const CVEditor = () => {
     closeModal();
   };
 
-  const removeItem = async (sectionKey, itemId) => {
-    if (!window.confirm('Are you sure you want to remove this item?')) return;
+  const removeItem = (sectionKey, itemId) => {
+    setDeleteConfirm({ open: true, sectionKey, itemId });
+  };
 
+  const confirmRemoveItem = async () => {
+    const { sectionKey, itemId } = deleteConfirm;
+    setDeleteConfirm({ open: false, sectionKey: null, itemId: null });
     await mutateAndSync(
       (prev) => ({
         ...prev,
@@ -399,7 +408,7 @@ const CVEditor = () => {
       // Save immediately so the user doesn't have to click "Save" separately
       setSaving(true);
       try {
-        await updateCVDataApi(normalized);
+        await updateCVDataApi(normalized, locale);
         showToast({ type: 'success', message: 'Raw data applied and saved successfully' });
       } catch (saveErr) {
         console.error('Error saving CV data:', saveErr);
@@ -416,6 +425,11 @@ const CVEditor = () => {
       }
       showToast({ type: 'error', message: errorMessage, duration: 6000 });
     }
+  };
+
+  const handleImportGenerated = (generatedData) => {
+    setNormalizedData(generatedData);
+    setActiveSection('rawData');
   };
 
   const downloadRawData = () => {
@@ -715,6 +729,8 @@ const CVEditor = () => {
             onDownload={downloadRawData}
           />
         );
+      case 'import':
+        return <CVImportSection onGenerated={handleImportGenerated} />;
       default:
         return <p>Select a section to edit</p>;
     }
@@ -757,6 +773,15 @@ const CVEditor = () => {
           onRemoveLink={removeLink}
         />
       </EditItemModal>
+
+      <ConfirmModal
+        isOpen={deleteConfirm.open}
+        title={t('deleteItem')}
+        message={t('confirmRemove')}
+        confirmLabel={t('deleteItem')}
+        onConfirm={confirmRemoveItem}
+        onCancel={() => setDeleteConfirm({ open: false, sectionKey: null, itemId: null })}
+      />
     </div>
   );
 };

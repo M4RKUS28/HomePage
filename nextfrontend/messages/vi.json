@@ -38,7 +38,15 @@
       "unknown": "Không xác định",
       "checking": "Đang kiểm tra..."
     },
-    "onlineCount": "{count} trực tuyến"
+    "onlineCount": "{count} trực tuyến",
+    "importProjects": "Nhập dự án",
+    "exportProjects": "Xuất dự án",
+    "importSuccess": "Đã nhập thành công {count} dự án",
+    "importPartial": "{success} đã nhập, {failed} thất bại",
+    "importError": "Nhập thất bại. Vui lòng kiểm tra tệp JSON.",
+    "exportEmpty": "Không có dự án nào để xuất.",
+    "importFromGithub": "Nhập từ GitHub",
+    "viewSource": "Xem mã nguồn trên GitHub"
   },
   "cv": {
     "loading": "Đang tải dữ liệu CV...",
@@ -203,7 +211,22 @@
         "cancel": "Hủy",
         "imageUpload": "Hình ảnh dự án",
         "create": "Tạo dự án",
-        "update": "Cập nhật dự án"
+        "update": "Cập nhật dự án",
+        "githubLink": "Kho GitHub (tùy chọn)",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
+      },
+      "githubImport": {
+        "description": "Dán bất kỳ liên kết kho lưu trữ hoặc README GitHub nào. AI sẽ tải README và trích xuất tiêu đề, mô tả, liên kết và hình ảnh dự án.",
+        "urlLabel": "URL GitHub",
+        "generate": "Tạo",
+        "generating": "Đang tải README và phân tích bằng AI… có thể mất một lúc.",
+        "urlRequired": "Vui lòng nhập URL GitHub.",
+        "urlInvalid": "Vui lòng nhập URL GitHub hợp lệ.",
+        "error": "Không thể trích xuất dữ liệu dự án. Vui lòng thử lại.",
+        "noTitle": "Dự án chưa đặt tên",
+        "reviewHint": "Xem lại dữ liệu được trích xuất và nhấp vào 'Sử dụng dự án' để mở biểu mẫu.",
+        "useProject": "Sử dụng dự án",
+        "cancel": "Hủy"
       }
     },
     "messages": {
@@ -214,7 +237,8 @@
       "markUnread": "Đánh dấu chưa đọc",
       "delete": "Xóa",
       "unread": "Chưa đọc",
-      "read": "Đã đọc"
+      "read": "Đã đọc",
+      "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tin nhắn này?"
     },
     "users": {
       "title": "Quản lý người dùng",
@@ -244,11 +268,36 @@
       "addItem": "Thêm mục",
       "editItem": "Chỉnh sửa mục",
       "deleteItem": "Xóa mục",
+      "confirmRemove": "Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.",
       "rawData": "Dữ liệu thô",
+      "personal": {
+        "homepageName": "Tên trang chủ",
+        "homepageNameHint": "Hiển thị ở góc trên bên trái của trang web (hiện tại là \"M4RKUS28\")",
+        "titleHeadline": "Tiêu đề/Headline của trang đích",
+        "titleHeadlineHint": "Hiển thị dưới tên của bạn trong phần hero"
+      },
       "personalInfo": "Thông tin cá nhân",
       "moveUp": "Di chuyển lên",
       "moveDown": "Di chuyển xuống",
-      "saveSuccess": "CV đã được lưu thành công!"
+      "saveSuccess": "CV đã được lưu thành công!",
+      "import": {
+        "navLabel": "Nhập bằng AI",
+        "title": "Nhập CV bằng AI",
+        "description": "Tải lên CV của bạn (PDF, hình ảnh hoặc văn bản) và để AI trích xuất dữ liệu vào trình chỉnh sửa. Hãy xem lại kết quả trước khi lưu.",
+        "fileLabel": "Tệp CV",
+        "chooseFile": "Chọn tệp",
+        "noFileSelected": "Chưa chọn tệp nào",
+        "modeLabel": "Chế độ nhập",
+        "modeMerge": "Hợp nhất với dữ liệu hiện có",
+        "modeMergeHint": "Thêm thông tin mới từ tệp đã tải lên vào CV hiện tại của bạn, giữ nguyên các mục hiện có.",
+        "modeReplace": "Thay thế toàn bộ dữ liệu",
+        "modeReplaceHint": "Loại bỏ CV hiện tại và tạo lại mọi thứ từ tệp đã tải lên.",
+        "generate": "Tạo bằng AI",
+        "generating": "Đang phân tích CV bằng AI… việc này có thể mất đến một phút.",
+        "success": "Đã tạo dữ liệu CV. Hãy xem lại trong tab \"Dữ liệu thô\", sau đó nhấp Lưu.",
+        "error": "Không thể tạo dữ liệu CV. Vui lòng thử lại.",
+        "selectFileError": "Vui lòng chọn một tệp trước."
+      }
     },
     "access": {
       "title": "Nhật ký truy cập",
@@ -283,7 +332,16 @@
       "accentDefaultBadge": "Mặc định: {color}",
       "accentSaved": "Đã cập nhật màu nhấn.",
       "accentSaveError": "Không thể cập nhật màu nhấn.",
-      "accentReset": "Đặt lại mặc định"
+      "accentReset": "Đặt lại mặc định",
+      "accentRandom": "Ngẫu nhiên",
+      "accentRandomHelp": "Một màu mới mỗi khi tải lại trang.",
+      "autoTranslationTitle": "Dịch tự động",
+      "autoTranslationHelp": "Khi bật, các thay đổi đối với CV và dự án của bạn sẽ được dịch sang tất cả các ngôn ngữ khác trong lần đồng bộ tiếp theo. Khi tắt, các thay đổi chỉ được giữ trong ngôn ngữ bạn đã chỉnh sửa.",
+      "autoTranslationEnabled": "Dịch tự động đang bật",
+      "autoTranslationDisabled": "Dịch tự động đang tắt",
+      "autoTranslationSaved": "Đã cập nhật cài đặt dịch tự động.",
+      "autoTranslationSaveError": "Không thể cập nhật cài đặt dịch tự động.",
+      "autoTranslationNote": "Bật lại sẽ không dịch các thay đổi được thực hiện khi đang tắt — chỉ dịch các thay đổi mới."
     }
   },
   "notFound": {

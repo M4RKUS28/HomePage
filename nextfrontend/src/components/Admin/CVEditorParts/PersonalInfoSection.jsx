@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const PersonalInfoSection = ({
   personalInfo,
@@ -9,6 +10,7 @@ const PersonalInfoSection = ({
   onRemoveSocialLink,
   theme
 }) => {
+  const t = useTranslations('admin.cv.personal');
   return (
     <div className="section-card">
       <h3 className="section-title">Personal Information</h3>
@@ -24,14 +26,14 @@ const PersonalInfoSection = ({
             />
           </div>
           <div>
-            <label className="form-label">Title/Headline</label>
+            <label className="form-label">{t('titleHeadline')}</label>
             <input
               type="text"
               className="input-field"
               value={personalInfo?.title || ''}
               onChange={(e) => onChange('title', e.target.value)}
             />
-            <p className="cv-hint-text">This appears under your name in the hero section</p>
+            <p className="cv-hint-text">{t('titleHeadlineHint')}</p>
           </div>
         </div>
 
@@ -76,14 +78,14 @@ const PersonalInfoSection = ({
         </div>
 
         <div>
-          <label className="form-label">Header Text</label>
+          <label className="form-label">{t('homepageName')}</label>
           <input
             type="text"
             className="input-field"
             value={personalInfo?.headerText || ''}
             onChange={(e) => onChange('headerText', e.target.value)}
           />
-          <p className="cv-hint-text">This appears in the top-left corner of the site (currently "M4RKUS28")</p>
+          <p className="cv-hint-text">{t('homepageNameHint')}</p>
         </div>
 
         <div>

@@ -38,7 +38,15 @@
       "unknown": "不明",
       "checking": "確認中..."
     },
-    "onlineCount": "{count}件稼働中"
+    "onlineCount": "{count}件稼働中",
+    "importProjects": "プロジェクトをインポート",
+    "exportProjects": "プロジェクトをエクスポート",
+    "importSuccess": "{count}件のプロジェクトをインポートしました",
+    "importPartial": "{success}件をインポート、{failed}件が失敗しました",
+    "importError": "インポートに失敗しました。JSONファイルを確認してください。",
+    "exportEmpty": "エクスポートするプロジェクトがありません。",
+    "importFromGithub": "GitHubからインポート",
+    "viewSource": "GitHub でソースを見る"
   },
   "cv": {
     "loading": "履歴書データを読み込み中...",
@@ -203,7 +211,22 @@
         "cancel": "キャンセル",
         "imageUpload": "プロジェクト画像",
         "create": "プロジェクトを作成",
-        "update": "プロジェクトを更新"
+        "update": "プロジェクトを更新",
+        "githubLink": "GitHub リポジトリ（任意）",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
+      },
+      "githubImport": {
+        "description": "GitHubリポジトリまたはREADMEのリンクを貼り付けてください。AIがREADMEを取得してプロジェクトのタイトル・説明・リンク・画像を抽出します。",
+        "urlLabel": "GitHub URL",
+        "generate": "生成",
+        "generating": "READMEを取得してAIで解析中…しばらくお待ちください。",
+        "urlRequired": "GitHub URLを入力してください。",
+        "urlInvalid": "有効なGitHub URLを入力してください。",
+        "error": "プロジェクトデータの抽出に失敗しました。もう一度お試しください。",
+        "noTitle": "無題のプロジェクト",
+        "reviewHint": "下の抽出データを確認し、「プロジェクトを使用」をクリックしてフォームを開いてください。",
+        "useProject": "プロジェクトを使用",
+        "cancel": "キャンセル"
       }
     },
     "messages": {
@@ -214,7 +237,8 @@
       "markUnread": "未読にする",
       "delete": "削除",
       "unread": "未読",
-      "read": "既読"
+      "read": "既読",
+      "confirmDeleteMessage": "このメッセージを削除してもよろしいですか？"
     },
     "users": {
       "title": "ユーザー管理",
@@ -244,11 +268,36 @@
       "addItem": "項目を追加",
       "editItem": "項目を編集",
       "deleteItem": "項目を削除",
+      "confirmRemove": "このアイテムを削除してもよろしいですか？この操作は元に戻せません。",
       "rawData": "生データ",
+      "personal": {
+        "homepageName": "ホームページ名",
+        "homepageNameHint": "サイトの左上に表示されます（現在：\"M4RKUS28\"）",
+        "titleHeadline": "ランディングページのタイトル/見出し",
+        "titleHeadlineHint": "ヒーローセクションであなたの名前の下に表示されます"
+      },
       "personalInfo": "個人情報",
       "moveUp": "上へ移動",
       "moveDown": "下へ移動",
-      "saveSuccess": "履歴書が正常に保存されました！"
+      "saveSuccess": "履歴書が正常に保存されました！",
+      "import": {
+        "navLabel": "AI読み込み",
+        "title": "AIによるCV読み込み",
+        "description": "履歴書(PDF、画像、またはテキスト)をアップロードすると、AIがデータをエディタに抽出します。保存する前に結果を確認してください。",
+        "fileLabel": "CVファイル",
+        "chooseFile": "ファイルを選択",
+        "noFileSelected": "ファイルが選択されていません",
+        "modeLabel": "読み込みモード",
+        "modeMerge": "既存データと統合",
+        "modeMergeHint": "アップロードしたファイルの新しい情報を現在のCVに追加し、既存の項目はそのまま維持します。",
+        "modeReplace": "すべてのデータを置き換え",
+        "modeReplaceHint": "現在のCVを破棄し、アップロードしたファイルからすべてを新規に生成します。",
+        "generate": "AIで生成",
+        "generating": "AIがCVを解析しています…最大1分ほどかかる場合があります。",
+        "success": "CVデータが生成されました。「生データ」タブで確認し、保存をクリックしてください。",
+        "error": "CVデータの生成に失敗しました。再度お試しください。",
+        "selectFileError": "先にファイルを選択してください。"
+      }
     },
     "access": {
       "title": "アクセスログ",
@@ -283,7 +332,16 @@
       "accentDefaultBadge": "デフォルト: {color}",
       "accentSaved": "アクセントカラーを更新しました。",
       "accentSaveError": "アクセントカラーの更新に失敗しました。",
-      "accentReset": "デフォルトに戻す"
+      "accentReset": "デフォルトに戻す",
+      "accentRandom": "ランダム",
+      "accentRandomHelp": "ページを読み込むたびに新しい色になります。",
+      "autoTranslationTitle": "自動翻訳",
+      "autoTranslationHelp": "有効にすると、CV とプロジェクトの編集が次回の同期時にすべての他の言語へ翻訳されます。無効にすると、変更は編集した言語のみに保持されます。",
+      "autoTranslationEnabled": "自動翻訳は有効です",
+      "autoTranslationDisabled": "自動翻訳は無効です",
+      "autoTranslationSaved": "自動翻訳の設定を更新しました。",
+      "autoTranslationSaveError": "自動翻訳の設定を更新できませんでした。",
+      "autoTranslationNote": "再び有効にしても、無効だった間の変更は翻訳されず、新しい変更のみが翻訳されます。"
     }
   },
   "notFound": {

@@ -123,6 +123,9 @@ services:
       context: ./nextfrontend
       dockerfile: Dockerfile.dev
     container_name: nextfrontend
+    # Override --turbopack: Turbopack's Rust watcher ignores WATCHPACK_POLLING,
+    # so inotify misses changes on Windows bind-mounts. Webpack + polling works.
+    command: npx next dev
     expose:
       - "3000"
     environment:

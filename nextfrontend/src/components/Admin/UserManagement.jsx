@@ -6,6 +6,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../hooks/useTheme';
 import Spinner from '../UI/Spinner';
 import Modal from '../UI/Modal';
+import ConfirmModal from '../UI/ConfirmModal';
 import { 
   Shield, ShieldOff, Lock, Trash2, UserX, UserCheck, RefreshCw 
 } from 'lucide-react';
@@ -24,6 +25,7 @@ const UserManagement = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, userId: null });
   const { currentUser } = useAuth();
   const { showToast } = useToast();
 
@@ -106,26 +108,23 @@ const UserManagement = () => {
     }
   };
 
-  const handleDelete = async (userId) => {
-    // Don't allow deleting yourself
+  const handleDelete = (userId) => {
     if (userId === currentUser.id) {
-      showToast({ 
-        type: 'error', 
-        message: 'Cannot delete your own account'
-      });
+      showToast({ type: 'error', message: 'Cannot delete your own account' });
       return;
     }
+    setDeleteConfirm({ open: true, userId });
+  };
 
-    if (!window.confirm(t('confirmDelete'))) {
-      return;
-    }
-
+  const confirmDelete = async () => {
+    const { userId } = deleteConfirm;
+    setDeleteConfirm({ open: false, userId: null });
     setActionLoading(true);
     try {
       await deleteUserApi(userId);
       setUsers(prev => prev.filter(user => user.id !== userId));
-      showToast({ 
-        type: 'success', 
+      showToast({
+        type: 'success',
         message: 'User deleted successfully'
       });
     } catch (err) {
@@ -406,6 +405,15 @@ const UserManagement = () => {
           </form>
         </Modal>
       )}
+
+      <ConfirmModal
+        isOpen={deleteConfirm.open}
+        title={t('deleteUser')}
+        message={t('deleteConfirm')}
+        confirmLabel={t('deleteUser')}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ open: false, userId: null })}
+      />
     </div>
   );
 };

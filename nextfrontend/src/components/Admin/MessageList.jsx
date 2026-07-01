@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { getMessagesApi, markMessageAsReadApi, deleteMessageApi } from '../../api/messages';
 import Spinner from '../UI/Spinner';
+import ConfirmModal from '../UI/ConfirmModal';
 import { Mail, MailOpen, Trash2, RefreshCw } from 'lucide-react';
-import { format } from 'date-fns'; 
+import { format } from 'date-fns';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -95,6 +96,7 @@ const MessageList = () => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, messageId: null });
 
   const fetchMessages = useCallback(async () => {
     setIsLoading(true);
@@ -122,14 +124,18 @@ const MessageList = () => {
     }
   };
 
-  const handleDelete = async (messageId) => {
-    if (window.confirm('Are you sure you want to delete this message?')) {
-      try {
-        await deleteMessageApi(messageId);
-        setMessages(prev => prev.filter(msg => msg.id !== messageId));
-      } catch (err) {
-        alert('Failed to delete message.');
-      }
+  const handleDelete = (messageId) => {
+    setDeleteConfirm({ open: true, messageId });
+  };
+
+  const confirmDelete = async () => {
+    const { messageId } = deleteConfirm;
+    setDeleteConfirm({ open: false, messageId: null });
+    try {
+      await deleteMessageApi(messageId);
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    } catch (err) {
+      setError('Failed to delete message.');
     }
   };
 
@@ -158,6 +164,15 @@ const MessageList = () => {
         ))}
         </AnimatePresence>
       )}
+
+      <ConfirmModal
+        isOpen={deleteConfirm.open}
+        title={t('delete')}
+        message={t('confirmDeleteMessage')}
+        confirmLabel={t('delete')}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ open: false, messageId: null })}
+      />
     </div>
   );
 };

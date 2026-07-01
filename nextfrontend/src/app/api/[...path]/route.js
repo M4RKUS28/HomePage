@@ -79,6 +79,13 @@ async function proxyRequest(request, { params }) {
     const accept = request.headers.get("accept");
     if (accept) headers.set("Accept", accept);
 
+    // Forward client IP / proto info from nginx so the backend's
+    // IPTrackingMiddleware sees the real visitor, not the proxy hop.
+    for (const name of ["x-forwarded-for", "x-real-ip", "x-forwarded-proto", "x-forwarded-host"]) {
+      const value = request.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+
     // --- Build fetch options ---
     const fetchOpts = {
       method: request.method,
@@ -93,9 +100,13 @@ async function proxyRequest(request, { params }) {
     }
 
     // --- Forward to backend (intercept redirects so we can re-send body) ---
+    // AI endpoints (CV import, GitHub import) can take 60-90 s; use a 5 min
+    // timeout so undici's default headersTimeout doesn't kill them first.
+    const proxySignal = AbortSignal.timeout(5 * 60 * 1000);
     let backendRes = await fetch(backendUrl, {
       ...fetchOpts,
       redirect: "manual",
+      signal: proxySignal,
     });
 
     // FastAPI uses redirect_slashes=True → trailing-slash 307/308 redirects.

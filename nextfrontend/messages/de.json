@@ -38,7 +38,15 @@
       "unknown": "Unbekannt",
       "checking": "Wird geprüft..."
     },
-    "onlineCount": "{count} online"
+    "onlineCount": "{count} online",
+    "importProjects": "Projekte importieren",
+    "exportProjects": "Projekte exportieren",
+    "importSuccess": "{count} Projekte erfolgreich importiert",
+    "importPartial": "{success} importiert, {failed} fehlgeschlagen",
+    "importError": "Import fehlgeschlagen. Bitte überprüfe die JSON-Datei.",
+    "exportEmpty": "Keine Projekte zum Exportieren.",
+    "importFromGithub": "Von GitHub importieren",
+    "viewSource": "Quellcode auf GitHub ansehen"
   },
   "cv": {
     "loading": "Lebenslauf wird geladen...",
@@ -203,7 +211,22 @@
         "cancel": "Abbrechen",
         "imageUpload": "Projektbild",
         "create": "Projekt erstellen",
-        "update": "Projekt aktualisieren"
+        "update": "Projekt aktualisieren",
+        "githubLink": "GitHub-Repository (optional)",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
+      },
+      "githubImport": {
+        "description": "Füge einen GitHub-Repository- oder README-Link ein. KI ruft das README ab und extrahiert Titel, Beschreibung, Links und Bild.",
+        "urlLabel": "GitHub-URL",
+        "generate": "Generieren",
+        "generating": "README wird abgerufen und mit KI analysiert… das kann einen Moment dauern.",
+        "urlRequired": "Bitte gib eine GitHub-URL ein.",
+        "urlInvalid": "Bitte gib eine gültige GitHub-URL ein.",
+        "error": "Projektdaten konnten nicht extrahiert werden. Bitte versuche es erneut.",
+        "noTitle": "Unbenanntes Projekt",
+        "reviewHint": "Überprüfe die extrahierten Daten und klicke auf 'Projekt verwenden', um das Formular für finale Bearbeitungen zu öffnen.",
+        "useProject": "Projekt verwenden",
+        "cancel": "Abbrechen"
       }
     },
     "messages": {
@@ -214,7 +237,8 @@
       "markUnread": "Als ungelesen markieren",
       "delete": "Löschen",
       "unread": "Ungelesen",
-      "read": "Gelesen"
+      "read": "Gelesen",
+      "confirmDeleteMessage": "Sind Sie sicher, dass Sie diese Nachricht löschen möchten?"
     },
     "users": {
       "title": "Benutzerverwaltung",
@@ -244,11 +268,36 @@
       "addItem": "Eintrag hinzufügen",
       "editItem": "Eintrag bearbeiten",
       "deleteItem": "Eintrag löschen",
+      "confirmRemove": "Sind Sie sicher, dass Sie diesen Eintrag entfernen möchten? Dies kann nicht rückgängig gemacht werden.",
       "rawData": "Rohdaten",
+      "personal": {
+        "homepageName": "Seitenname",
+        "homepageNameHint": "Erscheint in der oberen linken Ecke der Website (aktuell \"M4RKUS28\")",
+        "titleHeadline": "Titel/Überschrift der Startseite",
+        "titleHeadlineHint": "Erscheint unter Ihrem Namen im Hero-Bereich"
+      },
       "personalInfo": "Persönliche Daten",
       "moveUp": "Nach oben",
       "moveDown": "Nach unten",
-      "saveSuccess": "Lebenslauf erfolgreich gespeichert!"
+      "saveSuccess": "Lebenslauf erfolgreich gespeichert!",
+      "import": {
+        "navLabel": "KI-Import",
+        "title": "KI-Lebenslauf-Import",
+        "description": "Laden Sie Ihren Lebenslauf (PDF, Bild oder Text) hoch und lassen Sie die KI die Daten in den Editor übernehmen. Prüfen Sie das Ergebnis vor dem Speichern.",
+        "fileLabel": "Lebenslauf-Datei",
+        "chooseFile": "Datei auswählen",
+        "noFileSelected": "Keine Datei ausgewählt",
+        "modeLabel": "Import-Modus",
+        "modeMerge": "Mit vorhandenen Daten zusammenführen",
+        "modeMergeHint": "Fügt neue Informationen aus der hochgeladenen Datei zu Ihrem aktuellen Lebenslauf hinzu und behält bestehende Einträge.",
+        "modeReplace": "Alle Daten ersetzen",
+        "modeReplaceHint": "Verwirft den aktuellen Lebenslauf und erstellt alles neu aus der hochgeladenen Datei.",
+        "generate": "Mit KI generieren",
+        "generating": "Lebenslauf wird mit KI analysiert… dies kann bis zu einer Minute dauern.",
+        "success": "Lebenslaufdaten generiert. Überprüfen Sie das Ergebnis im Tab „Rohdaten“ und klicken Sie dann auf Speichern.",
+        "error": "Lebenslaufdaten konnten nicht generiert werden. Bitte versuchen Sie es erneut.",
+        "selectFileError": "Bitte wählen Sie zuerst eine Datei aus."
+      }
     },
     "access": {
       "title": "Zugriffsprotokoll",
@@ -283,7 +332,16 @@
       "accentDefaultBadge": "Standard: {color}",
       "accentSaved": "Akzentfarbe aktualisiert.",
       "accentSaveError": "Akzentfarbe konnte nicht aktualisiert werden.",
-      "accentReset": "Auf Standard zurücksetzen"
+      "accentReset": "Auf Standard zurücksetzen",
+      "accentRandom": "Zufällig",
+      "accentRandomHelp": "Bei jedem Seitenaufruf eine neue Farbe.",
+      "autoTranslationTitle": "Automatische Übersetzung",
+      "autoTranslationHelp": "Wenn aktiviert, werden Änderungen an Lebenslauf und Projekten beim nächsten Abgleich in alle anderen Sprachen übersetzt. Wenn deaktiviert, bleiben Änderungen nur in der bearbeiteten Sprache.",
+      "autoTranslationEnabled": "Automatische Übersetzung ist aktiviert",
+      "autoTranslationDisabled": "Automatische Übersetzung ist deaktiviert",
+      "autoTranslationSaved": "Einstellung für automatische Übersetzung aktualisiert.",
+      "autoTranslationSaveError": "Einstellung für automatische Übersetzung konnte nicht aktualisiert werden.",
+      "autoTranslationNote": "Beim erneuten Aktivieren werden Änderungen, die im deaktivierten Zustand gemacht wurden, nicht übersetzt – nur neue Änderungen."
     }
   },
   "notFound": {

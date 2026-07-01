@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono, Archivo } from "next/font/google";
 import "../globals.css";
 import { fetchCVDataSSR, fetchPublicSettingsSSR } from '../../lib/server-api';
-import { buildAccentCss } from '../../lib/accent';
+import { buildAccentCss, resolveAccentColor } from '../../lib/accent';
 import Providers from "../../components/Providers";
 import MainLayout from "../../layouts/MainLayout";
 import ToastNotification from "../../components/UI/ToastNotification";
@@ -61,8 +61,10 @@ export default async function LocaleLayout({ children, params }) {
   const ownerName = cvData?.personalInfo?.name || 'Portfolio';
 
   // Custom accent color → CSS var overrides, rendered inline so the very
-  // first paint already uses it. Null when unset/default/invalid.
-  const accentCss = buildAccentCss(publicSettings?.accent_color);
+  // first paint already uses it. Null when unset/default/invalid. The "random"
+  // setting is resolved to a fresh hex per request (the route already renders
+  // dynamically via the no-store CV fetch), so each full reload gets a new color.
+  const accentCss = buildAccentCss(resolveAccentColor(publicSettings?.accent_color));
 
   const messages = await getMessages();
 

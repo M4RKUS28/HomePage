@@ -23,7 +23,9 @@
       "Bash(bash -n deploy/start.sh)",
       "Bash(bash -n deploy/update.sh)",
       "Bash(bash -n deploy/stop.sh)",
-      "Bash(python -m py_compile backend/src/core/config.py)"
+      "Bash(python -m py_compile backend/src/core/config.py)",
+      "Bash(\"C:/Users/marku/AppData/Local/nvm/v22.18.0/node.exe\" -e \"const fs=require\\('fs'\\);const babel=require\\('@babel/core'\\);const code=fs.readFileSync\\('src/components/Admin/CVEditor.jsx','utf8'\\);babel.parseSync\\(code,{parserOpts:{plugins:['jsx']}}\\);console.log\\('parse OK'\\);\")",
+      "Bash(C:/Users/marku/AppData/Local/nvm/v22.18.0/node.exe -e ' *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\marku\\AppData\\Local\\Temp\\claude"

@@ -2,16 +2,19 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import ProjectCard from './ProjectCard';
-import { getProjectsApi, getProjectApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
+import { getProjectsApi, getProjectApi, createProjectApi, deleteProjectApi, checkProjectStatusApi, updateProjectApi } from '../../api/projects';
 import { useAuth } from '../../hooks/useAuth';import { useLanguage } from '../../contexts/LanguageContext';import Spinner from '../UI/Spinner';
 import ProjectForm from '../Admin/ProjectForm';
 import Modal from '../UI/Modal';
-import { PlusCircle, FolderOpen } from 'lucide-react';
+import { useToast } from '../../contexts/ToastContext';
+import { PlusCircle, FolderOpen, Upload, Download, Github } from 'lucide-react';
+import GithubImportModal from '../Admin/GithubImportModal';
 
 
 const ProjectsGrid = () => {
   const t = useTranslations('projects');
   const { locale } = useLanguage();
+  const { showToast } = useToast();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,7 +23,10 @@ const ProjectsGrid = () => {
   const [editingProject, setEditingProject] = useState(null);
   const [projectImages, setProjectImages] = useState({});
   const [deletingProject, setDeletingProject] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [showGithubImport, setShowGithubImport] = useState(false);
   const fetchedImageIds = useRef(new Set());
+  const fileInputRef = useRef(null);
 
   /**
    * Fetch the full project detail (GET /projects/{id}) which includes
@@ -95,6 +101,12 @@ const ProjectsGrid = () => {
     }
   };
 
+  const handleGithubImported = (projectData) => {
+    setShowGithubImport(false);
+    setEditingProject(projectData);
+    setShowModal(true);
+  };
+
   const handleEdit = async (project) => {
     try {
       const detail = await getProjectApi(project.id);
@@ -105,7 +117,99 @@ const ProjectsGrid = () => {
     setShowModal(true);
   }
   const handleAdd = () => { setEditingProject(null); setShowModal(true); }
-  
+
+  /** Download the current language's projects as a JSON file (images excluded). */
+  const handleExport = () => {
+    if (projects.length === 0) {
+      showToast({ type: 'warning', message: t('exportEmpty') });
+      return;
+    }
+    const payload = {
+      version: 1,
+      exported_at: new Date().toISOString(),
+      language: locale,
+      projects: [...projects]
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        .map((p) => ({
+          title: p.title,
+          description: p.description ?? '',
+          link: p.link,
+          github_link: p.github_link ?? '',
+          position: p.position ?? 0,
+          health_check_urls: p.health_check_urls ?? [],
+        })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `projects-${locale}-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  /**
+   * Read a JSON file containing a list of projects (a bare array or an object
+   * with a `projects` array) and create them in the current language. Each
+   * created project is flagged for automatic translation into the other languages.
+   */
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // reset so the same file can be picked again
+    if (!file) return;
+
+    let items;
+    try {
+      const parsed = JSON.parse(await file.text());
+      items = Array.isArray(parsed) ? parsed : parsed?.projects;
+    } catch {
+      showToast({ type: 'error', message: t('importError') });
+      return;
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      showToast({ type: 'error', message: t('importError') });
+      return;
+    }
+
+    setImporting(true);
+    let success = 0;
+    let failed = 0;
+    for (const item of items) {
+      if (!item?.title || !item?.link) { failed++; continue; }
+      try {
+        await createProjectApi({
+          title: item.title,
+          description: item.description ?? '',
+          link: item.link,
+          github_link: item.github_link ?? '',
+          position: item.position,
+          health_check_urls: Array.isArray(item.health_check_urls) ? item.health_check_urls : [],
+          language: locale,
+        });
+        success++;
+      } catch (err) {
+        console.error('Project import failed:', err);
+        failed++;
+      }
+    }
+    setImporting(false);
+
+    if (failed === 0) {
+      showToast({ type: 'success', message: t('importSuccess', { count: success }) });
+    } else if (success > 0) {
+      showToast({ type: 'warning', message: t('importPartial', { success, failed }) });
+    } else {
+      showToast({ type: 'error', message: t('importError') });
+    }
+
+    if (success > 0) fetchProjectsData();
+  };
+
   const moveProjectUp = async (projectId) => {
     const sortedProjects = [...projects].sort((a, b) => {
       if (a.position !== undefined && b.position !== undefined) {
@@ -184,27 +288,32 @@ const ProjectsGrid = () => {
     }
   };
   
-  const handleModalClose = (refresh = false) => { 
+  const handleModalClose = (savedProject = null) => {
     setShowModal(false);
-    if (editingProject && refresh) {
-      fetchedImageIds.current.delete(editingProject.id);
-    }
     setEditingProject(null);
-    if (refresh) fetchProjectsData();
+    if (savedProject && typeof savedProject === 'object' && savedProject.id) {
+      // Optimistically add/update the project in local state immediately
+      setProjects(prev => {
+        const exists = prev.some(p => p.id === savedProject.id);
+        if (exists) return prev.map(p => p.id === savedProject.id ? { ...p, ...savedProject } : p);
+        return [...prev, savedProject];
+      });
+      // Set the image URL directly from the API response so it shows without a round-trip
+      const imageUrl = savedProject.image_url || savedProject.image_external_url || null;
+      fetchedImageIds.current.add(savedProject.id);
+      setProjectImages(prev => ({
+        ...prev,
+        [savedProject.id]: { loading: false, url: imageUrl },
+      }));
+      // Background re-sync from server
+      fetchProjectsData();
+    }
   }
 
   if (loading && projects.length === 0) return (
     <div className="flex justify-center items-center py-20"><Spinner size="h-12 w-12" /></div>
   );
   
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.12, delayChildren: 0.15 },
-    },
-  };
-
   const onlineCount = projects.filter(p => p.status?.toLowerCase() === 'up').length;
 
   return (
@@ -247,7 +356,7 @@ const ProjectsGrid = () => {
         </div>
 
         {currentUser?.is_admin && (
-          <div className="mb-12">
+          <div className="mb-12 flex flex-wrap gap-3">
             <motion.button
               onClick={handleAdd}
               whileHover={{ scale: 1.03 }}
@@ -257,6 +366,45 @@ const ProjectsGrid = () => {
               <PlusCircle size={17} />
               {t('addProject')}
             </motion.button>
+
+            <motion.button
+              onClick={handleImportClick}
+              disabled={importing}
+              whileHover={{ scale: importing ? 1 : 1.03 }}
+              whileTap={{ scale: importing ? 1 : 0.97 }}
+              className="btn-ghost text-sm px-6 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {importing ? <Spinner size="h-4 w-4" /> : <Upload size={17} />}
+              {t('importProjects')}
+            </motion.button>
+
+            <motion.button
+              onClick={() => setShowGithubImport(true)}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="btn-ghost text-sm px-6 py-3"
+            >
+              <Github size={17} />
+              {t('importFromGithub')}
+            </motion.button>
+
+            <motion.button
+              onClick={handleExport}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="btn-ghost text-sm px-6 py-3"
+            >
+              <Download size={17} />
+              {t('exportProjects')}
+            </motion.button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
           </div>
         )}
 
@@ -283,13 +431,7 @@ const ProjectsGrid = () => {
           </motion.div>
         )}
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {projects
             .sort((a, b) => {
               if (a.position !== undefined && b.position !== undefined) {
@@ -298,9 +440,10 @@ const ProjectsGrid = () => {
               return (a.id || 0) - (b.id || 0);
             })
             .map((project, index, sortedArray) => (
-              <ProjectCard 
-                key={project.id} 
-                project={project} 
+              <ProjectCard
+                key={project.id}
+                project={project}
+                index={index}
                 isAdmin={currentUser?.is_admin}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
@@ -314,12 +457,21 @@ const ProjectsGrid = () => {
               />
             ))
           }
-        </motion.div>
+        </div>
       </div>
 
+      {showGithubImport && (
+        <Modal title={t('importFromGithub')} onClose={() => setShowGithubImport(false)}>
+          <GithubImportModal
+            onImported={handleGithubImported}
+            onClose={() => setShowGithubImport(false)}
+          />
+        </Modal>
+      )}
+
       {showModal && (
-        <Modal title={editingProject ? t('editProject') : t('addProject')} onClose={() => handleModalClose(false)}>
-          <ProjectForm project={editingProject} onFormSubmit={() => handleModalClose(true)} />
+        <Modal title={editingProject ? t('editProject') : t('addProject')} onClose={() => handleModalClose()}>
+          <ProjectForm project={editingProject} onFormSubmit={handleModalClose} />
         </Modal>
       )}
 

@@ -12,7 +12,7 @@ import json
 import logging
 import asyncio
 import os
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
 from sqlalchemy import text
 
@@ -50,7 +50,7 @@ _LANG_NAMES: Dict[str, str] = {
 # Gemini helpers
 # ---------------------------------------------------------------------------
 
-async def _get_active_model(db) -> str:
+async def get_active_model(db) -> str:
     """Resolve the translation model: admin DB override → env/config default."""
     stored = await app_setting_crud.get_setting(db, app_setting_crud.TRANSLATION_MODEL_KEY)
     return stored or settings.gemini.model
@@ -156,6 +156,209 @@ async def translate_cv_data(
 
 
 
+# ---------------------------------------------------------------------------
+# CV import – parse an uploaded CV/resume file into the CV JSON structure
+# ---------------------------------------------------------------------------
+
+_CV_JSON_SCHEMA = (
+    "{\n"
+    '  "summary": "string",\n'
+    '  "personalInfo": {"name": "string", "title": "string", "profileImage": "string", '
+    '"headerText": "string", "socialLinks": [{"platform": "string", "url": "string"}]},\n'
+    '  "experience": [{"id": number, "position": number, "role": "string", "company": "string", '
+    '"period": "string", "details": "string"}],\n'
+    '  "education": [{"id": number, "position": number, "degree": "string", "institution": "string", '
+    '"period": "string", "details": "string", "logo": "string"}],\n'
+    '  "projectsHighlight": [{"id": number, "position": number, "name": "string", "period": "string", '
+    '"description": "string", "logo": "string", "links": [{"text": "string", "url": "string"}]}],\n'
+    '  "awards": [{"id": number, "position": number, "name": "string", "date": "string", '
+    '"awardingBody": "string", "details": "string", "logo": "string", "links": [{"text": "string", "url": "string"}]}],\n'
+    '  "skills": [{"id": number, "position": number, "name": "string", "level": number}],\n'
+    '  "volunteering": [{"id": number, "position": number, "role": "string", "organization": "string", '
+    '"period": "string", "details": "string", "logo": "string"}],\n'
+    '  "languages": [{"id": number, "position": number, "name": "string", "level": "string"}]\n'
+    "}"
+)
+
+
+async def generate_cv_from_file(
+    file_bytes: bytes,
+    mime_type: str,
+    model: str,
+    existing_data: Optional[dict] = None,
+) -> dict:
+    """Parse an uploaded CV/resume file (PDF, image, text, …) into the CV JSON structure.
+
+    If ``existing_data`` is provided, the new document is merged into it
+    (extending existing entries, adding new ones). Otherwise a completely
+    fresh CV is generated from the document alone.
+    """
+    if existing_data:
+        mode_instructions = (
+            "You are given the CURRENT CV data (as JSON text) and an uploaded CV/resume document "
+            "(file) in the user message. Merge the information from the uploaded document INTO the "
+            "current data:\n"
+            "- Keep all existing entries that are not contradicted by the new document.\n"
+            "- Add new entries found in the document that are not yet present (avoid duplicates).\n"
+            "- Update an existing entry if the document provides more complete or more recent "
+            "information for the same company/institution/project/etc.\n"
+            "- Preserve the existing numeric 'id' and 'position' values for unchanged/updated items; "
+            "assign new unique integer ids (e.g. large timestamps) for newly added items and continue "
+            "the 'position' sequence.\n"
+        )
+    else:
+        mode_instructions = (
+            "Generate completely new CV data based solely on the uploaded document in the user "
+            "message. Ignore any prior data and start from scratch. Assign sequential integer "
+            "'position' values (starting at 0) and unique integer 'id' values (e.g. large "
+            "timestamps) for every list item.\n"
+        )
+
+    system_prompt = (
+        "You are an expert CV/resume parser. Read the attached document and extract all "
+        "professional information from it.\n\n"
+        f"{mode_instructions}\n"
+        "Return a valid JSON object matching EXACTLY this structure (use an empty string/array/0 "
+        f"for fields you cannot determine, keep all keys):\n{_CV_JSON_SCHEMA}\n\n"
+        "Rules:\n"
+        "- 'level' for skills is an integer 0-100 estimating proficiency.\n"
+        "- 'level' for languages is one of: 'Native', 'Fluent', 'Advanced', 'Intermediate', 'Basic'.\n"
+        "- Detect the document's language and write all extracted text in that language.\n"
+        "- 'logo' and 'profileImage' fields must always be left as empty strings.\n"
+        "- Do not invent information that is not present in the document or current data.\n"
+        "Please return a valid JSON object with exactly one key 'cv_data', containing the resulting "
+        "dictionary."
+    )
+
+    logger.info("[translation] [Gemini ADK] Initiating CV import run (merge=%s)", bool(existing_data))
+    agent = _get_agent(system_prompt, model)
+    try:
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+        from google.genai import types
+
+        session_service = InMemorySessionService()
+        try:
+            await session_service.create_session(app_name="transl", user_id="system", session_id="cv_import")
+        except Exception:
+            pass
+
+        runner = Runner(agent=agent, app_name="transl", session_service=session_service)
+
+        parts = []
+        if existing_data:
+            parts.append(types.Part(
+                text=f"CURRENT CV DATA:\n{json.dumps(existing_data, ensure_ascii=False)}"
+            ))
+        parts.append(types.Part.from_bytes(data=file_bytes, mime_type=mime_type))
+        parts.append(types.Part(text="Extract the CV data from the attached document as instructed."))
+
+        content = types.Content(role="user", parts=parts)
+
+        final_text = ""
+        async for event in runner.run_async(user_id="system", session_id="cv_import", new_message=content):
+            if event.is_final_response() and event.content and event.content.parts:
+                final_text = event.content.parts[0].text.strip()
+
+        if not final_text:
+            raise ValueError("No final response text received from ADK runner.")
+
+        logger.info("[translation] [Gemini ADK] CV import run succeeded")
+
+        stripped_text = final_text.strip()
+        if stripped_text.startswith("```json"):
+            stripped_text = stripped_text[7:]
+        if stripped_text.endswith("```"):
+            stripped_text = stripped_text[:-3]
+        parsed = json.loads(stripped_text.strip())
+        if isinstance(parsed, dict):
+            return parsed.get("cv_data", parsed)
+        return parsed
+
+    except Exception as e:
+        if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+            logger.error(f"[translation] Gemini API 429 Quota Exhausted: {e}")
+            raise
+        logger.error(f"[translation] Gemini API Error during CV import: {e}")
+        raise
+
+
+async def generate_project_from_readme(
+    readme_content: str,
+    github_url: str,
+    model: str,
+    language: str = "en",
+) -> dict:
+    """Extract project metadata from a GitHub README via Gemini.
+
+    Returns a dict with keys: title, description, github_link, image_url, website_url.
+    Written in the requested language.
+    """
+    lang_name = _LANG_NAMES.get(language, language)
+
+    system_prompt = (
+        "You are an expert at extracting structured project information from GitHub README files.\n\n"
+        "Given a README and the repository URL, extract the following as JSON:\n"
+        "- title: The project name (short, clear title)\n"
+        "- description: A concise description of what the project does (2-4 sentences max). "
+        "Do NOT include installation instructions or technical setup details, just what the project is.\n"
+        f"- github_link: The GitHub repository URL (use the provided URL if not found in the README)\n"
+        "- image_url: The absolute URL of the first screenshot, banner, or logo image in the README "
+        "(must be a full http/https URL; empty string if none found)\n"
+        "- website_url: The URL of the project's live website or demo (empty string if none found)\n\n"
+        f"Write the title and description in {lang_name}.\n"
+        "Please return a valid JSON object with exactly one key 'project', containing these five fields."
+    )
+
+    user_message = (
+        f"GitHub repository URL: {github_url}\n\n"
+        f"README content:\n{readme_content}"
+    )
+
+    logger.info("[translation] [Gemini ADK] Initiating GitHub README import run (language=%s)", language)
+    agent = _get_agent(system_prompt, model)
+    try:
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+        from google.genai import types
+
+        session_service = InMemorySessionService()
+        try:
+            await session_service.create_session(app_name="transl", user_id="system", session_id="github_import")
+        except Exception:
+            pass
+
+        runner = Runner(agent=agent, app_name="transl", session_service=session_service)
+        content = types.Content(role="user", parts=[types.Part(text=user_message)])
+
+        final_text = ""
+        async for event in runner.run_async(user_id="system", session_id="github_import", new_message=content):
+            if event.is_final_response() and event.content and event.content.parts:
+                final_text = event.content.parts[0].text.strip()
+
+        if not final_text:
+            raise ValueError("No final response text received from ADK runner.")
+
+        logger.info("[translation] [Gemini ADK] GitHub README import run succeeded")
+
+        stripped_text = final_text.strip()
+        if stripped_text.startswith("```json"):
+            stripped_text = stripped_text[7:]
+        if stripped_text.endswith("```"):
+            stripped_text = stripped_text[:-3]
+        parsed = json.loads(stripped_text.strip())
+        if isinstance(parsed, dict):
+            return parsed.get("project", parsed)
+        return parsed
+
+    except Exception as e:
+        if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+            logger.error("[translation] Gemini API 429 Quota Exhausted: %s", e)
+            raise
+        logger.error("[translation] Gemini API Error during GitHub README import: %s", e)
+        raise
+
+
 async def translate_projects_batch(
     projects: List[dict],
     source_lang: str,
@@ -246,6 +449,13 @@ async def run_translation_sync() -> None:
         logger.warning("[translation] Gemini API key not configured, skipping translation sync.")
         return
 
+    # Respect the admin toggle. When auto-translation is off, skip the whole run
+    # so nothing flagged just before disabling gets propagated to other languages.
+    async with AsyncSessionLocal() as db:
+        if not await app_setting_crud.is_auto_translation_enabled(db):
+            logger.info("[translation] Auto-translation disabled in settings, skipping run.")
+            return
+
     supported = settings.translation.supported_languages
     logger.info("[translation] Starting translation sync …")
 
@@ -266,7 +476,7 @@ async def run_translation_sync() -> None:
     async with AsyncSessionLocal() as db:
         try:
             # Admin-configurable model (falls back to env/config default)
-            active_model = await _get_active_model(db)
+            active_model = await get_active_model(db)
             logger.info("[translation] Using Gemini model: %s", active_model)
 
             # Nach Lock: Nochmals prüfen, ob Übersetzungen ausstehen
@@ -363,7 +573,9 @@ async def run_translation_sync() -> None:
                                     "description", source_proj_data["description"]
                                 )
                                 target_proj.link = source_proj_data["link"]
+                                target_proj.github_link = source_proj_data["github_link"]
                                 target_proj.image_object_name = source_proj_data["image_object_name"]
+                                target_proj.image_external_url = source_proj_data["image_external_url"]
                                 target_proj.position = source_proj_data["position"]
                                 target_proj.health_check_urls = source_proj_data["health_check_urls"] or []
                                 target_proj.has_changes = False
@@ -375,7 +587,9 @@ async def run_translation_sync() -> None:
                                         "description", source_proj_data["description"]
                                     ),
                                     link=source_proj_data["link"],
+                                    github_link=source_proj_data["github_link"],
                                     image_object_name=source_proj_data["image_object_name"],
+                                    image_external_url=source_proj_data["image_external_url"],
                                     position=source_proj_data["position"],
                                     owner_id=source_proj_data["owner_id"],
                                     language=tgt,
@@ -399,7 +613,9 @@ async def run_translation_sync() -> None:
                             "description": p.description,
                             "translation_group_id": p.translation_group_id,
                             "link": p.link,
+                            "github_link": p.github_link,
                             "image_object_name": p.image_object_name,
+                            "image_external_url": p.image_external_url,
                             "position": p.position,
                             "owner_id": p.owner_id,
                             "health_check_urls": p.health_check_urls

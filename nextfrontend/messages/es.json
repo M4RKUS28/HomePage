@@ -38,7 +38,15 @@
       "unknown": "Desconocido",
       "checking": "Verificando..."
     },
-    "onlineCount": "{count} en línea"
+    "onlineCount": "{count} en línea",
+    "importProjects": "Importar proyectos",
+    "exportProjects": "Exportar proyectos",
+    "importSuccess": "{count} proyectos importados correctamente",
+    "importPartial": "{success} importados, {failed} fallidos",
+    "importError": "Error al importar. Comprueba el archivo JSON.",
+    "exportEmpty": "No hay proyectos para exportar.",
+    "importFromGithub": "Importar desde GitHub",
+    "viewSource": "Ver código fuente en GitHub"
   },
   "cv": {
     "loading": "Cargando datos del CV...",
@@ -203,7 +211,22 @@
         "cancel": "Cancelar",
         "imageUpload": "Imagen del proyecto",
         "create": "Crear proyecto",
-        "update": "Actualizar proyecto"
+        "update": "Actualizar proyecto",
+        "githubLink": "Repositorio de GitHub (opcional)",
+        "githubLinkPlaceholder": "https://github.com/user/repo"
+      },
+      "githubImport": {
+        "description": "Pega cualquier enlace de repositorio o README de GitHub. La IA obtendrá el README y extraerá el título, descripción, enlaces e imagen del proyecto.",
+        "urlLabel": "URL de GitHub",
+        "generate": "Generar",
+        "generating": "Obteniendo README y analizando con IA… esto puede tardar un momento.",
+        "urlRequired": "Por favor, introduce una URL de GitHub.",
+        "urlInvalid": "Por favor, introduce una URL de GitHub válida.",
+        "error": "No se pudieron extraer los datos del proyecto. Por favor, inténtalo de nuevo.",
+        "noTitle": "Proyecto sin título",
+        "reviewHint": "Revisa los datos extraídos a continuación y haz clic en 'Usar proyecto' para abrir el formulario con ediciones finales.",
+        "useProject": "Usar proyecto",
+        "cancel": "Cancelar"
       }
     },
     "messages": {
@@ -214,7 +237,8 @@
       "markUnread": "Marcar como no leído",
       "delete": "Eliminar",
       "unread": "No leído",
-      "read": "Leído"
+      "read": "Leído",
+      "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar este mensaje?"
     },
     "users": {
       "title": "Gestión de usuarios",
@@ -244,11 +268,36 @@
       "addItem": "Añadir elemento",
       "editItem": "Editar elemento",
       "deleteItem": "Eliminar elemento",
+      "confirmRemove": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
       "rawData": "Datos sin procesar",
+      "personal": {
+        "homepageName": "Nombre de la página de inicio",
+        "homepageNameHint": "Aparece en la esquina superior izquierda del sitio (actualmente \"M4RKUS28\")",
+        "titleHeadline": "Título/Titular de la página de inicio",
+        "titleHeadlineHint": "Aparece debajo de tu nombre en la sección hero"
+      },
       "personalInfo": "Información personal",
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",
-      "saveSuccess": "¡CV guardado con éxito!"
+      "saveSuccess": "¡CV guardado con éxito!",
+      "import": {
+        "navLabel": "Importación IA",
+        "title": "Importación de CV con IA",
+        "description": "Sube tu CV (PDF, imagen o texto) y deja que la IA extraiga los datos en el editor. Revisa el resultado antes de guardar.",
+        "fileLabel": "Archivo del CV",
+        "chooseFile": "Elegir archivo",
+        "noFileSelected": "Ningún archivo seleccionado",
+        "modeLabel": "Modo de importación",
+        "modeMerge": "Combinar con los datos existentes",
+        "modeMergeHint": "Añade nueva información del archivo subido a tu CV actual, conservando las entradas existentes.",
+        "modeReplace": "Reemplazar todos los datos",
+        "modeReplaceHint": "Descarta el CV actual y genera todo de nuevo a partir del archivo subido.",
+        "generate": "Generar con IA",
+        "generating": "Analizando el CV con IA… esto puede tardar hasta un minuto.",
+        "success": "Datos del CV generados. Revísalos en la pestaña «Datos sin procesar» y luego haz clic en Guardar.",
+        "error": "No se pudieron generar los datos del CV. Inténtalo de nuevo.",
+        "selectFileError": "Por favor, selecciona primero un archivo."
+      }
     },
     "access": {
       "title": "Registro de acceso",
@@ -283,7 +332,16 @@
       "accentDefaultBadge": "Predeterminado: {color}",
       "accentSaved": "Color de acento actualizado.",
       "accentSaveError": "No se pudo actualizar el color de acento.",
-      "accentReset": "Restablecer al predeterminado"
+      "accentReset": "Restablecer al predeterminado",
+      "accentRandom": "Aleatorio",
+      "accentRandomHelp": "Un color nuevo en cada carga de la página.",
+      "autoTranslationTitle": "Traducción automática",
+      "autoTranslationHelp": "Cuando está activada, los cambios en tu CV y proyectos se traducen a todos los demás idiomas en la próxima sincronización. Cuando está desactivada, los cambios permanecen solo en el idioma editado.",
+      "autoTranslationEnabled": "La traducción automática está activada",
+      "autoTranslationDisabled": "La traducción automática está desactivada",
+      "autoTranslationSaved": "Ajuste de traducción automática actualizado.",
+      "autoTranslationSaveError": "No se pudo actualizar el ajuste de traducción automática.",
+      "autoTranslationNote": "Volver a activarla no traduce los cambios hechos mientras estaba desactivada, solo los nuevos cambios."
     }
   },
   "notFound": {

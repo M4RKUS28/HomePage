@@ -26,6 +26,7 @@ export const createProjectApi = async (projectData) => {
     title: projectData.title,
     description: projectData.description,
     link: projectData.link,
+    github_link: projectData.github_link || null,
     health_check_urls: projectData.health_check_urls || [],
     language: projectData.language || "en",
   };
@@ -43,9 +44,11 @@ export const updateProjectApi = async (projectId, projectData) => {
     title: projectData.title,
     description: projectData.description,
     link: projectData.link,
+    github_link: projectData.github_link,
     position: projectData.position,
-    health_check_urls: projectData.health_check_urls ?? [],
+    health_check_urls: projectData.health_check_urls,
     image_object_name: projectData.image_object_name,
+    image_external_url: projectData.image_external_url,
   };
 
   // Remove undefined values
@@ -60,6 +63,26 @@ export const updateProjectApi = async (projectId, projectData) => {
 export const deleteProjectApi = async (projectId) => {
   await apiClient.delete(`/projects/${projectId}`);
   return { success: true, projectId };
+};
+
+/**
+ * AI-assisted GitHub project import.
+ *
+ * Fetches the README at the given GitHub URL, runs it through Gemini, and
+ * returns extracted project metadata for review. The result is NOT saved
+ * automatically — call `createProjectApi` afterwards to persist it.
+ *
+ * @param {string} githubUrl - Any GitHub URL (repo root, blob, or raw README)
+ * @param {string} language  - Language for title/description generation
+ * @returns {Promise<{ title, description, github_link, image_url, website_url }>}
+ */
+export const importProjectFromGithubApi = async (githubUrl, language = "en") => {
+  const { data } = await apiClient.post(
+    "/projects/import-github",
+    { github_url: githubUrl, language },
+    { timeout: 90000 },
+  );
+  return data;
 };
 
 export const checkProjectStatusApi = async (projectId) => {

@@ -4,7 +4,7 @@ CRUD operations for the CV model.
 
 from typing import Optional, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.cv import CV
@@ -36,6 +36,21 @@ async def check_pending_changes_other_language(
         .limit(1)
     )
     return result.scalar_one_or_none() is not None
+
+
+async def clear_all_changes(db: AsyncSession) -> int:
+    """Reset has_changes on every CV record. Returns the number of rows cleared.
+
+    Used when auto-translation is re-enabled so that edits made while it was
+    off are not retroactively queued for translation.
+    """
+    result = await db.execute(
+        update(CV)
+        .where(CV.has_changes == True)  # noqa: E712
+        .values(has_changes=False)
+    )
+    await db.commit()
+    return result.rowcount or 0
 
 
 # ---------------------------------------------------------------------------

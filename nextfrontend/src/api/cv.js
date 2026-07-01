@@ -20,6 +20,32 @@ export const updateCVDataApi = async (cvData, language) => {
 };
 
 /**
+ * AI-assisted CV import: upload a CV/resume file (PDF, image or text) and
+ * have the configured Gemini model extract it into the CV JSON structure.
+ *
+ * The result is returned for review (not saved automatically) - call
+ * `updateCVDataApi` afterwards to persist it.
+ *
+ * @param {File}   file     - Browser File object (PDF/PNG/JPEG/WEBP/TXT)
+ * @param {string} mode     - 'replace' (fresh data) or 'merge' (extend existing data)
+ * @param {string} language - CV language to merge into / save as
+ * @returns {Promise<object>} Generated CV data
+ */
+export const importCVApi = async (file, mode, language) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('mode', mode);
+
+  const params = language ? { language } : {};
+  const { data } = await apiClient.post('/cv/import', formData, {
+    params,
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000,
+  });
+  return data;
+};
+
+/**
  * Upload a CV-related image via presigned URL.
  *
  * @param {File}        file       - Browser File object
