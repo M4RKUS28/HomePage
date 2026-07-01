@@ -160,9 +160,12 @@ services:
 networks:
   app-network:
     driver: bridge
-
 volumes:
   postgres_data:
+    external: true
+    name: home_postgres_data
   redis_data:
   minio_data:
+    external: true
+    name: home_minio_data
   frontend_logs:

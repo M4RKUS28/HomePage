@@ -37,7 +37,7 @@ echo "[start] Starting stack (detached)…"
 # Install / refresh the hourly auto-update cron job (idempotent via marker)
 CRON_MARK="# m4rkus-hp-auto-update"
 CRON_LINE="0 * * * * $SCRIPT_DIR/update.sh >> $SCRIPT_DIR/update.log 2>&1 $CRON_MARK"
-( crontab -l 2>/dev/null | grep -vF "$CRON_MARK" ; echo "$CRON_LINE" ) | crontab -
+( crontab -l 2>/dev/null | grep -vF "$CRON_MARK" || true ; echo "$CRON_LINE" ) | crontab -
 echo "[start] Hourly auto-update installed (crontab). Log: $SCRIPT_DIR/update.log"
 
 "${COMPOSE[@]}" ps
