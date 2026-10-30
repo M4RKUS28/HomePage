@@ -7,6 +7,7 @@ Responsibilities:
 * Scheduled background task to flush pending IPs to PostgreSQL
 """
 
+import ipaddress
 import logging
 from datetime import datetime, timezone
 from typing import Optional
@@ -39,6 +40,10 @@ async def track_ip(ip: str) -> bool:
     Returns True if this is a **new** access (not seen in the last 10 min).
     Uses SET NX + EX for atomic dedup.
     """
+    ip = _normalize_ip(ip)
+    if ip is None:
+        logger.debug("[access] Ignoring invalid IP value")
+        return False
     # Ignore internal infrastructure traffic (Docker network, health checks,
     # localhost): these reach the backend without a forwarded client IP and are
     # not real visitors, so they should never appear in the access log.
@@ -145,7 +150,10 @@ async def resolve_pending_ips() -> None:
             try:
                 entry_str = entry if isinstance(entry, str) else entry.decode()
                 parts = entry_str.split("||", 1)
-                ip = parts[0]
+                ip = _normalize_ip(parts[0])
+                if ip is None:
+                    logger.warning("[access] Dropping pending entry with invalid IP")
+                    continue
                 ts_iso = parts[1] if len(parts) > 1 else None
                 ts = (
                     datetime.fromisoformat(ts_iso)
@@ -184,9 +192,16 @@ async def resolve_pending_ips() -> None:
     logger.info("[access] Finished resolving pending IPs.")
 
 
+def _normalize_ip(ip: str) -> Optional[str]:
+    """Return the canonical form of a valid IP address, or None if invalid."""
+    try:
+        return str(ipaddress.ip_address(ip.strip()))
+    except ValueError:
+        return None
+
+
 def _is_private_ip(ip: str) -> bool:
     """Check if an IP is a private/local address."""
-    import ipaddress
     try:
         addr = ipaddress.ip_address(ip)
         return addr.is_private or addr.is_loopback or addr.is_reserved
