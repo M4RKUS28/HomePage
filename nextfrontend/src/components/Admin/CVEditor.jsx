@@ -4,6 +4,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../hooks/useTheme';
 import { useLanguage } from '../../contexts/LanguageContext';
 import Spinner from '../UI/Spinner';
+import { safeHref } from '../../lib/safe-href';
 import {
   Save,
   RefreshCw,
@@ -528,7 +529,7 @@ const CVEditor = () => {
           {item.links.map((link, idx) => (
             <a
               key={idx}
-              href={link.url ? String(link.url) : '#'}
+              href={safeHref(link.url)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-700 text-white"
@@ -564,7 +565,7 @@ const CVEditor = () => {
       {item.links && item.links.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
           {item.links.map((link, idx) => (
-            <a key={idx} href={link.url ? String(link.url) : '#'} target="_blank" rel="noopener noreferrer" className="cv-tag">
+            <a key={idx} href={safeHref(link.url)} target="_blank" rel="noopener noreferrer" className="cv-tag">
               <Link size={12} className="mr-1" /> {link.text || 'Link'}
             </a>
           ))}

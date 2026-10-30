@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Github, Sparkles, ExternalLink, Image, Globe } from 'lucide-react';
 import Spinner from '../UI/Spinner';
+import { safeHref } from '../../lib/safe-href';
 import { useToast } from '../../contexts/ToastContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { importProjectFromGithubApi } from '../../api/projects';
@@ -108,7 +109,7 @@ const GithubImportModal = ({ onImported, onClose }) => {
               <div className="flex items-center gap-2">
                 <Github size={13} className="shrink-0" />
                 <a
-                  href={preview.github_link}
+                  href={safeHref(preview.github_link)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="truncate hover:text-ink transition-colors"
@@ -121,7 +122,7 @@ const GithubImportModal = ({ onImported, onClose }) => {
               <div className="flex items-center gap-2">
                 <Globe size={13} className="shrink-0" />
                 <a
-                  href={preview.website_url}
+                  href={safeHref(preview.website_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="truncate hover:text-ink transition-colors"
@@ -134,7 +135,7 @@ const GithubImportModal = ({ onImported, onClose }) => {
               <div className="flex items-center gap-2">
                 <Image size={13} className="shrink-0" />
                 <a
-                  href={preview.image_url}
+                  href={safeHref(preview.image_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="truncate hover:text-ink transition-colors"

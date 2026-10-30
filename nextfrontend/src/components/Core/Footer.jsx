@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTranslations } from 'next-intl';
+import { safeHref } from '../../lib/safe-href';
 import { Github, Linkedin, Mail, Globe, Twitter, Languages } from 'lucide-react';
 
 const LOCALE_LABELS = {
@@ -49,8 +50,7 @@ const Footer = ({
   // Create social link components
   const socialLinkComponents = socialLinks.map((link) => {
     const Icon = getIconForPlatform(link.platform);
-    // Coerce url to string - Pydantic v2 HttpUrl objects serialize as non-primitives
-    const href = link.url ? String(link.url) : '#';
+    const href = safeHref(link.url);
     return {
       icon: Icon,
       href,
