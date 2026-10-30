@@ -114,7 +114,7 @@ services:
     environment:
       - NODE_ENV=production
       - BACKEND_URL=http://homepagebackend:8000
-      - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET}
+      - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET:?AUTH_INTERNAL_SHARED_SECRET must be set (openssl rand -hex 32)}
       - SESSION_SECRET=${SESSION_SECRET}
       - AUTH_URL=${AUTH_URL:-https://www.m4rkus28.de}
       - AUTH_TRUST_HOST=true

@@ -131,7 +131,7 @@ services:
     environment:
       - NODE_ENV=development
       - BACKEND_URL=http://homepagebackend:8000
-      - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET:-change-me-in-production}
+      - AUTH_INTERNAL_SHARED_SECRET=${AUTH_INTERNAL_SHARED_SECRET:?AUTH_INTERNAL_SHARED_SECRET must be set (openssl rand -hex 32)}
       - SESSION_SECRET=${SESSION_SECRET:-iron-session-secret-at-least-32-chars-change-me}
       - AUTH_URL=${AUTH_URL:-http://localhost:8457}
       - NEXT_TELEMETRY_DISABLED=1
