@@ -134,15 +134,8 @@ export const useAuth = () => {
   const refreshUser = useCallback(async () => {
     try {
       const { data: freshUser } = await apiClient.get('/users/me');
-      await update({
-        id: freshUser.id,
-        username: freshUser.username,
-        email: freshUser.email,
-        isAdmin: freshUser.is_admin,
-        isActive: freshUser.is_active,
-        avatarUrl: freshUser.profile_image_url || null,
-        createdAt: freshUser.created_at || null,
-      });
+      // Payload is ignored server-side; the jwt callback re-fetches the user.
+      await update({});
       return freshUser;
     } catch (err) {
       console.error('refreshUser failed:', err);

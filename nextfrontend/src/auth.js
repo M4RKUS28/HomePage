@@ -12,9 +12,30 @@
  */
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import { signInternalJWT } from './lib/internal-jwt';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 const INTERNAL_KEY = process.env.AUTH_INTERNAL_SHARED_SECRET || '';
+
+async function fetchCurrentUser(token) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/users/me`, {
+      headers: {
+        Authorization: `Bearer ${signInternalJWT({
+          userId: token.userId,
+          username: token.username,
+          isAdmin: token.isAdmin,
+        })}`,
+      },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.error('[auth/jwt] Failed to refresh user from backend:', err);
+    return null;
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.SESSION_SECRET,
@@ -87,10 +108,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // ---------------------------------------------------------------------------
   callbacks: {
     /**
-     * Persist custom fields into the JWT on initial sign-in and on
-     * explicit session updates (e.g. after profile edits).
+     * Persist custom fields into the JWT on initial sign-in and refresh
+     * them from the backend on explicit session updates (e.g. after
+     * profile edits).
      */
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger }) {
       // Initial sign-in — copy user fields into the token
       if (user) {
         token.userId = parseInt(user.id, 10);
@@ -103,16 +125,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.language = user.language ?? 'en';
       }
 
-      // Client-triggered update (useSession().update(data))
-      if (trigger === 'update' && session) {
-        if (session.username !== undefined) token.username = session.username;
-        if (session.email !== undefined) token.email = session.email;
-        if (session.isAdmin !== undefined) token.isAdmin = session.isAdmin;
-        if (session.isActive !== undefined) token.isActive = session.isActive;
-        if (session.avatarUrl !== undefined) token.avatarUrl = session.avatarUrl;
-        if (session.createdAt !== undefined) token.createdAt = session.createdAt;
-        if (session.language !== undefined) token.language = session.language;
-        if (session.id !== undefined) token.userId = session.id;
+      // Client-triggered update (useSession().update()). The client payload is
+      // untrusted, so it is ignored: identity stays bound to token.userId and
+      // all other fields are re-fetched from the backend.
+      if (trigger === 'update' && token.userId) {
+        const fresh = await fetchCurrentUser(token);
+        if (fresh) {
+          token.username = fresh.username;
+          token.email = fresh.email;
+          token.isAdmin = fresh.is_admin ?? false;
+          token.isActive = fresh.is_active ?? true;
+          token.avatarUrl = fresh.profile_image_url ?? token.avatarUrl ?? null;
+          token.language = fresh.language ?? token.language ?? 'en';
+        }
       }
 
       return token;
