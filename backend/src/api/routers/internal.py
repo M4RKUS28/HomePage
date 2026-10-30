@@ -13,6 +13,7 @@ Flow:
   5. Every subsequent request: NextJS signs a fresh 30 s JWT and proxies
 """
 
+import hmac
 import logging
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
@@ -38,7 +39,10 @@ async def _verify_internal_key(
     x_internal_key: str = Header(..., alias="X-Internal-Key"),
 ) -> None:
     """Reject requests that don't carry the correct internal key."""
-    if x_internal_key != settings.auth.internal_shared_secret:
+    if not hmac.compare_digest(
+        x_internal_key.encode("utf-8"),
+        settings.auth.internal_shared_secret.encode("utf-8"),
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid internal key",

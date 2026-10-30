@@ -150,7 +150,7 @@ Images werden per CI/CD auf DockerHub gepusht:
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL-Verbindung |
 | `REDIS_HOST`, `REDIS_PORT` | Redis-Verbindung |
 | `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | MinIO Object Storage |
-| `AUTH_INTERNAL_SHARED_SECRET` | Shared Secret zwischen Next.js und FastAPI |
+| `AUTH_INTERNAL_SHARED_SECRET` | Shared Secret zwischen Next.js und FastAPI (Pflicht, min. 32 Zeichen, z. B. `openssl rand -hex 32`; Backend startet sonst nicht) |
 | `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Initialer Admin-User (Seed) |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASSWORD` | SMTP für ausgehende E-Mails |
 | `GOOGLE_API_KEY`, `TRANSLATION_ENABLED` | Google Gemini KI-Übersetzung (Projekte & CV) |

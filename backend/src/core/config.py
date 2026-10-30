@@ -6,6 +6,7 @@ Application settings powered by pydantic-settings.
 * Singleton via @lru_cache - import ``get_settings()`` everywhere.
 """
 
+import re
 from functools import lru_cache
 from typing import List, Optional
 
@@ -96,6 +97,10 @@ class EmailSettings(BaseSettings):
     use_ssl: bool = False
 
 
+MIN_INTERNAL_SECRET_LENGTH = 32
+_PLACEHOLDER_SECRET_MARKERS = ("changeme", "example", "placeholder")
+
+
 class AuthSettings(BaseSettings):
     """
     Internal service-token settings (NextJS → FastAPI).
@@ -103,12 +108,31 @@ class AuthSettings(BaseSettings):
     NextJS signs a JWT with INTERNAL_SHARED_SECRET; FastAPI validates it.
     No login / register endpoints in the backend.
     """
-    model_config = SettingsConfigDict(env_prefix="AUTH_")
+    model_config = SettingsConfigDict(env_prefix="AUTH_", hide_input_in_errors=True)
 
-    internal_shared_secret: str = "change-me-in-production"
+    # Required: no default, startup fails if missing / weak / placeholder.
+    internal_shared_secret: str = Field(..., repr=False)
     algorithm: str = "HS256"
     # Token lifetime used by NextJS when signing (FastAPI just validates exp)
     token_expire_minutes: int = 60
+
+    @field_validator("internal_shared_secret")
+    @classmethod
+    def _validate_internal_shared_secret(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < MIN_INTERNAL_SECRET_LENGTH:
+            raise ValueError(
+                "AUTH_INTERNAL_SHARED_SECRET must be at least "
+                f"{MIN_INTERNAL_SECRET_LENGTH} characters "
+                "(generate one with: openssl rand -hex 32)"
+            )
+        normalized = re.sub(r"[^a-z0-9]", "", value.lower())
+        if any(marker in normalized for marker in _PLACEHOLDER_SECRET_MARKERS):
+            raise ValueError(
+                "AUTH_INTERNAL_SHARED_SECRET is a placeholder value; "
+                "set a random secret (openssl rand -hex 32)"
+            )
+        return value
 
 
 class AdminSettings(BaseSettings):
