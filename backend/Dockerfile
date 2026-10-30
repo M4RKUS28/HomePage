@@ -9,7 +9,9 @@ WORKDIR /usr/src/app
 RUN pip install --upgrade pip
 
 COPY requirements.txt ./requirements.txt
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+# Resolve direct and transitive dependencies together to avoid selecting
+# incompatible wheels before dependency constraints are known.
+RUN pip wheel --no-cache-dir --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 
 # ---------- final stage ----------
@@ -22,10 +24,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
 
 WORKDIR /home/app/web
 
-# Install pre-built wheels
+# Install the resolved wheelhouse offline, preserving requirement extras.
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
-RUN pip install --no-cache /wheels/*
+RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt
 
 # Copy application source (src → app inside the container)
 COPY ./src ./src
