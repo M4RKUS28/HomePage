@@ -1,10 +1,10 @@
 """
-Presigned URL endpoints for direct MinIO uploads & downloads.
+Presigned URL endpoints for direct S3 uploads & downloads.
 
 Flow:
 1. Client calls POST /storage/upload-url with desired category + filename
 2. Backend returns a presigned PUT URL + the object_name
-3. Client PUTs the file directly to MinIO
+3. Client PUTs the file directly to the object store
 4. Client calls a domain endpoint (e.g. PUT /projects/{id}) with the object_name
    to persist the reference in the database
 """
@@ -14,7 +14,7 @@ import re
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ...core.dependencies import get_current_active_user, get_current_admin_user
-from ...db.minio import get_minio
+from ...db.storage import get_storage
 from ...db.models.user import User
 from ..schemas.storage import (
     PresignedDownloadResponse,
@@ -69,7 +69,7 @@ def _split_object_name(object_name: str) -> list[str] | None:
 
 def _can_access_object(parts: list[str], user: User) -> bool:
     """
-    Authorisation for downloading a MinIO object.
+    Authorisation for downloading an S3 object.
 
     Rules:
     * Public assets (``avatars/``, ``projects/``) are readable by any caller.
@@ -92,14 +92,14 @@ async def get_upload_url(
     req: PresignedUploadRequest,
     current_user: User = Depends(get_current_admin_user),
 ):
-    """Generate a presigned PUT URL for direct client → MinIO upload."""
-    minio = get_minio()
+    """Generate a presigned PUT URL for direct client → object-store upload."""
+    storage = get_storage()
     object_name = _build_object_name(req.category, req.resource_id, req.filename, current_user.id)
-    url = minio.presigned_put_url(object_name)
+    url = storage.presigned_put_url(object_name)
     return PresignedUploadResponse(
         upload_url=url,
         object_name=object_name,
-        expires_in=minio._expiry,
+        expires_in=storage._expiry,
     )
 
 
@@ -109,7 +109,7 @@ async def get_download_url(
     current_user: User = Depends(get_current_active_user),
 ):
     """
-    Generate a presigned GET URL for direct MinIO → client download.
+    Generate a presigned GET URL for direct object-store → client download.
 
     Private objects (e.g. uploaded CVs under ``cv/<user_id>/``) are only
     accessible to their owner or an admin; public assets like avatars and
@@ -126,9 +126,9 @@ async def get_download_url(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorised to access this object",
         )
-    minio = get_minio()
-    url = minio.presigned_get_url(object_name)
+    storage = get_storage()
+    url = storage.presigned_get_url(object_name)
     return PresignedDownloadResponse(
         download_url=url,
-        expires_in=minio._expiry,
+        expires_in=storage._expiry,
     )

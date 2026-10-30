@@ -55,32 +55,36 @@ services:
       timeout: 3s
       retries: 5
 
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    command: server /data --console-address ":9001"
+  garage:
+    image: dxflrs/garage:v2.5.0
+    container_name: garage
+    entrypoint: /garage
+    command: ["server", "--single-node", "--default-bucket"]
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?GARAGE_RPC_SECRET must be set (openssl rand -hex 32)}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?GARAGE_ADMIN_TOKEN must be set (openssl rand -hex 32)}
+      GARAGE_DEFAULT_ACCESS_KEY: ${S3_ACCESS_KEY:?S3_ACCESS_KEY must be set (GK + openssl rand -hex 16)}
+      GARAGE_DEFAULT_SECRET_KEY: ${S3_SECRET_KEY:?S3_SECRET_KEY must be set (openssl rand -hex 32)}
+      GARAGE_DEFAULT_BUCKET: ${S3_BUCKET:-homepage}
     volumes:
-      - minio_data:/data
+      - ./garage.toml:/etc/garage.toml:ro
+      - garage_metadata:/var/lib/garage/meta
+      - garage_data:/var/lib/garage/data
     expose:
-      - "9000"
-      - "9001"
+      - "3900"
     networks:
       - app-network
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "/garage", "status"]
       interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      timeout: 5s
+      retries: 5
 
   # ── Application ─────────────────────────────────────────────────────────────
 
   homepagebackend:
-    image: ${DOCKERHUB_USERNAME}/m4rkus-backend:latest
+    image: ${DOCKERHUB_USERNAME}/m4rkus-backend:${APP_IMAGE_TAG:-latest}
     container_name: homepagebackend
     expose:
       - "8000"
@@ -94,7 +98,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      minio:
+      garage:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/docs"]
@@ -107,7 +111,7 @@ services:
     restart: always
 
   nextfrontend:
-    image: ${DOCKERHUB_USERNAME}/m4rkus-frontend:latest
+    image: ${DOCKERHUB_USERNAME}/m4rkus-frontend:${APP_IMAGE_TAG:-latest}
     container_name: nextfrontend
     expose:
       - "3000"
@@ -133,7 +137,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:3000",
+          "http://127.0.0.1:3000",
         ]
       interval: 20s
       timeout: 10s
@@ -144,7 +148,7 @@ services:
     restart: always
 
   nginx:
-    image: ${DOCKERHUB_USERNAME}/m4rkus-nginx:latest
+    image: ${DOCKERHUB_USERNAME}/m4rkus-nginx:${APP_IMAGE_TAG:-latest}
     container_name: nginx
     ports:
       - "8457:80"
@@ -165,7 +169,8 @@ volumes:
     external: true
     name: home_postgres_data
   redis_data:
-  minio_data:
-    external: true
-    name: home_minio_data
+  garage_metadata:
+    name: deploy_garage_metadata
+  garage_data:
+    name: deploy_garage_data
   frontend_logs:

@@ -1,7 +1,7 @@
 """
 Project service - business logic for project management.
 
-Orchestrates: CRUD, health-checking, MinIO image handling.
+Orchestrates: CRUD, health-checking, S3 image handling.
 """
 
 import asyncio
@@ -17,7 +17,7 @@ from ..api.schemas.project import ProjectCreate, ProjectUpdate
 from ..core.config import get_settings
 from ..db.crud import app_setting as app_setting_crud
 from ..db.crud import project as project_crud
-from ..db.minio import get_minio
+from ..db.storage import get_storage
 from ..db.models.project import Project, ProjectStatus
 from . import translation as translation_service
 
@@ -325,11 +325,11 @@ async def delete_project(db: AsyncSession, project_id: int) -> None:
         # Fallback if for some reason group_id is missing
         all_projects_in_group = [project]
 
-    # Clean up image from MinIO for all projects in the group
-    minio_client = get_minio()
+    # Clean up image from S3 for all projects in the group
+    storage_client = get_storage()
     for p in all_projects_in_group:
         if p.image_object_name:
-            minio_client.delete_file(p.image_object_name)
+            storage_client.delete_file(p.image_object_name)
 
     if group_id:
         await project_crud.delete_projects_by_group(db, group_id)
@@ -340,7 +340,7 @@ async def delete_project(db: AsyncSession, project_id: int) -> None:
 
 
 def get_project_image_url(project: Project) -> Optional[str]:
-    """Return the display URL for a project image: MinIO presigned URL if uploaded, else external URL."""
+    """Return the display URL for a project image: S3 presigned URL if uploaded, else external URL."""
     if project.image_object_name:
-        return get_minio().presigned_get_url(project.image_object_name)
+        return get_storage().presigned_get_url(project.image_object_name)
     return project.image_external_url or None

@@ -1,13 +1,16 @@
 """
-MinIO / S3-compatible object-storage client.
+S3-compatible object-storage client (Garage).
+
+Uses the MinIO Python SDK as a generic S3 client; the storage
+backend is Garage (single-node, provisioned externally).
 
 Provides:
-* Presigned upload URLs  (client uploads directly to MinIO)
-* Presigned download URLs (client downloads directly from MinIO)
+* Presigned upload URLs  (client uploads directly to Garage)
+* Presigned download URLs (client downloads directly from Garage)
 * Server-side upload / delete helpers for small files (e.g. avatars < 5 MB)
 * Bucket initialisation
 
-The MinIO Python SDK is synchronous - presigned URL generation is CPU-bound
+The MinIO Python SDK (used as a generic S3 client) is synchronous - presigned URL generation is CPU-bound
 and fast, so running it synchronously in the async context is acceptable.
 For heavy I/O (streaming large objects) use presigned URLs instead.
 """
@@ -28,16 +31,17 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
-class MinioStorage:
-    """Wrapper around the MinIO client with convenience methods."""
+class S3Storage:
+    """Wrapper around the S3 client with convenience methods."""
 
     def __init__(self) -> None:
-        cfg = settings.minio
+        cfg = settings.s3
         self._client = Minio(
             cfg.endpoint,
             access_key=cfg.access_key,
             secret_key=cfg.secret_key,
             secure=cfg.secure,
+            region=cfg.region,  # explicit region; Garage has no region lookup
         )
         self._bucket = cfg.bucket
         self._expiry = cfg.presigned_expiry
@@ -48,13 +52,16 @@ class MinioStorage:
     # ------------------------------------------------------------------
 
     def ensure_bucket(self) -> None:
-        """Create the default bucket if it does not exist."""
+        """Verify the default bucket exists; it is provisioned by Garage."""
         try:
             if not self._client.bucket_exists(self._bucket):
-                self._client.make_bucket(self._bucket)
-                logger.info("Created MinIO bucket: %s", self._bucket)
+                raise RuntimeError(
+                    f"S3 bucket '{self._bucket}' does not exist; "
+                    "provision it in Garage (GARAGE_DEFAULT_BUCKET / "
+                    "garage bucket create) before starting the backend"
+                )
         except S3Error as exc:
-            logger.error("MinIO bucket error: %s", exc)
+            logger.error("S3 bucket error: %s", exc)
             raise
 
     # ------------------------------------------------------------------
@@ -63,15 +70,18 @@ class MinioStorage:
 
     def _rewrite_url(self, url: str) -> str:
         """
-        If ``MINIO_PUBLIC_URL`` is configured, replace the internal
-        host:port with the public one so the browser can reach MinIO.
+        If ``S3_PUBLIC_URL`` is configured, replace the internal
+        host:port with the public one so the browser can reach the
+        object store through the nginx ``/storage/`` proxy. The request
+        stays signed for the internal host (``garage:3900``), which is
+        what the proxy forwards as ``Host``.
         """
         if not self._public_url:
             return url
         parsed = urlparse(url)
         public = urlparse(self._public_url)
         
-        # Merge paths if public_url has a path component (e.g., /minio)
+        # Merge paths if public_url has a path component (e.g., /storage)
         new_path = parsed.path
         if public.path and public.path != "/":
             new_path = f"{public.path.rstrip('/')}/{parsed.path.lstrip('/')}"
@@ -151,13 +161,13 @@ class MinioStorage:
 # Module-level singleton
 # ---------------------------------------------------------------------------
 
-_storage: Optional[MinioStorage] = None
+_storage: Optional[S3Storage] = None
 
 
-def get_minio() -> MinioStorage:
-    """Return the module-level MinioStorage singleton (lazy-initialised)."""
+def get_storage() -> S3Storage:
+    """Return the module-level S3Storage singleton (lazy-initialised)."""
     global _storage
     if _storage is None:
-        _storage = MinioStorage()
+        _storage = S3Storage()
         _storage.ensure_bucket()
     return _storage

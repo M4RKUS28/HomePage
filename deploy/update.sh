@@ -17,13 +17,16 @@ if ! flock -n 9; then
   exit 0
 fi
 
-echo "[update] $(date -Is) pulling images…"
-"${COMPOSE[@]}" pull --quiet
+echo "[update] $(date -Is) pulling app images…"
+# Only the application images — infra (garage/postgres/redis) is managed
+# deliberately and never pulled by the hourly job. APP_IMAGE_TAG pins the
+# exact commit tag, so this cannot roll back to an older "latest".
+"${COMPOSE[@]}" pull --quiet homepagebackend nextfrontend nginx
 
 echo "[update] $(date -Is) applying (recreates only changed containers)…"
-"${COMPOSE[@]}" up -d --remove-orphans
+"${COMPOSE[@]}" up -d --no-deps --pull never homepagebackend nextfrontend nginx
 
-# Keep the disk clean: drop dangling images from previous pulls
-docker image prune -f >/dev/null
+# No --remove-orphans and no image prune: old images stay available for
+# manual rollback; cleanup is a separate, explicitly approved step.
 
 echo "[update] $(date -Is) done."

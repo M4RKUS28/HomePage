@@ -66,15 +66,16 @@ class RedisSettings(BaseSettings):
         return f"redis://{auth}{self.host}:{self.port}/{self.db}"
 
 
-class MinioSettings(BaseSettings):
-    """S3-compatible object storage settings."""
-    model_config = SettingsConfigDict(env_prefix="MINIO_")
+class S3Settings(BaseSettings):
+    """S3-compatible object storage settings (Garage)."""
+    model_config = SettingsConfigDict(env_prefix="S3_")
 
-    endpoint: str = "minio:9000"
-    access_key: str = "minioadmin"
-    secret_key: str = "minioadmin"
+    endpoint: str = "garage:3900"
+    access_key: str = Field(..., repr=False)
+    secret_key: str = Field(..., repr=False)
     bucket: str = "homepage"
     secure: bool = False
+    region: str = "garage"
     presigned_expiry: int = 3600  # seconds for presigned URLs
 
     # Public URL prefix (used for constructing browser-accessible presigned URLs)
@@ -209,7 +210,7 @@ class Settings(BaseSettings):
     # Sub-configs (populated from env with their respective prefixes)
     db: DatabaseSettings = DatabaseSettings()
     redis: RedisSettings = RedisSettings()
-    minio: MinioSettings = MinioSettings()
+    s3: S3Settings = S3Settings()
     email: EmailSettings = EmailSettings()
     auth: AuthSettings = AuthSettings()
     admin: AdminSettings = AdminSettings()

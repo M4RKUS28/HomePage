@@ -19,7 +19,7 @@ Browser ──► Nginx (Reverse Proxy, Rate Limiting, Security Headers)
                                       │ iron-session           │ async
                                       │ (verschlüsseltes      ├── PostgreSQL 16
                                       │  Session-Cookie)       ├── Redis 7
-                                      │                        └── MinIO (S3)
+                                      │                        └── Garage (S3)
                                  Browser
 ```
 
@@ -39,7 +39,7 @@ Der Browser sieht niemals ein FastAPI-JWT. Next.js verwaltet die Session über v
 | **Geolokalisierung** | IPinfo | Besucher-Zugriffs-Log, Weltkarte via Leaflet |
 | **Datenbank** | PostgreSQL 16 | Health-checked, persistentes Volume |
 | **Cache** | Redis 7 | LRU-Eviction, async Client |
-| **Objektspeicher** | MinIO | S3-kompatibel, Presigned URLs für Uploads |
+| **Objektspeicher** | Garage | S3-kompatibel, Presigned URLs für Uploads |
 | **Reverse Proxy** | Nginx | Rate Limiting, Security Headers, Static-File-Caching |
 | **Process Manager** | PM2 | Cluster-Modus in Produktion |
 | **Container** | Docker Compose | Getrennte Dev/Prod-Konfigurationen |
@@ -56,7 +56,7 @@ Der Browser sieht niemals ein FastAPI-JWT. Next.js verwaltet die Session über v
 - **📫 Kontaktformular** – Nachrichten mit E-Mail-Benachrichtigung (aiosmtplib)
 - **📊 Admin-Dashboard** – Projekte, Nachrichten, User, CV und Einstellungen verwalten
 - **📈 Besucher-Analytics** – Zugriffs-Log mit IP-Geolokalisierung und Weltkarte (Leaflet)
-- **🖼️ Datei-Upload** – Avatar- und Bild-Upload über MinIO mit Presigned URLs
+- **🖼️ Datei-Upload** – Avatar- und Bild-Upload über Garage (S3) mit Presigned URLs
 - **⚡ Animationen** – Flüssige Übergänge und Interaktionen mit Framer Motion
 - **🛡️ Sicherheit** – Rate Limiting, Security Headers, verschlüsselte Sessions, CORS
 
@@ -107,7 +107,7 @@ und Frontend:
 
 ```bash
 cp .env.example .env
-# .env anpassen (DB, MinIO, Secrets, Admin-Credentials, E-Mail, …)
+# .env anpassen (DB, Garage/S3, Secrets, Admin-Credentials, E-Mail, …)
 ```
 
 ### 3. Starten
@@ -122,7 +122,6 @@ docker compose up --build
 |---|---|
 | **Website** | [http://localhost:8457](http://localhost:8457) |
 | **API Docs (Swagger)** | [http://localhost:8457/api/docs](http://localhost:8457/api/docs) |
-| **MinIO Console** | [http://localhost:9001](http://localhost:9001) |
 
 ---
 
@@ -149,7 +148,7 @@ Images werden per CI/CD auf DockerHub gepusht:
 |---|---|
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL-Verbindung |
 | `REDIS_HOST`, `REDIS_PORT` | Redis-Verbindung |
-| `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | MinIO Object Storage |
+| `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` | Garage S3 Object Storage |
 | `AUTH_INTERNAL_SHARED_SECRET` | Shared Secret zwischen Next.js und FastAPI (Pflicht, min. 32 Zeichen, z. B. `openssl rand -hex 32`; Backend startet sonst nicht) |
 | `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Initialer Admin-User (Seed) |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASSWORD` | SMTP für ausgehende E-Mails |

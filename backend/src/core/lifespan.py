@@ -10,7 +10,7 @@ from fastapi import FastAPI
 
 from .config import get_settings
 from .security import get_password_hash
-from ..db.minio import get_minio
+from ..db.storage import get_storage
 from ..db.redis import close_redis_pool, init_redis_pool
 from ..db.session import AsyncSessionLocal
 from ..db.crud import user as user_crud
@@ -86,7 +86,7 @@ async def lifespan(app: FastAPI):
     # ── Startup ──
     logger.info("[startup] Initialising resources…")
     await init_redis_pool()
-    get_minio()  # ensure bucket exists
+    get_storage()  # ensure bucket exists
 
     await _ensure_admin_exists()
     await _init_cv_data()

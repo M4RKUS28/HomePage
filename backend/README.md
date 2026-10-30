@@ -1,6 +1,6 @@
 # Backend – FastAPI
 
-Async REST API für die Portfolio-Homepage. Läuft zusammen mit PostgreSQL, Redis und MinIO im Docker-Netzwerk. Next.js ist das einzige Frontend – es kommuniziert intern über einen Shared-Secret-JWT (keine öffentlichen Auth-Endpoints).
+Async REST API für die Portfolio-Homepage. Läuft zusammen mit PostgreSQL, Redis und Garage (S3) im Docker-Netzwerk. Next.js ist das einzige Frontend – es kommuniziert intern über einen Shared-Secret-JWT (keine öffentlichen Auth-Endpoints).
 
 ---
 
@@ -14,7 +14,7 @@ Async REST API für die Portfolio-Homepage. Läuft zusammen mit PostgreSQL, Redi
 | Alembic | Datenbankmigrationen |
 | PostgreSQL 16 | Relationale Datenbank |
 | Redis 7 | Caching (LRU-Eviction, async Client) |
-| MinIO | S3-kompatibler Objektspeicher (Presigned URLs) |
+| Garage | S3-kompatibler Objektspeicher (Presigned URLs; MinIO Python SDK als generischer S3-Client) |
 | Pydantic v2 | Settings-Management & Request/Response-Schemas |
 | python-jose | JWT-Validierung (HS256) |
 | passlib + bcrypt | Passwort-Hashing |
@@ -34,11 +34,11 @@ backend/
 │   │   ├── config.py           # Pydantic Settings (liest .env, gruppiert in Nested Models)
 │   │   ├── security.py         # JWT-Validierung, Passwort-Hashing
 │   │   ├── dependencies.py     # FastAPI-Dependencies (get_current_user, get_admin etc.)
-│   │   └── lifespan.py         # Startup/Shutdown (DB-Init, Redis, MinIO, Scheduler)
+│   │   └── lifespan.py         # Startup/Shutdown (DB-Init, Redis, S3/Garage, Scheduler)
 │   ├── db/
 │   │   ├── session.py          # AsyncEngine + AsyncSessionLocal
 │   │   ├── redis.py            # Redis-Connectionpool
-│   │   ├── minio.py            # MinIO-Client
+│   │   ├── storage.py          # S3-Client (Garage via MinIO SDK)
 │   │   ├── base.py             # SQLAlchemy DeclarativeBase
 │   │   ├── models/             # ORM-Modelle (User, Project, CV, Message)
 │   │   └── crud/               # CRUD-Funktionen (kein HTTP-Bezug)
@@ -93,7 +93,7 @@ cp .env.example .env
 |---|---|
 | `DB_*` | PostgreSQL-Verbindung (Host, Port, User, Password, Name) |
 | `REDIS_*` | Redis-Verbindung |
-| `MINIO_*` | MinIO Objektspeicher (Endpoint, Bucket, Access/Secret Key) |
+| `S3_*` | Garage S3 Objektspeicher (Endpoint, Region, Bucket, Access/Secret Key) |
 | `AUTH_*` | Shared Secret mit Next.js (muss identisch sein!), Token-Lifetime |
 | `ADMIN_*` | Initialer Admin-User (Username, Email, Password – Seed beim Start) |
 | `EMAIL_*` | SMTP-Konfiguration für ausgehende Mails (aiosmtplib) |

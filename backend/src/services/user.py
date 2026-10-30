@@ -1,7 +1,7 @@
 """
 User service - business logic for user management.
 
-Orchestrates: CRUD operations, password hashing, MinIO avatar handling.
+Orchestrates: CRUD operations, password hashing, S3 avatar handling.
 """
 
 import logging
@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..api.schemas.user import UserCreate, UserUpdate
 from ..core.security import get_password_hash
 from ..db.crud import user as user_crud
-from ..db.minio import get_minio
+from ..db.storage import get_storage
 from ..db.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -123,7 +123,7 @@ async def delete_user(db: AsyncSession, user_id: int, current_user: User) -> Non
 
     # Clean up avatar
     if target.avatar_object_name:
-        get_minio().delete_file(target.avatar_object_name)
+        get_storage().delete_file(target.avatar_object_name)
 
     await user_crud.delete_user(db, target)
 
@@ -136,7 +136,7 @@ async def delete_own_account(db: AsyncSession, current_user: User) -> None:
             detail="Admins cannot delete their own account via this endpoint",
         )
     if current_user.avatar_object_name:
-        get_minio().delete_file(current_user.avatar_object_name)
+        get_storage().delete_file(current_user.avatar_object_name)
 
     await user_crud.delete_user(db, current_user)
 
@@ -147,7 +147,7 @@ async def upload_avatar(
     file_data: bytes,
     content_type: str,
 ) -> User:
-    """Upload / replace the user's profile picture via server-side MinIO upload."""
+    """Upload / replace the user's profile picture via server-side S3 upload."""
     if content_type not in ALLOWED_AVATAR_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -159,15 +159,15 @@ async def upload_avatar(
             detail="File too large. Maximum size is 5 MB.",
         )
 
-    minio = get_minio()
+    storage = get_storage()
 
     # Delete old avatar
     if current_user.avatar_object_name:
-        minio.delete_file(current_user.avatar_object_name)
+        storage.delete_file(current_user.avatar_object_name)
 
     ext = "jpg" if "jpeg" in content_type else content_type.split("/")[-1]
     object_name = f"avatars/{current_user.id}.{ext}"
-    minio.upload_file(object_name, file_data, content_type)
+    storage.upload_file(object_name, file_data, content_type)
 
     return await user_crud.update_user(db, current_user, avatar_object_name=object_name)
 
@@ -176,4 +176,4 @@ def get_avatar_url(user: User) -> Optional[str]:
     """Generate a presigned download URL for the user's avatar."""
     if not user.avatar_object_name:
         return None
-    return get_minio().presigned_get_url(user.avatar_object_name)
+    return get_storage().presigned_get_url(user.avatar_object_name)

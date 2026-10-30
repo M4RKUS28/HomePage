@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...core.config import get_settings
 from ...core.security import get_password_hash, verify_password
 from ...db.crud import user as user_crud
-from ...db.minio import get_minio
+from ...db.storage import get_storage
 from ...db.session import get_db
 from ..schemas.auth import InternalUserResponse, LoginRequest, RegisterRequest
 from ..schemas.user import UserRead
@@ -64,8 +64,8 @@ def _build_user_read(user) -> UserRead:
     """Convert a User ORM instance to a UserRead schema."""
     avatar_url = None
     if user.avatar_object_name:
-        minio = get_minio()
-        avatar_url = minio.presigned_get_url(user.avatar_object_name)
+        storage = get_storage()
+        avatar_url = storage.presigned_get_url(user.avatar_object_name)
 
     return UserRead(
         id=user.id,

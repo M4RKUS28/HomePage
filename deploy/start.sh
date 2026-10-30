@@ -32,7 +32,7 @@ echo "[start] Pulling latest images…"
 "${COMPOSE[@]}" pull
 
 echo "[start] Starting stack (detached)…"
-"${COMPOSE[@]}" up -d --remove-orphans
+"${COMPOSE[@]}" up -d
 
 # Install / refresh the hourly auto-update cron job (idempotent via marker)
 CRON_MARK="# m4rkus-hp-auto-update"
