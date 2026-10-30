@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useLanguage } from '../../contexts/LanguageContext';
 import Spinner from '../UI/Spinner';
 import { getCVDataApi } from '../../api/cv';
+import { safeHref } from '../../lib/safe-href';
 
 import {
   Briefcase,
@@ -166,7 +167,7 @@ const TimelineItem = ({ item, index = 0 }) => {
                 {links.map((link, idx) => (
                   <a 
                     key={`link-${idx}`}
-                    href={link.url ? String(link.url) : '#'}
+                    href={safeHref(link.url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center px-3 py-1 font-data text-xs rounded-md border border-line bg-raised text-ink-2 hover:text-accent hover:border-accent transition-colors duration-200"

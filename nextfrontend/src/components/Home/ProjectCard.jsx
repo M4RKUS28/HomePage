@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DefaultProjectImage from '../../assets/placeholder-project.png';
+import { safeHref } from '../../lib/safe-href';
 
 /* ------------------------------------------------------------------ */
 /*  Status chip – a live indicator LED floating on the card image      */
@@ -164,7 +165,7 @@ const ProjectCard = ({
           {/* Visit button + optional GitHub source link */}
           <div className="flex items-center gap-3">
             <a
-              href={project.link ? String(project.link) : '#'}
+              href={safeHref(project.link)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 font-data text-xs font-semibold uppercase tracking-[0.14em] text-accent transition-colors hover:brightness-110"
@@ -175,7 +176,7 @@ const ProjectCard = ({
 
             {project.github_link && (
               <a
-                href={String(project.github_link)}
+                href={safeHref(project.github_link)}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={t('viewSource')}
